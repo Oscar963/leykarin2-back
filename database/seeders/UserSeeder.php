@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -15,7 +16,8 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
+        // Crear o actualizar el usuario administrador
+        $admin = User::updateOrCreate(
             ['email' => 'oscar.apata01@gmail.com'], // Identificador único
             [
                 'rut' => '68243787-1',
@@ -23,11 +25,15 @@ class UserSeeder extends Seeder
                 'paternal_surname' => 'Apata',
                 'maternal_surname' => 'Tito',
                 'email' => 'oscar.apata01@gmail.com',
-                'estado' => 0,
-                'password' => Hash::make('password123'), // Contraseña predeterminada
+                'status' => 1,
+                'password' => Hash::make('password123'),
             ]
         );
 
+        // Asignar el rol al usuario
+        $admin->assignRole('Administrador');
+
+        // Mostrar mensaje en la consola
         $this->command->info('Usuario por defecto creado: oscar.apata01@gmail.com');
     }
 }
