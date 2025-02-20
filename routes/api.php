@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\MobileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PopupController;
 use App\Http\Controllers\UserController;
@@ -31,12 +33,22 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::get('/isAuthenticated', [AuthController::class, 'isAuthenticated']);
+
     Route::apiResource('banners', BannerController::class);
     Route::apiResource('popups', PopupController::class);
     Route::apiResource('pages', PageController::class);
+    
+    Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
     Route::apiResource('users', UserController::class);
-    Route::post('users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
-    Route::post('users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
+    
+    Route::post('/anexos/import', [AnexoController::class, 'import'])->name('anexos.import');
+    Route::get('/anexos/export', [AnexoController::class, 'export'])->name('anexos.export');
+    Route::apiResource('anexos', AnexoController::class);
+
+    Route::post('/mobiles/import', [MobileController::class, 'import'])->name('mobiles.import');
+    Route::get('/mobiles/export', [MobileController::class, 'export'])->name('mobiles.export');
+    Route::apiResource('mobiles', MobileController::class);
 
     //Files
     Route::get('/files', [FileController::class, 'index']);
