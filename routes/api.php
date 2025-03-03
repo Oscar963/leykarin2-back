@@ -66,4 +66,6 @@ Route::middleware('web')->prefix('web')->group(function () {
     Route::get('/pages/{id}', [WebController::class, 'getPageById']);
     Route::get('/files/search', [WebController::class, 'searchFiles']);
     Route::get('/files/{id}/download', [WebController::class, 'downloadFile']);
+    Route::get('/anexos/search', [WebController::class, 'searchAnexos']);
+    Route::get('/mobiles/search', [WebController::class, 'searchMobiles']);
 });

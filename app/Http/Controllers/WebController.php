@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AnexoResource;
 use App\Http\Resources\FileResource;
+use App\Http\Resources\MobileResource;
 use App\Services\WebService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -129,6 +131,40 @@ class WebController extends Controller
             $this->logActivity('download_file', 'Usuario descargo el archivo con ID: ' . $id);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al descargar el archivo: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Buscar anexos por nombre, numero o descripción.
+     */
+    public function searchAnexos(Request $request): JsonResponse
+    {
+        try {
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show', 15); // Valor por defecto: 15
+
+            $anexos = $this->webService->searchAnexos($query, $perPage);
+
+            return response()->json(['data' => AnexoResource::collection($anexos)->response()->getData(true)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al buscar anexos: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Buscar mobiles por nombre, numero o descripción.
+     */
+    public function searchMobiles(Request $request): JsonResponse
+    {
+        try {
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show', 15); // Valor por defecto: 15
+
+            $mobiles = $this->webService->searchMobiles($query, $perPage);
+
+            return response()->json(['data' => MobileResource::collection($mobiles)->response()->getData(true)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al buscar mobiles: ' . $e->getMessage()], 500);
         }
     }
 }

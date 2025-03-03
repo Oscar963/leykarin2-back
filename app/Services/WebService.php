@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Anexo;
 use App\Models\Banner;
 use App\Models\File;
+use App\Models\Mobile;
 use App\Models\Page;
 use App\Models\Popup;
 use Illuminate\Support\Facades\Storage;
@@ -52,5 +54,38 @@ class WebService
             ->orWhere('description', 'LIKE', "%{$query}%")
             ->orderBy('created_at', 'DESC')
             ->get();
+    }
+
+    public function searchAnexos(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = Anexo::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('internal_number', 'LIKE', "%{$query}%")
+                    ->orWhere('external_number', 'LIKE', "%{$query}%")
+                    ->orWhere('office', 'LIKE', "%{$query}%")
+                    ->orWhere('unit', 'LIKE', "%{$query}%")
+                    ->orWhere('person', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
+    }
+
+    public function searchMobiles(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = Mobile::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('number', 'LIKE', "%{$query}%")
+                    ->orWhere('office', 'LIKE', "%{$query}%")
+                    ->orWhere('direction', 'LIKE', "%{$query}%")
+                    ->orWhere('person', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
     }
 }
