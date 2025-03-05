@@ -86,24 +86,23 @@ class PageService
 
     public function uploadFile(array $data)
     {
-        $page = $this->getPageBySlug($data['slug']);
-
         $file = new File();
         $file->name = $data['name'];
         $file->description = $data['description'];
-        $file->type = $data['file']->getClientMimeType();
-        $file->size = $data['file']->getSize();
-        $file->page_id = $page->id;
-        $file->created_by = auth()->id();
 
         if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
+            $file->type = $data['file']->getClientMimeType();
+            $file->size = $data['file']->getSize();
             // Generar un nombre único para el archivo
             $fileName = pathinfo($data['file']->getClientOriginalName(), PATHINFO_FILENAME) . '-' . uniqid() . '.' . $data['file']->getClientOriginalExtension();
             $filePath = $data['file']->storeAs('files/pages', $fileName, 'public');
         }
         // Asignar la URL completa del archivo
         $file->url = url('storage/' . $filePath);
+
+        $file->created_by = auth()->id();
         $file->save();
+        $file->pages()->attach($data['page_id']);
         return $file;
     }
 

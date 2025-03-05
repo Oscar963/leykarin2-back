@@ -71,11 +71,6 @@ class FileController extends Controller
      */
     public function download(int $id): BinaryFileResponse
     {
-        try {
-            return $this->fileService->downloadFile($id);
-            $this->logActivity('download_file', 'Usuario descargo el archivo con ID: ' . $id);
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Error al descargar el archivo: ' . $e->getMessage()], 500);
-        }
+        return $this->fileService->downloadFile($id);
     }
 }

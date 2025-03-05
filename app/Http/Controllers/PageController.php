@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FileRequest;
 use App\Http\Requests\PageRequest;
+use App\Http\Resources\FileResource;
 use App\Http\Resources\PageResource;
+use App\Models\File;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use App\Services\PageService;
@@ -87,6 +90,36 @@ class PageController extends Controller
             return response()->json(['message' => 'Página eliminada exitosamente'], 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al eliminar la página.' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Listar todos los archivos.
+     */
+    public function indexFile(Request $request): JsonResponse
+    {
+        try {
+            $show = $request->query('show');
+            $files = File::orderBy('created_at', 'DESC')->paginate($show);
+            return response()->json(['data' =>  FileResource::collection($files)->response()->getData(true)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al obtener las páginas.'], 500);
+        }
+    }
+
+    /**
+     * Guardar un nuevo archivo relacionado con una página.
+     */
+    public function uploadFile(FileRequest $request): JsonResponse
+    {
+        //return response()->json(['message' =>  $request->all()]);
+        try {
+            $file = $this->pageService->uploadFile($request->validated());
+            $this->logActivity('upload_file', 'Usuario subió un archivo: ' . $file->name);
+
+            return response()->json(['message' => 'Archivo subido exitosamente', 'data' => new FileResource($file)], 201);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al subir el archivo: ' . $e->getMessage()], 500);
         }
     }
 }

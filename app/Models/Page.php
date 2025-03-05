@@ -10,6 +10,11 @@ class Page extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public function files()
+    {
+        return $this->belongsToMany(File::class, 'file_page', 'page_id', 'file_id')->withTimestamps();
+    }
+    
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -18,10 +23,5 @@ class Page extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    public function files()
-    {
-        return $this->hasMany(File::class);
     }
 }

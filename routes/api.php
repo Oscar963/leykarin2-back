@@ -36,12 +36,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('banners', BannerController::class);
     Route::apiResource('popups', PopupController::class);
+
+    Route::post('/pages/files', [PageController::class, 'uploadFile']);
+    Route::get('/pages/files', [PageController::class, 'indexFile']);
     Route::apiResource('pages', PageController::class);
-    
+
+
+
     Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
     Route::apiResource('users', UserController::class);
-    
+
     Route::post('/anexos/import', [AnexoController::class, 'import'])->name('anexos.import');
     Route::get('/anexos/export', [AnexoController::class, 'export'])->name('anexos.export');
     Route::apiResource('anexos', AnexoController::class);

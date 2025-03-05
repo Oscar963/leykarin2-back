@@ -9,6 +9,11 @@ class File extends Model
 {
     use HasFactory;
 
+    public function pages()
+    {
+        return $this->belongsToMany(Page::class, 'file_page');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

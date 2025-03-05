@@ -22,7 +22,6 @@ class FileService
         $file->description = $data['description'];
         $file->size = $data['file']->getSize();
         $file->type = $data['file']->getClientMimeType();
-        $file->page_id = $data['page_id'];
         $file->created_by = auth()->id();
 
         if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
@@ -51,11 +50,11 @@ class FileService
     {
         $file = File::findOrFail($id);
         $filePath = str_replace(url('storage/'), '', $file->url);
-    
+
         if (!Storage::disk('public')->exists($filePath)) {
             throw new Exception("El archivo no existe en el servidor.");
         }
-    
+
         return response()->download(storage_path("app/public/{$filePath}"), $file->name);
     }
 }

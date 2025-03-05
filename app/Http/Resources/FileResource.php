@@ -16,7 +16,6 @@ class FileResource extends JsonResource
             'url' => $this->url,
             'type' => $this->getFriendlyFileType($this->type),
             'size' => round($this->size / (1024 * 1024), 2), // Tamaño en MB, redondeado a 2 decimales
-            'page_id' => $this->page_id,
             'created_at' => $this->created_at ? $this->created_at->format('d-m-Y H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('d-m-Y H:i:s') : null,
             'created_by' => new UserResource($this->createdBy),
