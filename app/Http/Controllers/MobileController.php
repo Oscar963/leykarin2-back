@@ -125,10 +125,7 @@ class MobileController extends Controller
      */
     public function export(): BinaryFileResponse
     {
-        try {
-            return Excel::download(new MobileExport, 'mobiles.xlsx');
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Error al exportar los datos: ' . $e->getMessage()], 500);
-        }
+        $this->logActivity('download_file', 'Usuario exporto el excel de móviles');
+        return Excel::download(new MobileExport, 'mobiles.xlsx');
     }
 }

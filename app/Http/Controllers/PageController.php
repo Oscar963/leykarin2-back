@@ -100,7 +100,17 @@ class PageController extends Controller
     {
         try {
             $show = $request->query('show');
-            $files = File::orderBy('created_at', 'DESC')->paginate($show);
+            $idpage = $request->query('idpage');
+
+            $files =
+                File::when($idpage, function ($query) use ($idpage) {
+                    $query->whereHas('pages', function ($q) use ($idpage) {
+                        $q->where('pages.id', $idpage);
+                    });
+                })
+                ->orderBy('created_at', 'DESC')
+                ->paginate($show);
+
             return response()->json(['data' =>  FileResource::collection($files)->response()->getData(true)], 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al obtener las páginas.'], 500);
