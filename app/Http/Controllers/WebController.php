@@ -137,7 +137,7 @@ class WebController extends Controller
     {
         try {
             $query = $request->query('q'); // Parámetro de búsqueda
-            $perPage = $request->query('show', 15); // Valor por defecto: 15
+            $perPage = $request->query('show', 50); // Valor por defecto: 15
 
             $anexos = $this->webService->searchAnexos($query, $perPage);
 
