@@ -35,7 +35,7 @@ class WebService
 
     public function getPageBySlug($slug)
     {
-        return Page::where('slug', $slug)->firstOrFail();
+        return Page::where('slug', $slug)->with('files')->firstOrFail();
     }
 
     public function getAllPopups()

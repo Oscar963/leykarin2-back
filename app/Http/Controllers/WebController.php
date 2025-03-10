@@ -102,6 +102,19 @@ class WebController extends Controller
     }
 
     /**
+     * Obtener una página por Slug.
+     */
+    public function getPageSlug(string $slug): JsonResponse
+    {
+        try {
+            $page = $this->webService->getPageBySlug($slug);
+            return response()->json(['data' => $page], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener la página: ' . $e->getMessage()], 404);
+        }
+    }
+
+    /**
      * Buscar archivos por nombre o descripción.
      */
     public function searchFiles(Request $request): JsonResponse
