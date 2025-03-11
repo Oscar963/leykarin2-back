@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\AnexoResource;
 use App\Http\Resources\FileResource;
 use App\Http\Resources\MobileResource;
+use App\Http\Resources\PageResource;
 use App\Services\WebService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -108,7 +109,7 @@ class WebController extends Controller
     {
         try {
             $page = $this->webService->getPageBySlug($slug);
-            return response()->json(['data' => $page], 200);
+            return response()->json(['data' => new PageResource($page)], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener la página: ' . $e->getMessage()], 404);
         }
@@ -139,7 +140,6 @@ class WebController extends Controller
      */
     public function downloadFile(int $id): BinaryFileResponse
     {
-        $this->logActivity('download_file', 'Usuario descargo el archivo con ID: ' . $id);
         return $this->fileService->downloadFile($id);
     }
 

@@ -71,7 +71,6 @@ class FileController extends Controller
      */
     public function download(int $id): BinaryFileResponse
     {
-        $this->logActivity('download_file', 'Usuario descargo el archivo con ID: ' . $id);
         return $this->fileService->downloadFile($id);
     }
 }

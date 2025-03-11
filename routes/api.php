@@ -70,6 +70,7 @@ Route::middleware('web')->prefix('web')->group(function () {
     Route::get('/pages', [WebController::class, 'getAllPages']);
     Route::get('/pages/id/{id}', [WebController::class, 'getPageById']);
     Route::get('/pages/slug/{slug}', [WebController::class, 'getPageSlug']);
+    Route::get('/pages/files/{id}/download', [FileController::class, 'download']);
     Route::get('/files/search', [WebController::class, 'searchFiles']);
     Route::get('/files/{id}/download', [WebController::class, 'downloadFile']);
     Route::get('/anexos/search', [WebController::class, 'searchAnexos']);
