@@ -28,22 +28,31 @@ jobs:
     - name: 📦 Instalar dependencias con Composer
       run: composer install --no-dev --optimize-autoloader
 
-    # 4. Generar clave de la aplicación
+    # 4. Crear archivo .env temporal para key:generate
+    - name: 📄 Crear archivo .env temporal
+      run: |
+        echo "APP_NAME=Laravel" > .env
+        echo "APP_ENV=production" >> .env
+        echo "APP_KEY=" >> .env
+        echo "APP_DEBUG=false" >> .env
+        echo "APP_URL=https://localhost" >> .env
+
+    # 5. Generar clave de la aplicación
     - name: 🔑 Generar clave de la aplicación
       run: php artisan key:generate
 
-    # 5. Ejecutar migraciones
+    # 6. Ejecutar migraciones
     - name: 🗂️ Ejecutar migraciones
       run: php artisan migrate --force
 
-    # 6. Optimizar caché de Laravel
+    # 7. Optimizar caché de Laravel
     - name: ⚡ Optimizar caché de Laravel
       run: |
         php artisan config:cache
         php artisan route:cache
         php artisan view:cache
 
-    # 7. Subir archivos al servidor vía FTP (ignorando .env)
+    # 8. Subir archivos al servidor vía FTP (ignorando .env)
     - name: 📂 Subir archivos al servidor FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
