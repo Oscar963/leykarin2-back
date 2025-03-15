@@ -19,7 +19,7 @@ jobs:
     - name: ⚙️ Configurar PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.2
+        php-version: 7.4
         extensions: mbstring, intl, bcmath, gd, pdo, pdo_mysql
         ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
         coverage: none
@@ -28,34 +28,30 @@ jobs:
     - name: 📦 Instalar dependencias con Composer
       run: composer install --no-dev --optimize-autoloader
 
-    # 4. Copiar archivo .env
-    - name: 📄 Copiar archivo .env
-      run: cp .env.production .env
-
-    # 5. Generar la clave de la aplicación
+    # 4. Generar clave de la aplicación
     - name: 🔑 Generar clave de la aplicación
       run: php artisan key:generate
 
-    # 6. Ejecutar migraciones
+    # 5. Ejecutar migraciones
     - name: 🗂️ Ejecutar migraciones
       run: php artisan migrate --force
 
-    # 7. Optimizar caché
+    # 6. Optimizar caché de Laravel
     - name: ⚡ Optimizar caché de Laravel
       run: |
         php artisan config:cache
         php artisan route:cache
         php artisan view:cache
 
-    # 8. Sincronizar archivos al servidor vía FTP
+    # 7. Subir archivos al servidor vía FTP (ignorando .env)
     - name: 📂 Subir archivos al servidor FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
         server: dev.imaarica.cl
         username: ${{ secrets.ftp_username }}
         password: ${{ secrets.ftp_password }}
-        local-dir: ./ 
-        server-dir: ./ 
+        local-dir: ./
+        server-dir: ./
         exclude: |
           **/.git*
           **/node_modules/**
