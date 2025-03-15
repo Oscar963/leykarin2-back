@@ -42,8 +42,8 @@ jobs:
       run: php artisan key:generate
 
     # 6. Ejecutar migraciones
-    - name: 🗂️ Ejecutar migraciones
-      run: php artisan migrate --force
+    #- name: 🗂️ Ejecutar migraciones
+    #  run: php artisan migrate --force
 
     # 7. Optimizar caché de Laravel
     - name: ⚡ Optimizar caché de Laravel
