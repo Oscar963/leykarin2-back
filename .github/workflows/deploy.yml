@@ -19,7 +19,7 @@ jobs:
       - name: ⚙️ Configurar PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.2
+          php-version: 7.4
           extensions: mbstring, intl, bcmath, pdo, pdo_mysql
           ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
           coverage: none
@@ -84,7 +84,7 @@ jobs:
 
           MIX_PUSHER_APP_KEY=$PUSHER_APP_KEY
           MIX_PUSHER_APP_CLUSTER=$PUSHER_APP_CLUSTER
-          EOF
+           EOF
 
       # 5. Generar clave de la aplicación
       - name: 🔑 Generar clave de la aplicación
