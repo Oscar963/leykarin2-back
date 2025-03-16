@@ -3,70 +3,131 @@ on:
     branches:
       - main
 
-name: 🚀 Despliegue Laravel a Producción
+name: 🚀 Despliegue Laravel API a Producción
 
 jobs:
   web-deploy:
-    name: 🎉 Despliegue
+    name: 🎉 Despliegue API
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Clonar el código
-    - name: 🚚 Obtener código más reciente
-      uses: actions/checkout@v4
+      # 1. Clonar el código
+      - name: 🚚 Obtener código más reciente
+        uses: actions/checkout@v4
 
-    # 2. Configurar PHP y Composer
-    - name: ⚙️ Configurar PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 7.4
-        extensions: mbstring, intl, bcmath, gd, pdo, pdo_mysql
-        ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
-        coverage: none
+      # 2. Configurar PHP y Composer
+      - name: ⚙️ Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, intl, bcmath, pdo, pdo_mysql
+          ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
+          coverage: none
 
-    # 3. Instalar dependencias de Laravel
-    - name: 📦 Instalar dependencias con Composer
-      run: composer install --no-dev --optimize-autoloader
+      # 3. Instalar dependencias de Laravel
+      - name: 📦 Instalar dependencias con Composer
+        run: composer install --no-dev --optimize-autoloader
 
-    # 4. Crear archivo .env temporal para key:generate
-    - name: 📄 Crear archivo .env temporal
-      run: |
-        echo "APP_NAME=Laravel" > .env
-        echo "APP_ENV=production" >> .env
-        echo "APP_KEY=" >> .env
-        echo "APP_DEBUG=false" >> .env
-        echo "APP_URL=https://localhost" >> .env
+      # 4. Crear el archivo .env con secretos
+      - name: 📄 Crear archivo .env
+        run: |
+          cat <<EOF > .env
+            APP_NAME=Laravel
+            APP_ENV=production
+            APP_KEY=${{ secrets.APP_KEY }}
+            APP_DEBUG=false
+            APP_URL=${{ secrets.APP_URL }}
 
-    # 5. Generar clave de la aplicación
-    - name: 🔑 Generar clave de la aplicación
-      run: php artisan key:generate
+            LOG_CHANNEL=stack
+            LOG_DEPRECATIONS_CHANNEL=null
+            LOG_LEVEL=debug
 
-    # 6. Ejecutar migraciones
-    #- name: 🗂️ Ejecutar migraciones
-    #  run: php artisan migrate --force
+            DB_CONNECTION=${{ secrets.DB_CONNECTION }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_DATABASE=${{ secrets.DB_DATABASE }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
 
-    # 7. Optimizar caché de Laravel
-    - name: ⚡ Optimizar caché de Laravel
-      run: |
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
+            SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1
+            SESSION_DOMAIN=localhost
+            FRONTEND_URL=http://localhost:4200
 
-    # 8. Subir archivos al servidor vía FTP (ignorando .env)
-    - name: 📂 Subir archivos al servidor FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.0
-      with:
-        server: dev.imaarica.cl
-        username: ${{ secrets.ftp_username }}
-        password: ${{ secrets.ftp_password }}
-        local-dir: ./
-        server-dir: ./
-        exclude: |
-          **/.git*
-          **/node_modules/**
-          **/vendor/**
-          **/.env*
-          **/storage/**
-          **/tests/**
-          **/docker-compose.yml
-          **/package-lock.json
+            BROADCAST_DRIVER=log
+            CACHE_DRIVER=file
+            FILESYSTEM_DRIVER=local
+            QUEUE_CONNECTION=sync
+            SESSION_DRIVER=database
+            SESSION_LIFETIME=120
+
+            MEMCACHED_HOST=127.0.0.1
+
+            MAIL_MAILER=smtp
+            MAIL_HOST=${{ secrets.MAIL_HOST }}
+            MAIL_PORT=${{ secrets.MAIL_PORT }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            MAIL_ENCRYPTION=${{ secrets.MAIL_ENCRYPTION }}
+            MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
+            MAIL_FROM_NAME="${{ secrets.MAIL_FROM_NAME }}"
+
+            AWS_ACCESS_KEY_ID=
+            AWS_SECRET_ACCESS_KEY=
+            AWS_DEFAULT_REGION=us-east-1
+            AWS_BUCKET=
+            AWS_USE_PATH_STYLE_ENDPOINT=false
+
+            PUSHER_APP_ID=
+            PUSHER_APP_KEY=
+            PUSHER_APP_SECRET=
+            PUSHER_APP_CLUSTER=mt1
+
+            MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+            MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+          EOF
+
+      # 5. Generar clave de la aplicación
+      - name: 🔑 Generar clave de la aplicación
+        run: php artisan key:generate
+
+      # 6. Ejecutar migraciones
+      - name: 🗂️ Ejecutar migraciones
+        run: php artisan migrate --force
+
+      # 7. Optimizar configuración (sin cache de vistas o rutas innecesarias)
+      - name: ⚡ Optimizar configuración
+        run: php artisan config:cache
+
+      # 8. Subir archivos al servidor vía FTP (ignorando .env y directorios innecesarios)
+      - name: 📂 Subir archivos al servidor FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: dev.imaarica.cl
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          local-dir: ./
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/node_modules/**
+            **/vendor/**
+            **/.env*
+            **/storage/**
+            **/tests/**
+            **/docker-compose.yml
+            **/package-lock.json
+
+    # 9. 📢 Nota Importante sobre el Servidor
+    # ---------------------------------------------------------------
+    # ⚠️ Después del despliegue, asegúrate de:
+    #
+    # ✅ Tener un archivo `.env` correctamente configurado en el servidor.
+    # ✅ Ejecutar manualmente en el servidor:
+    #      - composer install --no-dev --optimize-autoloader
+    #      - php artisan migrate --force (si no se migró correctamente)
+    #      - php artisan config:cache
+    # ✅ Configurar permisos correctos en las carpetas:
+    #      - storage/
+    #      - bootstrap/cache
+    # ✅ Reiniciar el servicio PHP-FPM o el servidor web si es necesario.
+    # ---------------------------------------------------------------
