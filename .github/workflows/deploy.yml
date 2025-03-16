@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
           local-dir: ./
-          server-dir: ./intranet
+          server-dir: ./intranet/
           exclude: |
             **/.git*
             **/node_modules/**
