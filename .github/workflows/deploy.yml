@@ -34,7 +34,7 @@ jobs:
           cat <<EOF > .env
             APP_NAME=Laravel
             APP_ENV=production
-            APP_KEY=${{ secrets.APP_KEY }}
+            APP_KEY=
             APP_DEBUG=false
             APP_URL=${{ secrets.APP_URL }}
 
