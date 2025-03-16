@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
           local-dir: ./
-          server-dir: ./
+          server-dir: ./intranet
           exclude: |
             **/.git*
             **/node_modules/**
@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
           local-dir: ./public/
-          server-dir: ../public_html/intranet/
+          server-dir: ./public_html/intranet/
           exclude: |
             **/.git*
             **/node_modules/**
