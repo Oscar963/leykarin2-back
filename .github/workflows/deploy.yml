@@ -51,6 +51,21 @@ jobs:
             **/docker-compose.yml
             **/package-lock.json
 
+      # 6. Subir la carpeta 'public' a 'public_html/intranet'
+      - name: 📂 Subir carpeta 'public' a 'public_html/intranet'
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: dev.imaarica.cl
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          local-dir: ./public/
+          server-dir: ./public_html/intranet/
+          exclude: |
+            **/.git*
+            **/node_modules/**
+            **/.env*
+            **/tests/**
+
     # 9. 📢 Nota Importante sobre el Servidor
     # ---------------------------------------------------------------
     # ⚠️ Después del despliegue, asegúrate de:
