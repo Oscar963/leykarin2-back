@@ -86,18 +86,9 @@ jobs:
           MIX_PUSHER_APP_CLUSTER=$PUSHER_APP_CLUSTER
           EOF
 
-      - name: ✅ Probar conexión a la base de datos
-        run: |
-          mysql --host=${{ secrets.DB_HOST }} --port=${{ secrets.DB_PORT }} --user=${{ secrets.DB_USERNAME }} --password=${{ secrets.DB_PASSWORD }} -e "SHOW DATABASES;"
-          
-
       # 5. Generar clave de la aplicación
       - name: 🔑 Generar clave de la aplicación
         run: php artisan key:generate
-
-      # 6. Ejecutar migraciones
-      - name: 🗂️ Ejecutar migraciones
-        run: php artisan migrate --force
 
       # 7. Optimizar configuración (sin cache de vistas o rutas innecesarias)
       - name: ⚡ Optimizar configuración
