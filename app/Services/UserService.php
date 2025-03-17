@@ -93,4 +93,22 @@ class UserService
         $user->password = bcrypt($data['new_password']);
         $user->save();
     }
+
+    /**
+     * Actualizar perfil.
+     */
+    public function updateProfile(array $data)
+    {
+        $idUser = auth()->user()->id;
+        $user = $this->getUserById($idUser);
+
+        $user->name = $data['name'];
+        $user->paternal_surname = $data['paternal_surname'];
+        $user->maternal_surname = $data['maternal_surname'];
+        $user->rut = $data['rut'];
+        $user->email = $data['email'];
+
+        $user->save();
+        return $user;
+    }
 }
