@@ -25,7 +25,7 @@ class ForgotPasswordController extends Controller
         $user = User::where('email', $request->email)->first();
         if (!$user) {
             return response()->json([
-                'error' => 'El correo electrónico ingresado no está registrado en nuestro sistema. Por favor, verifique e intente nuevamente.'
+                'message' => 'El correo electrónico ingresado no está registrado en nuestro sistema. Por favor, verifique e intente nuevamente.'
             ], 404);
         }
 
@@ -37,7 +37,7 @@ class ForgotPasswordController extends Controller
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($key);
             return response()->json([
-                'error' => 'Ha superado el número máximo de intentos. Por favor, intente nuevamente en ' . ceil($seconds / 60) . ' minutos.'
+                'message' => 'Ha superado el número máximo de intentos. Por favor, intente nuevamente en ' . ceil($seconds / 60) . ' minutos.'
             ], 429);
         }
 
@@ -54,7 +54,7 @@ class ForgotPasswordController extends Controller
         }
 
         return response()->json([
-            'error' => 'Ocurrió un error al enviar el enlace de restablecimiento. Intente nuevamente más tarde.'
+            'message' => 'Ocurrió un error al enviar el enlace de restablecimiento. Intente nuevamente más tarde.'
         ], 400);
     }
 }

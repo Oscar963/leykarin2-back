@@ -42,7 +42,8 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        $resetUrl = env('FRONTEND_URL') . '/reset-password/' . $this->token . '?email=' . urlencode($notifiable->getEmailForPasswordReset());
+        $resetUrl = config('app.frontend_url') . '/reset-password/' . $this->token . '?email=' . urlencode($notifiable->getEmailForPasswordReset());
+
         $logoUrl = asset('assets/img/logos/logo-blanco.png'); // Asegúrate de que la imagen esté en public/images/logo.png
 
         // Usamos la vista de correo personalizada
