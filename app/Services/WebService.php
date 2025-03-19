@@ -8,14 +8,12 @@ use App\Models\File;
 use App\Models\Mobile;
 use App\Models\Page;
 use App\Models\Popup;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class WebService
 {
     public function getAllBanners()
     {
-        return Banner::orderBy('created_at', 'DESC')->where('status', 'published')->get();
+        return Banner::orderBy('created_at', 'DESC')->where('status', 'published')->select(['image', 'link', 'date_expiration', 'status'])->get();
     }
 
     public function getBannerById($id)
@@ -35,7 +33,7 @@ class WebService
 
     public function getPageBySlug($slug)
     {
-        return Page::where('slug', $slug)->with('files')->firstOrFail();
+        return Page::where('slug', $slug)->with('files')->select(['id', 'title', 'content', 'slug', 'status', 'image'])->firstOrFail();
     }
 
     public function getAllPopups()
@@ -69,8 +67,7 @@ class WebService
                     ->orWhere('person', 'LIKE', "%{$query}%");
             });
         }
-
-        return $queryBuilder->paginate($perPage);
+        return $queryBuilder->select(['external_number', 'internal_number', 'office', 'unit', 'person'])->paginate($perPage);
     }
 
     public function searchMobiles(?string $query, int $perPage = 15)

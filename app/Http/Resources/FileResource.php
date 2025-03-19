@@ -41,6 +41,7 @@ class FileResource extends JsonResource
             'image/png' => 'Imagen PNG',
             'image/gif' => 'Imagen GIF',
             'image/bmp' => 'Imagen BMP',
+            'image/webp' => 'Imagen WebP',
             'application/zip' => 'Archivo ZIP', 
             'application/octet-stream' => 'Archivo ZIP', 
             'application/x-zip-compressed' => 'Archivo ZIP',
