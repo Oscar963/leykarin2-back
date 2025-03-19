@@ -27,7 +27,7 @@ class PageRequest extends FormRequest
             ],
             'content' => 'nullable|string',
             'status' => 'required|in:published,hidden',
-            'image' => $isUpdate ? 'image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => $isUpdate ? 'image|mimes:jpeg,png,jpg,gif,webp|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
     }
 
@@ -39,7 +39,7 @@ class PageRequest extends FormRequest
             'title.unique' => 'El título ya ha sido registrado, debe ser único.',
             'status.in' => 'El status debe ser publicado o oculto.',
             'image.image' => 'El archivo debe ser una image.',
-            'image.mimes' => 'La image debe ser de tipo: jpeg, png, jpg, gif.',
+            'image.mimes' => 'La image debe ser de tipo: jpeg, png, jpg, gif, webp.',
             'image.max' => 'La image no puede exceder los 2048 kilobytes.',
         ];
     }

@@ -26,7 +26,7 @@ class BannerRequest extends FormRequest
             ],
             'status' => 'required|in:published,hidden',
             'link' => 'nullable|url:http,https',
-            'image' => $isUpdate ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => $isUpdate ? 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'date_expiration' => 'required|date|after_or_equal:date',
         ];
     }
@@ -40,7 +40,7 @@ class BannerRequest extends FormRequest
             'status.in' => 'El estado debe ser publicado o oculto.',
             'image.required' => 'La imagen es obligatoria.',
             'image.image' => 'El archivo debe ser una imagen.',
-            'image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
+            'image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, webp.',
             'image.max' => 'La imagen no puede exceder los 2048 kilobytes.',
             'date_expiration.required' => 'La fecha de expiración es obligatoria.',
             'date_expiration.date' => 'La fecha de expiración no es válida.',

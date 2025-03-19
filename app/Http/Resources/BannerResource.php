@@ -9,7 +9,7 @@ class BannerResource extends JsonResource
 {
     public function toArray($request)
     {
-        return [
+        return array_filter([
             'id' => $this->id,
             'title' => $this->title,
             'image' => $this->image,
@@ -23,6 +23,8 @@ class BannerResource extends JsonResource
             'created_by' => new UserResource($this->createdBy),
             'updated_by' => $this->updated_by ? new UserResource($this->updatedBy) : null,
             'deleted_by' => $this->deleted_by ? new UserResource($this->deletedBy) : null
-        ];
+        ], function ($value) {
+            return !is_null($value); // Filtra los valores nulos
+        });
     }
 }
