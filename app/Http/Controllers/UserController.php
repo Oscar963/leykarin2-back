@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UserRequest;
@@ -123,6 +124,35 @@ class UserController extends Controller
             return response()->json(['message' => 'Contraseña actualizada exitosamente'], 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al actualizar la contraseña: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Actualizar la contraseña del usuario autenticado.
+     */
+    public function profile(): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            $this->logActivity('view_profile', 'Usuario consultó su perfil.', $user->id);
+            return response()->json(['data' => new UserResource($user)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al obtener el perfil: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Actualizar un perfil.
+     */
+    public function updateProfile(ProfileRequest $request): JsonResponse
+    {
+        try {
+            $updatedUser = $this->userService->updateProfile($request->validated());
+            $this->logActivity('update_user', 'Usuario actualizó su perfil ID: ' . $updatedUser->id);
+
+            return response()->json(['message' => 'Perfil actualizado exitosamente', 'data' => new UserResource($updatedUser)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al actualizar el perfil: ' . $e->getMessage()], 500);
         }
     }
 }

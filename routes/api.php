@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
+    Route::post('/users/update-profile', [UserController::class, 'updateProfile'])->name('users.update-profile');
+    Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::apiResource('users', UserController::class);
 
     Route::post('/anexos/import', [AnexoController::class, 'import'])->name('anexos.import');
