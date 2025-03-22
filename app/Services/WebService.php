@@ -13,7 +13,14 @@ class WebService
 {
     public function getAllBanners()
     {
-        return Banner::orderBy('created_at', 'DESC')->where('status', 'published')->select(['image', 'link', 'date_expiration', 'status'])->get();
+        return Banner::where('status', 'published')
+            ->where(function ($query) {
+                $query->whereNull('date_expiration') // Si no tiene fecha de expiración, se muestra
+                    ->orWhere('date_expiration', '>=', now()); // Si la fecha de expiración es en el futuro
+            })
+            ->orderBy('created_at', 'DESC')
+            ->select(['image', 'link', 'date_expiration', 'status'])
+            ->get();
     }
 
     public function getBannerById($id)
