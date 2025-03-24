@@ -24,7 +24,7 @@ class FileRequest extends FormRequest
     public function rules()
     {
         return [
-            'file' => 'required|file|max:20000',
+            'file' => 'required|file|max:250000', //250MB
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'page_id' => 'nullable|integer|exists:pages,id',

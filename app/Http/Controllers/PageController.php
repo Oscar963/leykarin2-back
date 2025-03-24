@@ -122,7 +122,6 @@ class PageController extends Controller
      */
     public function uploadFile(FileRequest $request): JsonResponse
     {
-        //return response()->json(['message' =>  $request->all()]);
         try {
             $file = $this->pageService->uploadFile($request->validated());
             $this->logActivity('upload_file', 'Usuario subió un archivo: ' . $file->name);
