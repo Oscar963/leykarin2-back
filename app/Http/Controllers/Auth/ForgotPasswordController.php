@@ -37,7 +37,7 @@ class ForgotPasswordController extends Controller
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($key);
             return response()->json([
-                'message' => 'Ha superado el número máximo de intentos. Por favor, intente nuevamente en ' . ceil($seconds / 60) . ' minutos.'
+                'message' => 'Has superado el límite de intentos para ingresar tu contraseña. Por favor, intente nuevamente en ' . ceil($seconds / 60) . ' minutos.'
             ], 429);
         }
 
