@@ -56,9 +56,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('mobiles', MobileController::class);
 
     //Files
-    Route::get('/files', [FileController::class, 'index']);
-    Route::post('/files', [FileController::class, 'store']);
-    Route::delete('/files/{id}', [FileController::class, 'destroy']);
+    // Route::get('/files', [FileController::class, 'index']);
+    // Route::post('/files', [FileController::class, 'store']);
+    // Route::delete('/files/{id}', [FileController::class, 'destroy']);
+    Route::apiResource('files', FileController::class);
     Route::get('/files/{id}/download', [FileController::class, 'download']);
 });
 

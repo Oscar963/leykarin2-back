@@ -23,8 +23,14 @@ class FileRequest extends FormRequest
      */
     public function rules()
     {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+
         return [
-            'file' => 'required|file|max:250000', //250MB
+            'file' => [
+                'file',
+                'max:250000', //250MB
+                $isUpdate ? 'nullable' : 'required',
+            ],
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'page_id' => 'nullable|integer|exists:pages,id',

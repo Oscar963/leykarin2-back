@@ -43,12 +43,40 @@ class FileController extends Controller
     public function store(FileRequest $request): JsonResponse
     {
         try {
-            $file = $this->fileService->uploadFile($request->validated());
+            $file = $this->fileService->createFile($request->validated());
             $this->logActivity('upload_file', 'Usuario subió un archivo: ' . $file->name);
 
             return response()->json(['message' => 'Archivo subido exitosamente', 'data' => new FileResource($file)], 201);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al subir el archivo: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Obtener datos de archivo.
+     */
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $banner = $this->fileService->getFileById($id);
+            return response()->json(['data' => new FileResource($banner)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Archivo no encontrado.'], 404);
+        }
+    }
+
+    /**
+     * Actualizar un archivo.
+     */
+    public function update(int $id, FileRequest $request): JsonResponse
+    {
+        try {
+            $updatedMobile = $this->fileService->updateFile($id, $request->validated());
+            $this->logActivity('update_mobile', 'Usuario actualizó el archivo con ID: ' . $updatedMobile->id);
+
+            return response()->json(['message' => 'Archivo actualizado exitosamente', 'data' => new FileResource($updatedMobile)], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al actualizar el archivo. ' . $e->getMessage()], 500);
         }
     }
 
