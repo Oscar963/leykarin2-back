@@ -15,11 +15,11 @@ class WebService
     {
         return Banner::where('status', 'published')
             ->where(function ($query) {
-                $query->whereNull('date_expiration') // Si no tiene fecha de expiración, se muestra
-                    ->orWhere('date_expiration', '>=', now()); // Si la fecha de expiración es en el futuro
+                $query->whereNull('date_expiration')
+                    ->orWhere('date_expiration', '>=', now());
             })
             ->orderBy('created_at', 'DESC')
-            ->select(['image', 'link', 'date_expiration', 'status'])
+            ->select(['image', 'link'])
             ->get();
     }
 
@@ -45,7 +45,14 @@ class WebService
 
     public function getAllPopups()
     {
-        return Popup::orderBy('created_at', 'DESC')->get();
+        return Popup::where('status', 'published')
+            ->where(function ($query) {
+                $query->whereNull('date_expiration')
+                    ->orWhere('date_expiration', '>=', now());
+            })
+            ->orderBy('created_at', 'DESC')
+            ->select(['image', 'link'])
+            ->get();
     }
 
     public function getPopupById($id)

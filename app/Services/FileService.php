@@ -67,6 +67,23 @@ class FileService
             throw new Exception("El archivo no existe en el servidor.");
         }
 
-        return response()->download(storage_path("app/public/{$filePath}"), $file->name);
+        $fileName = pathinfo($file->name, PATHINFO_FILENAME);
+        $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+
+        // Convertir caracteres especiales a ASCII (Ej: "Instrucción" → "Instruccion")
+        $fileName = Str::ascii($fileName);
+
+        // Reemplazar caracteres problemáticos
+        $fileName = preg_replace('/[\/\\:*?"<>|&\'~]/', '_', $fileName);
+
+        // Remover caracteres invisibles o erróneos
+        $fileName = trim(str_replace(["\r", "\n", "\t", "\0", "\x0B"], '', $fileName));
+
+        // Reemplazar espacios múltiples por un solo guion bajo
+        $fileName = preg_replace('/\s+/', '_', $fileName);
+
+        $safeFileName = $fileName . '.' . $extension;
+
+        return response()->download(storage_path("app/public/{$filePath}"), $safeFileName);
     }
 }
