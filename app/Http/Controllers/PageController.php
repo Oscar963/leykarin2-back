@@ -100,21 +100,14 @@ class PageController extends Controller
     public function indexFile(Request $request): JsonResponse
     {
         try {
-            $show = $request->query('show');
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show');
             $idpage = $request->query('idpage');
 
-            $files =
-                File::when($idpage, function ($query) use ($idpage) {
-                    $query->whereHas('pages', function ($q) use ($idpage) {
-                        $q->where('pages.id', $idpage);
-                    });
-                })
-                ->orderBy('created_at', 'DESC')
-                ->paginate($show);
-
+            $files = $this->pageService->getAllFilesByQuery($idpage, $query, $perPage);
             return response()->json(['data' =>  FileResource::collection($files)->response()->getData(true)], 200);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error al obtener las páginas.'], 500);
+            return response()->json(['message' => 'Error al obtener los los archivos.'], 500);
         }
     }
 
@@ -123,6 +116,7 @@ class PageController extends Controller
      */
     public function uploadFile(FileRequest $request): JsonResponse
     {
+        //return response()->json(['message' =>  $request->all()]);
         try {
             $file = $this->pageService->uploadFile($request->validated());
             $this->logActivity('upload_file', 'Usuario subió un archivo: ' . $file->name);

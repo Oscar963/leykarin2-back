@@ -123,4 +123,21 @@ class PageService
         $page = $this->getPageBySlug($slug);
         return File::where('page_id', $page->id)->orderBy('created_at', 'DESC')->get();
     }
+
+    public function getAllFilesByQuery(?int $idpage = null, ?string $query = null, int $perPage = 15)
+    {
+        return File::orderBy('created_at', 'DESC')
+            ->when($query, function ($queryBuilder) use ($query) {
+                $queryBuilder->where(function ($q) use ($query) {
+                    $q->where('name', 'LIKE', "%{$query}%")
+                        ->orWhere('description', 'LIKE', "%{$query}%");
+                });
+            })
+            ->when($idpage, function ($queryBuilder) use ($idpage) {
+                $queryBuilder->whereHas('pages', function ($q) use ($idpage) {
+                    $q->where('pages.id', $idpage);
+                });
+            })
+            ->paginate($perPage);
+    }
 }
