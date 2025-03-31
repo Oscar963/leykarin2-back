@@ -28,8 +28,9 @@ class PopupController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $show = $request->query('show');
-            $popups = Popup::orderBy('created_at', 'DESC')->paginate($show);
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show');
+            $popups = $this->popupService->getAllPopupsByQuery($query, $perPage);
             return response()->json(['data' =>  PopupResource::collection($popups)->response()->getData(true)], 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al obtener los popups.'], 500);

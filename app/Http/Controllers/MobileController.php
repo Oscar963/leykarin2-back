@@ -32,11 +32,12 @@ class MobileController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $show = $request->query('show');
-            $mobiles = Mobile::orderBy('created_at', 'DESC')->paginate($show);
-            return response()->json(['data' => MobileResource::collection($mobiles)->response()->getData(true)], 200);
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show');
+            $banners = $this->mobileService->getAllMobilesByQuery($query, $perPage);
+            return response()->json(['data' =>  MobileResource::collection($banners)->response()->getData(true)], 200);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error al obtener los móviles.'], 500);
+            return response()->json(['message' => 'Error al obtener los mobiles.'], 500);
         }
     }
 

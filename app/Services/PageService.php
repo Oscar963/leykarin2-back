@@ -14,6 +14,18 @@ class PageService
         return Page::orderBy('created_at', 'DESC')->get();
     }
 
+    public function getAllPagesByQuery(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = Page::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('title', 'LIKE', "%{$query}%");
+            });
+        }
+        return $queryBuilder->paginate($perPage);
+    }
+
     public function createPage(array $data)
     {
         $page = new Page();

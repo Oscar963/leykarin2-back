@@ -11,6 +11,23 @@ class AnexoService
         return Anexo::orderBy('created_at', 'DESC')->get();
     }
 
+    public function getAllAnexosByQuery(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = Anexo::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('internal_number', 'LIKE', "%{$query}%")
+                    ->orWhere('external_number', 'LIKE', "%{$query}%")
+                    ->orWhere('office', 'LIKE', "%{$query}%")
+                    ->orWhere('unit', 'LIKE', "%{$query}%")
+                    ->orWhere('person', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
+    }
+
     public function createAnexo(array $data)
     {
         $anexo = new Anexo();

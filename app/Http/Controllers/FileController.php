@@ -29,11 +29,12 @@ class FileController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $show = $request->query('show');
-            $pages = File::orderBy('created_at', 'DESC')->paginate($show);
-            return response()->json(['data' =>  FileResource::collection($pages)->response()->getData(true)], 200);
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show');
+            $banners = $this->fileService->getAllFilesByQuery($query, $perPage);
+            return response()->json(['data' =>  FileResource::collection($banners)->response()->getData(true)], 200);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error al obtener las páginas.'], 500);
+            return response()->json(['message' => 'Error al obtener los archivos.'], 500);
         }
     }
 

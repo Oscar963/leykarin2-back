@@ -15,6 +15,19 @@ class FileService
         return File::orderBy('created_at', 'DESC')->get();
     }
 
+    public function getAllFilesByQuery(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = File::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%");
+            });
+        }
+        return $queryBuilder->paginate($perPage);
+    }
+
     public function createFile(array $data)
     {
         $file = new File();

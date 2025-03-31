@@ -13,6 +13,18 @@ class BannerService
         return Banner::orderBy('created_at', 'DESC')->get();
     }
 
+    public function getAllBannersByQuery(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = Banner::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('title', 'LIKE', "%{$query}%");
+            });
+        }
+        return $queryBuilder->paginate($perPage);
+    }
+
     public function createBanner(array $data)
     {
         $banner = new Banner();

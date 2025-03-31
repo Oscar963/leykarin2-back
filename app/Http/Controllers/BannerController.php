@@ -28,8 +28,9 @@ class BannerController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $show = $request->query('show');
-            $banners = Banner::orderBy('created_at', 'DESC')->paginate($show);
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show');
+            $banners = $this->bannerService->getAllBannersByQuery($query, $perPage);
             return response()->json(['data' =>  BannerResource::collection($banners)->response()->getData(true)], 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al obtener los banners.'], 500);

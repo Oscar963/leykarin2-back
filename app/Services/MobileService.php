@@ -14,6 +14,21 @@ class MobileService
         return Mobile::orderBy('created_at', 'DESC')->get();
     }
 
+    public function getAllMobilesByQuery(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = Mobile::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('number', 'LIKE', "%{$query}%")
+                    ->orWhere('office', 'LIKE', "%{$query}%")
+                    ->orWhere('unit', 'LIKE', "%{$query}%")
+                    ->orWhere('person', 'LIKE', "%{$query}%");
+            });
+        }
+        return $queryBuilder->paginate($perPage);
+    }
+
     /**
      * Crear un nuevo registro en Mobile.
      */

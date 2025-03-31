@@ -16,6 +16,23 @@ class UserService
         return User::orderBy('created_at', 'DESC')->get();
     }
 
+    public function getAllUsersByQuery(?string $query, int $perPage = 15)
+    {
+        $queryBuilder = User::orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('rut', 'LIKE', "%{$query}%")
+                    ->orWhere('name', 'LIKE', "%{$query}%")
+                    ->orWhere('paternal_surname', 'LIKE', "%{$query}%")
+                    ->orWhere('maternal_surname', 'LIKE', "%{$query}%")
+                    ->orWhere('email', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
+    }
+
     /**
      * Crear un nuevo usuario.
      */

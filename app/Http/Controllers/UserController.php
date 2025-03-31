@@ -31,9 +31,10 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $show = $request->query('show');
-            $users = User::orderBy('created_at', 'DESC')->paginate($show);
-            return response()->json(['data' => UserResource::collection($users)->response()->getData(true)], 200);
+            $query = $request->query('q'); // Parámetro de búsqueda
+            $perPage = $request->query('show');
+            $banners = $this->userService->getAllUsersByQuery($query, $perPage);
+            return response()->json(['data' =>  UserResource::collection($banners)->response()->getData(true)], 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al obtener los usuarios: '], 500);
         }
