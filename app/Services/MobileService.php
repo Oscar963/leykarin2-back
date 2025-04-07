@@ -22,7 +22,7 @@ class MobileService
             $queryBuilder->where(function ($q) use ($query) {
                 $q->where('number', 'LIKE', "%{$query}%")
                     ->orWhere('office', 'LIKE', "%{$query}%")
-                    ->orWhere('unit', 'LIKE', "%{$query}%")
+                    ->orWhere('direction', 'LIKE', "%{$query}%")
                     ->orWhere('person', 'LIKE', "%{$query}%");
             });
         }

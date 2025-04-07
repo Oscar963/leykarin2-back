@@ -37,7 +37,7 @@ class MobileController extends Controller
             $banners = $this->mobileService->getAllMobilesByQuery($query, $perPage);
             return response()->json(['data' =>  MobileResource::collection($banners)->response()->getData(true)], 200);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error al obtener los mobiles.'], 500);
+            return response()->json(['message' => 'Error al obtener los mobiles.' . $e->getMessage()], 500);
         }
     }
 
