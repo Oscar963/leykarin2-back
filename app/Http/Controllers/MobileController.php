@@ -14,6 +14,10 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\MobileImport;
 use App\Exports\MobileExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Throwable;
 
 class MobileController extends Controller
 {
@@ -104,20 +108,39 @@ class MobileController extends Controller
     public function import(Request $request): JsonResponse
     {
         try {
-            // Validar que el archivo esté presente y sea de tipo Excel
             $request->validate([
-                'file' => 'required|mimes:xlsx,csv,xls|max:10240', // max 10MB
+                'file' => 'required|mimes:xlsx,csv,xls|max:10240',
             ]);
 
-            // Eliminar todos los datos existentes en la tabla antes de importar
             Mobile::truncate();
-
-            // Importar los datos del archivo
             Excel::import(new MobileImport, $request->file('file'));
 
-            return response()->json(['message' => 'Datos importados correctamente.'], 200);
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Error al importar los datos: ' . $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Datos importados correctamente.',
+            ], 200);
+        } catch (ValidationException $e) {
+            // Errores de validación del request
+            return response()->json([
+                'message' => 'El archivo no es válido.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (ExcelValidationException $e) {
+            // Errores internos de validación del Excel
+            return response()->json([
+                'message' => 'El archivo contiene datos inválidos.',
+                'errors' => $e->failures(),
+            ], 422);
+        } catch (Throwable $e) {
+            // Registra el error completo para desarrolladores
+            Log::error('Error al importar anexos', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Devuelve un mensaje genérico al cliente
+            return response()->json([
+                'message' => 'Error al importar los datos. Verifique que el archivo tenga el formato correcto.',
+            ], 500);
         }
     }
 
