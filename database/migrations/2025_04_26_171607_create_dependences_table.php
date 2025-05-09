@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMobilesTable extends Migration
+class CreateDependencesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,10 @@ class CreateMobilesTable extends Migration
      */
     public function up()
     {
-        Schema::create('mobiles', function (Blueprint $table) {
+        Schema::create('dependences', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('number')->unique();
-            $table->string('office')->nullable();
-            $table->string('direction')->nullable();
-            $table->string('person')->nullable();
+            $table->string('name', 100)->unique();
+            $table->string('key', 100)->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ class CreateMobilesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mobiles');
+        Schema::dropIfExists('dependences');
     }
 }

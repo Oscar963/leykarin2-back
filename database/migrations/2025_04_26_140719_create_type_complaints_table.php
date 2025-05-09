@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAnexosTable extends Migration
+class CreateTypeComplaintsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,10 @@ class CreateAnexosTable extends Migration
      */
     public function up()
     {
-        Schema::create('anexos', function (Blueprint $table) {
+        Schema::create('type_complaints', function (Blueprint $table) {
             $table->id();
-            $table->integer('internal_number')->unique();
-            $table->integer('external_number')->unique();
-            $table->string('office')->nullable();
-            $table->string('unit')->nullable();
-            $table->string('person')->nullable();
+            $table->string('name', 100)->unique();
+            $table->string('key', 100)->nullable();
             $table->timestamps();
         });
     }
@@ -31,6 +28,6 @@ class CreateAnexosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('anexos');
+        Schema::dropIfExists('type_complaints');
     }
 }

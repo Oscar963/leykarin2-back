@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFilePageTable extends Migration
+class CreateWitnessesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,15 @@ class CreateFilePageTable extends Migration
      */
     public function up()
     {
-        Schema::create('file_page', function (Blueprint $table) {
+        Schema::create('witnesses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('file_id')->constrained('files')->onDelete('cascade');
-            $table->foreignId('page_id')->constrained('pages')->onDelete('cascade');
+            $table->string('name');
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+
+            // Relaciones con otras tablas
+            $table->foreignId('complaint_id')->constrained('complaints')->onDelete('cascade'); 
+
             $table->timestamps();
         });
     }
@@ -28,6 +33,6 @@ class CreateFilePageTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('file_page');
+        Schema::dropIfExists('witnesses');
     }
 }

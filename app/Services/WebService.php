@@ -2,101 +2,155 @@
 
 namespace App\Services;
 
-use App\Models\Anexo;
-use App\Models\Banner;
-use App\Models\File;
-use App\Models\Mobile;
-use App\Models\Page;
-use App\Models\Popup;
+
+use App\Models\Complainant;
+use App\Models\Complaint;
+use App\Models\Denounced;
+use App\Models\Dependence;
+use App\Models\Evidence;
+use App\Models\TypeComplaint;
+use App\Models\Witness;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class WebService
 {
-    public function getAllBanners()
+    public function createComplaint(array $data)
     {
-        return Banner::where('status', 'published')
-            ->where(function ($query) {
-                $query->whereNull('date_expiration')
-                    ->orWhere('date_expiration', '>=', now());
-            })
-            ->orderBy('created_at', 'DESC')
-            ->select(['image', 'link'])
-            ->get();
+        return DB::transaction(function () use ($data) {
+            // Registrar denunciante
+            $complainant = new Complainant();
+            $complainant->name = $data['name_complainant'];
+            $complainant->rut = $data['rut_complainant'];
+            $complainant->phone = $data['phone_complainant'];
+            $complainant->email = $data['email_complainant'];
+            $complainant->address = $data['address_complainant'];
+            $complainant->charge = $data['charge_complainant'];
+            $complainant->unit = $data['unit_complainant'];
+            $complainant->function = $data['function_complainant'];
+            $complainant->grade_eur = $data['grade_eur_complainant'];
+            $complainant->date_income = $data['date_income_complainant'];
+            $complainant->type_contract = $data['type_contract_complainant'];
+            $complainant->type_ladder = $data['type_ladder_complainant'];
+            $complainant->grade = $data['grade_complainant'];
+            $complainant->is_victim = $data['is_victim_complainant'];
+            $complainant->dependence_id = Dependence::where('key', $data['dependence_complainant'])->value('id');
+            $complainant->save();
+
+            // Registrar denunciado
+            $denounced = new Denounced();
+            $denounced->name = $data['name_denounced'];
+            $denounced->rut = $data['rut_denounced'];
+            $denounced->phone = $data['phone_denounced'];
+            $denounced->address = $data['address_denounced'];
+            $denounced->charge = $data['charge_denounced'];
+            $denounced->grade = $data['grade_denounced'];
+            $denounced->email = $data['email_denounced'];
+            $denounced->unit = $data['unit_denounced'];
+            $denounced->function = $data['function_denounced'];
+            $denounced->save();
+
+            // Registrar denuncia
+            $complaint = new Complaint();
+            $complaint->folio = $this->generateFolio($data['dependence_complainant']);
+            $complaint->date = now();
+            $complaint->hierarchical_level = $data['hierarchical_level'];
+            $complaint->work_directly = $data['work_directly'];
+            $complaint->immediate_leadership = $data['immediate_leadership'];
+            $complaint->narration_facts = $data['narration_facts'];
+            $complaint->narration_consequences = $data['narration_consequences'];
+
+            $complaint->complainant_id = $complainant->id;
+            $complaint->denounced_id = $denounced->id;
+            $complaint->type_complaint_id = TypeComplaint::where('key', $data['type_complaint'])->value('id');
+
+            // Firmar denuncia
+            if (isset($data['signature']) && $data['signature'] instanceof \Illuminate\Http\UploadedFile) {
+                $fileName = uniqid() . '.' . $data['signature']->getClientOriginalExtension();
+                $filePath = $data['signature']->storeAs('signatures', $fileName, 'public');
+                $complaint->signature = url('storage/' . $filePath);
+            }
+
+            $complaint->save();
+
+
+            // Registrar evidencias
+            if (!empty($data['evidences']) && is_array($data['evidences'])) {
+                foreach ($data['evidences'] as $ev) {
+                    $evidence = new Evidence();
+                    $evidence->name = $ev['name'] ?? 'documento';
+                    $evidence->size = $ev['file']->getSize();
+                    $evidence->type = $ev['file']->getClientMimeType();
+
+                    if (isset($ev['file']) && $ev['file'] instanceof \Illuminate\Http\UploadedFile) {
+                        $fileName = Str::slug($evidence->name) . '-' . uniqid() . '.' . $ev['file']->getClientOriginalExtension();
+                        $filePath = $ev['file']->storeAs('evidence', $fileName, 'public');
+                        $evidence->url = url('storage/' . $filePath);
+                        $evidence->complaint_id = $complaint->id;
+                        $evidence->save();
+                    }
+                }
+            }
+
+            // Registrar testigos
+            if (!empty($data['witnesses']) && is_array($data['witnesses'])) {
+                foreach ($data['witnesses'] as $wit) {
+                    $witness = new Witness();
+                    $witness->name = $wit['name'];
+                    $witness->email = $wit['email'] ?? null;
+                    $witness->phone = $wit['phone'] ?? null;
+                    $witness->complaint_id = $complaint->id;
+                    $witness->save();
+                }
+            }
+
+            return $complaint;
+        });
     }
 
-    public function getBannerById($id)
+    public function getAllTypeComplaint()
     {
-        return Banner::findOrFail($id);
+        return TypeComplaint::orderBy('id', 'ASC')->get();
     }
 
-    public function getAllPages()
+    public function getAllDependence()
     {
-        return Page::orderBy('created_at', 'DESC')->get();
+        return Dependence::orderBy('id', 'ASC')->get();
     }
 
-    public function getPageById($id)
+    public function generateFolio(string $dependenceKey): string
     {
-        return Page::findOrFail($id);
-    }
+        $initial = $this->getFolioInitial($dependenceKey);
+        $year = now()->year;
 
-    public function getPageBySlug($slug)
-    {
-        return Page::where('slug', $slug)->with('files')->select(['id', 'title', 'content', 'slug', 'status', 'image'])->firstOrFail();
-    }
+        $lastFolio = Complaint::whereYear('created_at', $year)
+            ->where('folio', 'like', "{$initial}-%-$year")
+            ->orderByDesc('id')
+            ->first();
 
-    public function getAllPopups()
-    {
-        return Popup::where('status', 'published')
-            ->where(function ($query) {
-                $query->whereNull('date_expiration')
-                    ->orWhere('date_expiration', '>=', now());
-            })
-            ->orderBy('created_at', 'DESC')
-            ->select(['image', 'link'])
-            ->get();
-    }
+        $nextNumber = 1;
 
-    public function getPopupById($id)
-    {
-        return Popup::findOrFail($id);
-    }
-
-    public function searchFiles(string $query)
-    {
-        return File::where('name', 'LIKE', "%{$query}%")
-            ->orWhere('description', 'LIKE', "%{$query}%")
-            ->orderBy('created_at', 'DESC')
-            ->get();
-    }
-
-    public function searchAnexos(?string $query, int $perPage = 15)
-    {
-        $queryBuilder = Anexo::orderBy('created_at', 'DESC');
-
-        if ($query) {
-            $queryBuilder->where(function ($q) use ($query) {
-                $q->where('internal_number', 'LIKE', "%{$query}%")
-                    ->orWhere('external_number', 'LIKE', "%{$query}%")
-                    ->orWhere('office', 'LIKE', "%{$query}%")
-                    ->orWhere('unit', 'LIKE', "%{$query}%")
-                    ->orWhere('person', 'LIKE', "%{$query}%");
-            });
+        if ($lastFolio) {
+            $matches = [];
+            if (preg_match('/^[A-Z]-(\d+)-\d{4}$/', $lastFolio->folio, $matches)) {
+                $nextNumber = (int)$matches[1] + 1;
+            }
         }
-        return $queryBuilder->select(['external_number', 'internal_number', 'office', 'unit', 'person'])->paginate($perPage);
+
+        return sprintf("%s-%04d-%d", $initial, $nextNumber, $year);
     }
 
-    public function searchMobiles(?string $query, int $perPage = 15)
+    private function getFolioInitial(string $dependenceKey): string
     {
-        $queryBuilder = Mobile::orderBy('created_at', 'DESC');
+        // Mapear dependencia a letra
+        $map = [
+            'disam' => 'D',
+            'demuce' => 'C', // Diferenciar de DISAM
+            'ima' => 'I',
+        ];
 
-        if ($query) {
-            $queryBuilder->where(function ($q) use ($query) {
-                $q->where('number', 'LIKE', "%{$query}%")
-                    ->orWhere('office', 'LIKE', "%{$query}%")
-                    ->orWhere('direction', 'LIKE', "%{$query}%")
-                    ->orWhere('person', 'LIKE', "%{$query}%");
-            });
-        }
+        $key = strtolower($dependenceKey);
 
-        return $queryBuilder->paginate($perPage);
+        return $map[$key] ?? strtoupper(substr($dependenceKey, 0, 1));
     }
 }
