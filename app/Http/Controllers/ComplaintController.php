@@ -9,6 +9,7 @@ use App\Services\ComplaintService;
 use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 
 class ComplaintController extends Controller
@@ -38,5 +39,17 @@ class ComplaintController extends Controller
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al obtener las denuncias.'], 500);
         }
+    }
+
+    /**
+     * Generar pdf por denuncia.
+     */
+    public function generateComplaintPdf($complaintId) 
+    {
+        $complaint = Complaint::with(['complainant', 'denounced'])->findOrFail($complaintId);
+
+        $pdf = PDF::loadView('complaints.pdf', compact('complaint')); // Generar PDF desde una vista Blade
+
+        return $pdf->download("comprobante-denuncia-{$complaintId}.pdf");
     }
 }

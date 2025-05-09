@@ -39,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/isAuthenticated', [AuthController::class, 'isAuthenticated']);
 
     Route::apiResource('complaints', ComplaintController::class);
+    Route::get('complaints/{id}/pdf', [ComplaintController::class, 'generateComplaintPdf']);
+
     Route::apiResource('dependences', DependenceController::class);
     Route::apiResource('type-complaints', TypeComplaintController::class);
     Route::apiResource('evidences', EvidenceController::class);
@@ -52,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('files', FileController::class);
     Route::get('/files/{id}/download', [FileController::class, 'download']);
+
 });
 
 Route::prefix('web')->group(function () {
