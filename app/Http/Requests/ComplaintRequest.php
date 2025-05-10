@@ -41,9 +41,9 @@ class ComplaintRequest extends FormRequest
             ],
             'grade_complainant'        => 'nullable|integer|min:0|max:255',
             'type_ladder_complainant' => [
-                'required',
+                'nullable',
                 'string',
-                'in:directivo,jefatura,profesional,tecnico,administrativo,auxiliar,no-aplica',
+                'in:directivo,jefatura,profesional,tecnico,administrativo,auxiliar',
             ],
             'is_victim_complainant'    => 'required|boolean',
 
@@ -80,8 +80,8 @@ class ComplaintRequest extends FormRequest
             'evidences.*.file' => [
                 'required',
                 'file',
-                'max:4096', // Tamaño en kilobytes (4096 KB = 4 MB)
-                'mimes:doc,docx,xls,xlsx,pdf,jpg,jpeg,png'
+                'max:5120', // Tamaño en kilobytes (5 MB)
+                'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,bmp,tiff,ico,webp,heic,heif',
             ],
 
             // Datos de los testigos
@@ -96,6 +96,10 @@ class ComplaintRequest extends FormRequest
                 'image',
                 'max:2048', // Tamaño en kilobytes (2048 KB = 2 MB)
             ],
+
+            // Validación de reCAPTCHA
+          //  'recaptcha' => ['required', new \App\Rules\RecaptchaRule],
+
         ];
     }
 
@@ -221,10 +225,10 @@ class ComplaintRequest extends FormRequest
             'evidences.*.name.string' => 'El nombre de la evidencia debe ser un texto.',
             'evidences.*.name.max' => 'El nombre de la evidencia no debe exceder los 255 caracteres.',
 
-            'evidences.*.file.required' => 'El archivo de evidencia es obligatorio.',
-            'evidences.*.file.file' => 'El archivo de evidencia debe ser un archivo válido.',
-            'evidences.*.file.max' => 'El archivo de evidencia no debe superar los 4 MB.',
-            'evidences.*.file.mimes' => 'El archivo de evidencia debe ser un documento o imagen válida (doc, docx, xls, xlsx, pdf, jpg, jpeg, png).',
+            'evidences.*.file.required' => 'Cada archivo adjunto es obligatorio.',
+            'evidences.*.file.file' => 'Cada evidencia debe ser un archivo válido.',
+            'evidences.*.file.max' => 'Ningún archivo debe superar los 4 MB de tamaño.',
+            'evidences.*.file.mimes' => 'Solo se permiten archivos con extensiones: PDF, Word, Excel, o imágenes (JPG, PNG, GIF, BMP, etc.).',
 
             // Testigos
             'witnesses.*.name.required' => 'El nombre del testigo es obligatorio.',
@@ -238,6 +242,9 @@ class ComplaintRequest extends FormRequest
             'signature.required' => 'La firma es obligatoria.',
             'signature.image' => 'La firma debe ser una imagen válida (jpg, jpeg, png).',
             'signature.max' => 'La firma no debe superar los 2 MB.',
+
+            // Validación de reCAPTCHA
+            'recaptcha.required' => 'La validación de reCAPTCHA es obligatoria.',            
 
         ];
     }

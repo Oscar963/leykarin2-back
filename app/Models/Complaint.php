@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Complaint extends Model
 {
+    protected $dates = ['date'];
+    
     use HasFactory;
 
     public function complainant()

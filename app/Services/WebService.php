@@ -53,6 +53,8 @@ class WebService
             // Registrar denuncia
             $complaint = new Complaint();
             $complaint->folio = $this->generateFolio($data['dependence_complainant']);
+            $complaint->token = Str::random(32);
+
             $complaint->date = now();
             $complaint->hierarchical_level = $data['hierarchical_level'];
             $complaint->work_directly = $data['work_directly'];
@@ -125,6 +127,9 @@ class WebService
 
         $lastFolio = Complaint::whereYear('created_at', $year)
             ->where('folio', 'like', "{$initial}-%-$year")
+            ->whereHas('complainant.dependence', function($query) use ($dependenceKey) {
+                $query->where('key', $dependenceKey);
+            })
             ->orderByDesc('id')
             ->first();
 
@@ -145,7 +150,7 @@ class WebService
         // Mapear dependencia a letra
         $map = [
             'disam' => 'D',
-            'demuce' => 'C', // Diferenciar de DISAM
+            'demuce' => 'C',
             'ima' => 'I',
         ];
 

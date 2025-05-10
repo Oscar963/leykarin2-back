@@ -17,6 +17,7 @@ class CreateComplaintsTable extends Migration
             $table->id();
             $table->dateTime('date');
             $table->string('folio');
+            $table->string('token');
 
             $table->string('hierarchical_level');
             $table->string('work_directly');

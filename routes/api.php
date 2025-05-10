@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/isAuthenticated', [AuthController::class, 'isAuthenticated']);
 
     Route::apiResource('complaints', ComplaintController::class);
-    Route::get('complaints/{id}/pdf', [ComplaintController::class, 'generateComplaintPdf']);
+    Route::get('complaints/{token}/pdf', [ComplaintController::class, 'generateComplaintPdf']);
 
     Route::apiResource('dependences', DependenceController::class);
     Route::apiResource('type-complaints', TypeComplaintController::class);

@@ -14,6 +14,7 @@ class ComplaintResource  extends JsonResource
             'id' => $this->id,
             'date' => $this->date ? Carbon::parse($this->date)->format('d-m-Y H:i:s') : null,
             'folio' => $this->folio,
+            'token' => $this->token,
             'hierarchical_level' => $this->hierarchical_level,
             'work_directly' => $this->work_directly,
             'immediate_leadership' => $this->immediate_leadership,

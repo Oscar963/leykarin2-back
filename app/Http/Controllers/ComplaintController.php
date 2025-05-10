@@ -44,12 +44,14 @@ class ComplaintController extends Controller
     /**
      * Generar pdf por denuncia.
      */
-    public function generateComplaintPdf($complaintId) 
+    public function generateComplaintPdf($token) 
     {
-        $complaint = Complaint::with(['complainant', 'denounced'])->findOrFail($complaintId);
+        $complaint = Complaint::with(['complainant', 'denounced', 'typeComplaint', 'witnesses'])
+            ->where('token', $token)
+            ->firstOrFail();
 
-        $pdf = PDF::loadView('complaints.pdf', compact('complaint')); // Generar PDF desde una vista Blade
+        $pdf = PDF::loadView('complaints.pdf', compact('complaint'));
 
-        return $pdf->download("comprobante-denuncia-{$complaintId}.pdf");
+        return $pdf->download("denuncia-{$complaint->folio}.pdf");
     }
 }
