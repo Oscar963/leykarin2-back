@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ComplaintRequest;
 use App\Http\Resources\ComplaintResource;
+use App\Mail\ComplaintRegistered;
 use App\Services\WebService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Exception;
 
 class WebController extends Controller
@@ -40,12 +43,32 @@ class WebController extends Controller
 
             $complaint = $this->webService->createComplaint($data);
 
+            // Enviar correo de confirmación
+            $this->sendComplaintConfirmationEmail($complaint);
+
             return response()->json([
                 'message' => 'Denuncia guardada exitosamente',
                 'data' => new ComplaintResource($complaint)
             ], 201);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error al guardar la denuncia. ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Envía el correo de confirmación al denunciante
+     *
+     * @param \App\Models\Complaint $complaint
+     * @return void
+     */
+    private function sendComplaintConfirmationEmail($complaint): void
+    {
+        try {
+            Mail::to($complaint->complainant->email)
+                ->send(new ComplaintRegistered($complaint));
+        } catch (Exception $e) {
+            // Log del error pero no interrumpimos el flujo principal
+            Log::error('Error al enviar correo de confirmación: ' . $e->getMessage());
         }
     }
 

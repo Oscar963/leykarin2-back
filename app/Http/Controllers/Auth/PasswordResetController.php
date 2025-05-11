@@ -39,13 +39,13 @@ class PasswordResetController extends Controller
 
         switch ($status) {
             case Password::INVALID_TOKEN:
-                return response()->json(['error' => 'El token de restablecimiento ha expirado o es inválido.'], 400);
+                return response()->json(['message' => 'El token de restablecimiento ha expirado o es inválido. Por favor, solicite un nuevo enlace de restablecimiento.'], 400);
 
             case Password::INVALID_USER:
-                return response()->json(['error' => 'No se ha encontrado un usuario con esa dirección de correo electrónico.'], 400);
+                return response()->json(['message' => 'No se ha encontrado un usuario con esa dirección de correo electrónico.'], 400);
 
             default:
-                return response()->json(['error' => 'No se pudo restablecer la contraseña. Inténtalo nuevamente más tarde.'], 400);
+                return response()->json(['message' => 'No se pudo restablecer la contraseña. Inténtalo nuevamente más tarde.'], 400);
         }
     }
 }

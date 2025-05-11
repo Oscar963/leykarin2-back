@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPasswordResetLink;
 use App\Models\User;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
@@ -43,18 +44,11 @@ class ForgotPasswordController extends Controller
 
         RateLimiter::hit($key, $decayMinutes * 60);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json([
-                'message' => '¡El enlace de restablecimiento de contraseña ha sido enviado a su correo electrónico! Por favor, revise su bandeja de entrada.'
-            ], 200);
-        }
+        // Enviar el enlace de restablecimiento en cola
+        SendPasswordResetLink::dispatch($request->email);
 
         return response()->json([
-            'message' => 'Ocurrió un error al enviar el enlace de restablecimiento. Intente nuevamente más tarde.'
-        ], 400);
+            'message' => '¡El enlace de restablecimiento de contraseña ha sido enviado a su correo electrónico! Por favor, revise su bandeja de entrada.'
+        ], 200);
     }
 }

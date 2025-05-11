@@ -163,8 +163,16 @@
             <td>{{ $complaint->complainant->function }}</td>
         </tr>
         <tr>
+            <th>Tipo de contrato</th>
+            <td colspan="3">{{ ucwords(str_replace('_', ' ', $complaint->complainant->type_contract)) }}</td>
+        </tr>
+        <tr>
+            <th>Tipo de escalafón</th>
+            <td colspan="3">{{ $complaint->complainant->type_ladder ?? 'No aplica' }}</td>
+        </tr>
+        <tr>
             <th>Grado</th>
-            <td colspan="3">{{ $complaint->complainant->grade }}</td>
+            <td colspan="3">{{ $complaint->complainant->grade ?? 'No aplica' }}</td>
         </tr>
     </table>
 
