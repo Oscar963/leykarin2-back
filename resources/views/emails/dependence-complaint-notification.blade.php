@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Comprobante de la Denuncia</title>
+    <title>Nueva Denuncia Registrada</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -80,14 +80,6 @@
             padding-bottom: 10px;
         }
 
-        h3 {
-            color: #0043b0;
-            font-size: 18px;
-            margin: 0 0 15px 0;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #e6e9f0;
-        }
-
         .details p {
             margin: 10px 0;
             padding: 8px 0;
@@ -127,35 +119,25 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('assets/img/logos/logo-blanco.png') }}" alt="Logo Municipalidad de Arica"
-                class="logo">
+            <img src="{{ asset('assets/img/logos/logo-blanco.png') }} " alt="Logo Municipalidad de Arica" class="logo">
         </div>
 
         <div class="content">
-            <h2>Comprobante de Denuncia</h2>
+            <h2>Nueva Denuncia Registrada</h2>
 
-            <p>Estimado/a {{ $complaint->complainant->name }},</p>
+            <p>Estimado/a,</p>
 
-            <p>Hemos recibido su denuncia y queremos confirmar que ha sido registrada exitosamente en nuestro sistema.
-            </p>
+            <p>Se ha registrado una nueva denuncia en el sistema que requiere su atención:</p>
 
             <div class="details">
-                <h3>Detalles de la Denuncia</h3>
                 <p><strong>Folio:</strong> <span class="highlight">{{ $complaint->folio }}</span></p>
-                <p><strong>Fecha:</strong> {{ $complaint->date->format('d/m/Y') }}</p>
-                <p><strong>Hora:</strong> {{ $complaint->date->format('H:i:s') }}</p>
+                <p><strong>Fecha de Registro:</strong> {{ $complaint->created_at->format('d/m/Y H:i') }}</p>
                 <p><strong>Tipo de Denuncia:</strong> {{ $complaint->typeComplaint->name }}</p>
-                <p><strong>Dependencia:</strong> {{ $complaint->complainant->dependence->name }}</p>
+                <p><strong>Denunciante:</strong> {{ $complaint->complainant->name }}</p>
             </div>
 
-            <div class="details">
-                <h3>Información del Denunciado</h3>
-                <p><strong>Nombre:</strong> {{ $complaint->denounced->name }}</p>
-                <p><strong>Cargo:</strong> {{ $complaint->denounced->charge }}</p>
-                <p><strong>Unidad:</strong> {{ $complaint->denounced->unit }}</p>
-            </div>
-
-            <p>Su denuncia será procesada según los procedimientos establecidos.</p>
+            <p>Por favor, acceda al sistema para revisar los detalles completos de la denuncia y tomar las acciones
+                correspondientes.</p>
 
             <p>Atentamente,<br>
                 <strong>Sistema de Denuncias Ley Karin | Ilustre Municipalidad de Arica</strong><br>
