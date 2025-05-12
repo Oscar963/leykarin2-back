@@ -72,9 +72,13 @@ class WebController extends Controller
             // Cargar las relaciones necesarias para el correo
             $complaint->load(['complainant.dependence', 'denounced', 'typeComplaint', 'witnesses']);
 
-            // Enviar el correo
+            // Generar el PDF
+            $pdf = PDF::loadView('complaints.pdf', compact('complaint'));
+
+            // Enviar el correo con el PDF adjunto
             Mail::to($complaint->complainant->email)
-                ->send(new ComplaintRegistered($complaint));
+                ->send(new ComplaintRegistered($complaint, $pdf, "denuncia-{$complaint->folio}.pdf"));
+
         } catch (Exception $e) {
             Log::error('Error al enviar comprobante de denuncia', [
                 'complaint_id' => $complaint->id,
