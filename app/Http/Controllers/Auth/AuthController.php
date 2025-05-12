@@ -68,6 +68,8 @@ class AuthController extends Controller
             'rut' => $user->rut,
             'email' => $user->email,
             'status' => $user->status,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
         ], 200);
     }
 

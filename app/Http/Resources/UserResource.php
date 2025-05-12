@@ -23,6 +23,8 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'status' => $this->status,
             'email_verified_at' => $this->email_verified_at ? $this->email_verified_at->format('d-m-Y H:i:s') : null,
+            'roles' => $this->roles->pluck('name'),
+            'permissions' => $this->getAllPermissions()->pluck('name'),
             'created_at' => $this->created_at ? $this->created_at->format('d-m-Y H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('d-m-Y H:i:s') : null,
         ];
