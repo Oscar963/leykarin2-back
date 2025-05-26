@@ -58,7 +58,7 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = User::find(Auth::id());
+        $user = User::with('direction')->find(Auth::id());
 
         return response()->json([
             'id' => $user->id,
@@ -68,8 +68,8 @@ class AuthController extends Controller
             'rut' => $user->rut,
             'email' => $user->email,
             'status' => $user->status,
-            'roles' => $user->getRoleNames(),
-            'permissions' => $user->getAllPermissions()->pluck('name'),
+            'direction' => $user->direction->name,
+
         ], 200);
     }
 

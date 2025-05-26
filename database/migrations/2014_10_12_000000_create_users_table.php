@@ -26,6 +26,9 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+
+            // Relaciones con otras tablas
+            $table->foreignId('type_user_id')->constrained('type_users')->onDelete('cascade');
         });
     }
 

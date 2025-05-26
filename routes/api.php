@@ -1,20 +1,17 @@
 <?php
 
-use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\BannerController;
-use App\Http\Controllers\ComplaintController;
-use App\Http\Controllers\DependenceController;
-use App\Http\Controllers\EvidenceController;
+use App\Http\Controllers\BudgetAllocationController;
 use App\Http\Controllers\FileController;
-use App\Http\Controllers\MobileController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\PopupController;
-use App\Http\Controllers\TypeComplaintController;
+use App\Http\Controllers\ItemPurchaseController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\PurchasePlanController;
+use App\Http\Controllers\TypePurchaseController;
+use App\Http\Controllers\UnitPurchasingController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\WebController;
+use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,13 +35,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::get('/isAuthenticated', [AuthController::class, 'isAuthenticated']);
 
-    Route::apiResource('complaints', ComplaintController::class);
-    Route::get('complaints/{token}/pdf', [ComplaintController::class, 'generateComplaintPdf']);
+    Route::apiResource('purchase-plans', PurchasePlanController::class);
+    Route::get('purchase-plans/token/{token}', [PurchasePlanController::class, 'showByToken'])->name('purchase-plans.show.token');
+    Route::put('purchase-plans/token/{token}', [PurchasePlanController::class, 'updateByToken'])->name('purchase-plans.update.token');
+    Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
+    Route::post('purchase-plans/upload/form-f1', [PurchasePlanController::class, 'uploadFormF1'])->name('purchase-plans.upload.form-f1');
 
-    Route::apiResource('dependences', DependenceController::class);
-    Route::apiResource('type-complaints', TypeComplaintController::class);
-    Route::apiResource('evidences', EvidenceController::class);
-    Route::get('/evidences/{id}/download', [EvidenceController::class, 'download']);
+    Route::apiResource('projects', ProjectController::class);
+    Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
+    Route::put('projects/token/{token}', [ProjectController::class, 'updateByToken'])->name('projects.update.token');
+
+    Route::apiResource('item-purchases', ItemPurchaseController::class);
+    Route::apiResource('budget-allocations', BudgetAllocationController::class);
+    Route::apiResource('type-purchases', TypePurchaseController::class);
+    Route::apiResource('unit-purchasings', UnitPurchasingController::class);
 
     Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
@@ -55,10 +59,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('files', FileController::class);
     Route::get('/files/{id}/download', [FileController::class, 'download']);
 
-});
-
-Route::prefix('web')->group(function () {
-    Route::post('/complaint', [WebController::class, 'storeComplaint'])->name('web.complaint.store');
-    Route::get('/typecomplaints', [WebController::class, 'getAllTypeComplaint'])->name('web.complaint.type');
-    Route::get('/dependences', [WebController::class, 'getAllDependence'])->name('web.complaint.dependence');
 });

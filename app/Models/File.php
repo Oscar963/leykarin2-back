@@ -9,10 +9,6 @@ class File extends Model
 {
     use HasFactory;
 
-    public function pages()
-    {
-        return $this->belongsToMany(Page::class, 'file_page', 'file_id', 'page_id')->withTimestamps();
-    }
 
     public function createdBy()
     {

@@ -9,13 +9,22 @@ use Illuminate\Support\Facades\Hash;
 class UserService
 {
     /**
-     * Obtener todos los usuarios.
+     * Obtiene todos los usuarios
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getAllUsers()
     {
         return User::orderBy('created_at', 'DESC')->get();
     }
 
+    /**
+     * Obtiene usuarios paginados con filtrado
+     *
+     * @param string|null $query Término de búsqueda
+     * @param int $perPage Número de elementos por página
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
     public function getAllUsersByQuery(?string $query, int $perPage = 15)
     {
         $queryBuilder = User::orderBy('created_at', 'DESC');
@@ -34,24 +43,10 @@ class UserService
     }
 
     /**
-     * Crear un nuevo usuario.
-     */
-    public function createUser(array $data)
-    {
-        $user = new User();
-        $user->name = $data['name'];
-        $user->paternal_surname = $data['paternal_surname'];
-        $user->maternal_surname = $data['maternal_surname'];
-        $user->rut = $data['rut'];
-        $user->email = $data['email'];
-        $user->status = $data['status'];
-        $user->password = bcrypt($data['password']);;
-        $user->save();
-        return $user;
-    }
-
-    /**
-     * Obtener un usuario por ID.
+     * Obtiene un usuario por su ID
+     *
+     * @param int $id ID del usuario
+     * @return User
      */
     public function getUserById($id)
     {
@@ -59,49 +54,84 @@ class UserService
     }
 
     /**
-     * Actualizar un usuario existente.
+     * Crea un nuevo usuario
+     *
+     * @param array $data Datos del usuario
+     * @return User
      */
-    public function updateUser($id, array $data)
+    public function createUser(array $data)
     {
-        $user = $this->getUserById($id);
-
-        $user->name = $data['name'];
-        $user->paternal_surname = $data['paternal_surname'];
-        $user->maternal_surname = $data['maternal_surname'];
-        $user->rut = $data['rut'];
-        $user->email = $data['email'];
+        $user = new User();
+        $user->name = trim($data['name']);
+        $user->paternal_surname = trim($data['paternal_surname']);
+        $user->maternal_surname = trim($data['maternal_surname']);
+        $user->rut = trim($data['rut']);
+        $user->email = trim($data['email']);
         $user->status = $data['status'];
-
+        $user->password = bcrypt($data['password']);
         $user->save();
+
         return $user;
     }
 
     /**
-     * Eliminar un usuario.
+     * Actualiza un usuario existente
+     *
+     * @param int $id ID del usuario
+     * @param array $data Datos actualizados
+     * @return User
+     */
+    public function updateUser($id, array $data)
+    {
+        $user = $this->getUserById($id);
+        $user->name = trim($data['name']);
+        $user->paternal_surname = trim($data['paternal_surname']);
+        $user->maternal_surname = trim($data['maternal_surname']);
+        $user->rut = trim($data['rut']);
+        $user->email = trim($data['email']);
+        $user->status = $data['status'];
+        $user->save();
+
+        return $user;
+    }
+
+    /**
+     * Elimina un usuario
+     *
+     * @param int $id ID del usuario
+     * @return void
      */
     public function deleteUser($id)
     {
         $user = $this->getUserById($id);
-        $user->save();
         $user->delete();
     }
 
     /**
-     * Restablecer contraseña del usuario.
+     * Restablece la contraseña de un usuario
+     *
+     * @param int $id ID del usuario
+     * @param array $data Datos de la contraseña
+     * @return void
      */
     public function resetUserPassword(int $id, array $data)
     {
-        $user = User::findOrFail($id);
+        $user = $this->getUserById($id);
         $user->password = bcrypt($data['password']);
         $user->save();
     }
 
     /**
-     * Actualizar contraseña del usuario.
+     * Actualiza la contraseña de un usuario
+     *
+     * @param int $id ID del usuario
+     * @param array $data Datos de la contraseña
+     * @throws Exception Si la contraseña actual es incorrecta
+     * @return void
      */
     public function updateUserPassword(int $id, array $data)
     {
-        $user = User::findOrFail($id);
+        $user = $this->getUserById($id);
 
         if (!Hash::check($data['current_password'], $user->password)) {
             throw new Exception('La contraseña actual es incorrecta.');
@@ -112,20 +142,21 @@ class UserService
     }
 
     /**
-     * Actualizar perfil.
+     * Actualiza el perfil del usuario autenticado
+     *
+     * @param array $data Datos del perfil
+     * @return User
      */
     public function updateProfile(array $data)
     {
-        $idUser = auth()->user()->id;
-        $user = $this->getUserById($idUser);
-
-        $user->name = $data['name'];
-        $user->paternal_surname = $data['paternal_surname'];
-        $user->maternal_surname = $data['maternal_surname'];
-        $user->rut = $data['rut'];
-        $user->email = $data['email'];
-
+        $user = $this->getUserById(auth()->id());
+        $user->name = trim($data['name']);
+        $user->paternal_surname = trim($data['paternal_surname']);
+        $user->maternal_surname = trim($data['maternal_surname']);
+        $user->rut = trim($data['rut']);
+        $user->email = trim($data['email']);
         $user->save();
+
         return $user;
     }
 }

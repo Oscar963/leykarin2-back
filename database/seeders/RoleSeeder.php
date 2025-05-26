@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+
 class RoleSeeder extends Seeder
 {
     /**
@@ -14,10 +15,14 @@ class RoleSeeder extends Seeder
     public function run()
     {
         DB::table('roles')->insert([
-            ['name' => 'Administrador', 'guard_name' => 'web'],
-            ['name' => 'Funcionario IMA', 'guard_name' => 'web'],
-            ['name' => 'Funcionario DISAM', 'guard_name' => 'web'],
-            ['name' => 'Funcionario DEMUCE', 'guard_name' => 'web'],
+            ['name' => 'Administrador del sistema', 'guard_name' => 'web'],
+            ['name' => 'Alcalde ', 'guard_name' => 'web'],
+            ['name' => 'Administrador Municipal', 'guard_name' => 'web'],
+            ['name' => 'Subrogante del Administrador Municipal', 'guard_name' => 'web'],
+            ['name' => 'Director', 'guard_name' => 'web'],
+            ['name' => 'Subrogante del Director', 'guard_name' => 'web'],
+            ['name' => 'Jefatura', 'guard_name' => 'web'],
+            ['name' => 'Subrogante de la Jefatura', 'guard_name' => 'web'],
         ]);
     }
 }

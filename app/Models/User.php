@@ -50,4 +50,8 @@ class User extends Authenticatable
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    public function direction()
+    {
+        return $this->hasOne(Direction::class, 'director_id');
+    }
 }

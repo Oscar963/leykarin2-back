@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class ProjectResource extends JsonResource
+{
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'amount' => $this->getTotalAmount(),
+            'project_number' => $this->project_number,
+            'token' => $this->token,
+            'purchase_plan_id' => $this->purchase_plan_id,
+            'purchase_plan' => new PurchasePlanResource($this->purchasePlan),
+            'unit_purchasing' => $this->unitPurchasing,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+} 

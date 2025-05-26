@@ -10,11 +10,23 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FileService
 {
+    /**
+     * Obtiene todos los archivos
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function getAllFiles()
     {
         return File::orderBy('created_at', 'DESC')->get();
     }
 
+    /**
+     * Obtiene archivos paginados con filtrado
+     *
+     * @param string|null $query Término de búsqueda
+     * @param int $perPage Número de elementos por página
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
     public function getAllFilesByQuery(?string $query, int $perPage = 15)
     {
         $queryBuilder = File::orderBy('created_at', 'DESC');
@@ -28,6 +40,23 @@ class FileService
         return $queryBuilder->paginate($perPage);
     }
 
+    /**
+     * Obtiene un archivo por su ID
+     *
+     * @param int $id ID del archivo
+     * @return File
+     */
+    public function getFileById($id)
+    {
+        return File::findOrFail($id);
+    }
+
+    /**
+     * Crea un nuevo archivo
+     *
+     * @param array $data Datos del archivo
+     * @return File
+     */
     public function createFile(array $data)
     {
         $file = new File();
@@ -47,6 +76,13 @@ class FileService
         return $file;
     }
 
+    /**
+     * Actualiza un archivo existente
+     *
+     * @param int $id ID del archivo
+     * @param array $data Datos actualizados
+     * @return File
+     */
     public function updateFile($id, array $data)
     {
         $file = $this->getFileById($id);
@@ -59,11 +95,12 @@ class FileService
         return $file;
     }
 
-    public function getFileById($id)
-    {
-        return File::findOrFail($id);
-    }
-
+    /**
+     * Elimina un archivo
+     *
+     * @param int $id ID del archivo
+     * @return void
+     */
     public function deleteFile($id)
     {
         $file = File::findOrFail($id);
@@ -71,6 +108,13 @@ class FileService
         $file->delete();
     }
 
+    /**
+     * Descarga un archivo
+     *
+     * @param int $id ID del archivo
+     * @return BinaryFileResponse
+     * @throws Exception Si el archivo no existe en el servidor
+     */
     public function downloadFile(int $id): BinaryFileResponse
     {
         $file = File::findOrFail($id);
@@ -80,10 +124,22 @@ class FileService
             throw new Exception("El archivo no existe en el servidor.");
         }
 
-        $fileName = pathinfo($file->name, PATHINFO_FILENAME);
-        $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+        $safeFileName = $this->generateSafeFileName($file->name);
+        return response()->download(storage_path("app/public/{$filePath}"), $safeFileName);
+    }
 
-        // Convertir caracteres especiales a ASCII (Ej: "Instrucción" → "Instruccion")
+    /**
+     * Genera un nombre de archivo seguro para la descarga
+     *
+     * @param string $fileName Nombre original del archivo
+     * @return string Nombre de archivo seguro
+     */
+    private function generateSafeFileName(string $fileName): string
+    {
+        $fileName = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
+        // Convertir caracteres especiales a ASCII
         $fileName = Str::ascii($fileName);
 
         // Reemplazar caracteres problemáticos
@@ -95,8 +151,6 @@ class FileService
         // Reemplazar espacios múltiples por un solo guion bajo
         $fileName = preg_replace('/\s+/', '_', $fileName);
 
-        $safeFileName = $fileName . '.' . $extension;
-
-        return response()->download(storage_path("app/public/{$filePath}"), $safeFileName);
+        return $fileName . '.' . $extension;
     }
 }
