@@ -21,6 +21,9 @@ class ItemPurchaseRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+        $itemPurchaseId = $isUpdate ? $this->route('item_purchase') : null;
+
         return [
             'product_service' => 'required|string|max:255',
             'quantity_item' => 'required|numeric|min:1',
@@ -31,7 +34,11 @@ class ItemPurchaseRequest extends FormRequest
             'cod_budget_allocation_type' => 'required|string',
             'budget_allocation_id' => 'required|exists:budget_allocations,id',
             'type_purchase_id' => 'required|exists:type_purchases,id',
-            'project_token' => 'required|string',
+            'project_token' => [
+                $isUpdate ? 'nullable' : 'required',
+                'string',
+            ],
+
         ];
     }
 
@@ -61,4 +68,4 @@ class ItemPurchaseRequest extends FormRequest
             'project_token.string' => 'El token del proyecto debe ser una cadena de caracteres',
         ];
     }
-} 
+}

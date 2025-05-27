@@ -34,4 +34,9 @@ class ItemPurchase extends Model
     {
         return $this->belongsTo(StatusItemPurchase::class, 'status_item_purchase_id');
     }
+
+    public function getTotalAmount()
+    {
+        return $this->amount_item * $this->quantity_item;
+    }
 }

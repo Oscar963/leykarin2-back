@@ -115,15 +115,23 @@ class ItemPurchaseService
      */
     public function updateItemPurchase($id, array $data)
     {
+        $project = $this->getItemPurchaseByToken($data['project_token']);
         $itemPurchase = $this->getItemPurchaseById($id);
-        $itemPurchase->name = trim($data['name']);
-        $itemPurchase->description = trim($data['description']);
-        $itemPurchase->quantity = $data['quantity'];
-        $itemPurchase->unit_price = $data['unit_price'];
-        $itemPurchase->total_price = $data['total_price'];
-        $itemPurchase->project_id = $data['project_id'];
-        $itemPurchase->status_id = $data['status_id'];
-        $itemPurchase->updated_by = auth()->id();
+
+        $itemPurchase->product_service = trim($data['product_service']);
+        $itemPurchase->quantity_item = $data['quantity_item'];
+        $itemPurchase->amount_item = $data['amount_item'];
+        $itemPurchase->item_number = $project->getNextItemNumber();
+        $itemPurchase->status_item_purchase_id = self::DEFAULT_STATUS_ID;
+        $itemPurchase->quantity_oc = $data['quantity_oc'];
+        $itemPurchase->months_oc = $data['months_oc'];
+        $itemPurchase->regional_distribution = $data['regional_distribution'];
+        $itemPurchase->cod_budget_allocation_type = $data['cod_budget_allocation_type'];
+
+        // Relaciones
+        $itemPurchase->project_id = $project->id;
+        $itemPurchase->budget_allocation_id = $data['budget_allocation_id'];
+        $itemPurchase->type_purchase_id = $data['type_purchase_id'];
         $itemPurchase->save();
 
         return $itemPurchase;
@@ -139,9 +147,9 @@ class ItemPurchaseService
     {
         $itemPurchase = $this->getItemPurchaseById($id);
         $projectId = $itemPurchase->project_id;
-        
+
         $itemPurchase->delete();
-        
+
         $this->reorderItemNumbers($projectId);
     }
 
@@ -156,7 +164,7 @@ class ItemPurchaseService
         $items = ItemPurchase::where('project_id', $projectId)
             ->orderBy('item_number', 'ASC')
             ->get();
-            
+
         $itemNumber = 1;
         foreach ($items as $item) {
             $item->item_number = $itemNumber;

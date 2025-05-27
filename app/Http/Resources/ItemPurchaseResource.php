@@ -32,6 +32,7 @@ class ItemPurchaseResource extends JsonResource
             'status' => $this->statusItemPurchase,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'total_item' => $this->getTotalAmount(),
         ];
     }
 }
