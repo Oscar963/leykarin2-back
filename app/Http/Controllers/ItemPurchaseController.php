@@ -9,6 +9,9 @@ use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Exports\ItemsPurchaseExport;
 
 class ItemPurchaseController extends Controller
 {
@@ -27,7 +30,7 @@ class ItemPurchaseController extends Controller
             $query = $request->query('q');
             $perPage = $request->query('show');
             $projectToken = $request->query('project_token');
-            
+
             $results = $this->itemPurchaseService->getAllItemPurchasesByQuery($query, $perPage, $projectToken);
 
             return response()->json([
@@ -110,10 +113,10 @@ class ItemPurchaseController extends Controller
         try {
             $validated = $request->validate([
                 'status_item_purchase_id' => 'required',
-            ]); 
+            ]);
             $updated = $this->itemPurchaseService->updateItemPurchaseStatus($id, $validated);
             $this->logActivity('update_item_purchase_status', 'Usuario actualizó el estado del ítem de compra con ID: ' . $updated->id);
-            
+
             return response()->json([
                 'message' => 'Estado del ítem de compra actualizado exitosamente',
                 'data' => new ItemPurchaseResource($updated)
@@ -123,5 +126,11 @@ class ItemPurchaseController extends Controller
                 'message' => 'Error al actualizar el estado del ítem de compra. ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function export($projectId)
+    {
+        $this->logActivity('download_file', 'Usuario exporto el excel de ítems de compra');
+        return Excel::download(new ItemsPurchaseExport($projectId), 'items-purchases.xlsx');
     }
 }

@@ -48,7 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('item-purchases', ItemPurchaseController::class);
     Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');
-
+    Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export'])->name('item-purchases.export');
+    
     Route::apiResource('budget-allocations', BudgetAllocationController::class);
     Route::apiResource('type-purchases', TypePurchaseController::class);
     Route::apiResource('unit-purchasings', UnitPurchasingController::class);
