@@ -104,4 +104,24 @@ class ItemPurchaseController extends Controller
             ], 500);
         }
     }
+
+    public function updateStatus(int $id, Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'status_item_purchase_id' => 'required',
+            ]); 
+            $updated = $this->itemPurchaseService->updateItemPurchaseStatus($id, $validated);
+            $this->logActivity('update_item_purchase_status', 'Usuario actualizó el estado del ítem de compra con ID: ' . $updated->id);
+            
+            return response()->json([
+                'message' => 'Estado del ítem de compra actualizado exitosamente',
+                'data' => new ItemPurchaseResource($updated)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el estado del ítem de compra. ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

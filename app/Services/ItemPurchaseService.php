@@ -172,4 +172,20 @@ class ItemPurchaseService
             $itemNumber++;
         }
     }
+
+    /**
+     * Actualiza el estado de un item de compra
+     *
+     * @param int $id ID del item de compra
+     * @param array $data Datos actualizados
+     * @return ItemPurchase
+     */
+
+    public function updateItemPurchaseStatus($id, $data)
+    {
+        $itemPurchase = $this->getItemPurchaseById($id);
+        $itemPurchase->status_item_purchase_id = $data['status_item_purchase_id'];
+        $itemPurchase->save();
+        return $itemPurchase;
+    }
 }

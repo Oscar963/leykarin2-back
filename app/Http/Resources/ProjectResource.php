@@ -20,6 +20,7 @@ class ProjectResource extends JsonResource
             'unit_purchasing' => $this->unitPurchasing,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'execution_percentage' => $this->getExecutionPercentage(),
         ];
     }
 } 
