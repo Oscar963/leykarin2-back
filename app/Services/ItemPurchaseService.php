@@ -121,7 +121,6 @@ class ItemPurchaseService
         $itemPurchase->product_service = trim($data['product_service']);
         $itemPurchase->quantity_item = $data['quantity_item'];
         $itemPurchase->amount_item = $data['amount_item'];
-        $itemPurchase->item_number = $project->getNextItemNumber();
         $itemPurchase->status_item_purchase_id = self::DEFAULT_STATUS_ID;
         $itemPurchase->quantity_oc = $data['quantity_oc'];
         $itemPurchase->months_oc = $data['months_oc'];
