@@ -172,4 +172,21 @@ class PurchasePlanController extends Controller
             ], 500);
         }
     }
+
+    public function send(string $token, Request $request): JsonResponse
+    {
+        try {
+            $purchasePlan = $this->purchasePlanService->getPurchasePlanByToken($token);
+            $this->purchasePlanService->sendPurchasePlan($purchasePlan, $request->status_id);
+
+            $this->logActivity('send_purchase_plan', 'Usuario envió el plan de compra con ID: ' . $purchasePlan->id);
+            return response()->json([
+                'message' => 'Plan de compra enviado exitosamente'
+            ], 200);    
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al enviar el plan de compra. ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

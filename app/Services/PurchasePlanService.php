@@ -79,12 +79,15 @@ class PurchasePlanService
     public function createPurchasePlan(array $data)
     {
         $direction = auth()->user()->direction;
+        $file = $this->createFile($data);
 
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = $data['name'];
         $purchasePlan->date_created = now();
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $data['year'];
+        $purchasePlan->amount_F1 = $data['amount_F1'];
+        $purchasePlan->form_F1_id = $file->id;
         $purchasePlan->status_id = self::DEFAULT_STATUS_ID;
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
@@ -102,9 +105,15 @@ class PurchasePlanService
      */
     public function updatePurchasePlan($id, array $data)
     {
+        if (isset($data['file'])) {
+            $file = $this->createFile($data);
+        }
+
         $purchasePlan = $this->getPurchasePlanById($id);
         $purchasePlan->name = $data['name'];
         $purchasePlan->year = $data['year'];
+        $purchasePlan->amount_F1 = $data['amount_F1'];
+        $purchasePlan->form_F1_id = $file->id ?? $purchasePlan->form_F1_id; 
         $purchasePlan->updated_by = auth()->id();
         $purchasePlan->save();
 
@@ -167,14 +176,14 @@ class PurchasePlanService
     private function createFile(array $data): File
     {
         $file = new File();
-        $file->name = $data['name'];
-        $file->description = $data['description'];
+        $file->name = $data['name_file'];
+        $file->description = $data['description_file'];
         $file->size = $data['file']->getSize();
         $file->type = $data['file']->getClientMimeType();
         $file->created_by = auth()->id();
 
         if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
-            $fileName = Str::slug($data['name']) . '-' . uniqid() . '.' . $data['file']->getClientOriginalExtension();
+            $fileName = Str::slug($data['name_file']) . '-' . uniqid() . '.' . $data['file']->getClientOriginalExtension();
             $filePath = $data['file']->storeAs('uploads', $fileName, 'public');
             $file->url = url('storage/' . $filePath);
         }
@@ -193,5 +202,12 @@ class PurchasePlanService
     {
         $userRoles = $user->roles->pluck('name')->toArray();
         return !empty(array_intersect($userRoles, self::ADMIN_ROLES));
+    }
+
+    public function sendPurchasePlan($purchasePlan, $statusId)
+    {
+        /* 1.- Borrador, 2.- Para aprobación, 3.- Aprobado, 4.- Decretado, 5.- Publicado */
+        $purchasePlan->status_id = $statusId;
+        $purchasePlan->save();
     }
 }

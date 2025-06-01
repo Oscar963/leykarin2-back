@@ -30,7 +30,9 @@ class Project extends Model
 
     public function getTotalAmount()
     {
-        return $this->itemPurchases()->sum('amount_item');
+        return $this->itemPurchases->sum(function($item) {
+            return $item->getTotalAmount();
+        });
     }
 
     public function getNextItemNumber()

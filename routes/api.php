@@ -32,15 +32,18 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
 
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [AuthController::class, 'user']);
-    Route::get('/isAuthenticated', [AuthController::class, 'isAuthenticated']);
+    Route::get('user', [AuthController::class, 'user']);
+    Route::get('isAuthenticated', [AuthController::class, 'isAuthenticated']);
 
     Route::apiResource('purchase-plans', PurchasePlanController::class);
     Route::get('purchase-plans/token/{token}', [PurchasePlanController::class, 'showByToken'])->name('purchase-plans.show.token');
     Route::put('purchase-plans/token/{token}', [PurchasePlanController::class, 'updateByToken'])->name('purchase-plans.update.token');
     Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
     Route::post('purchase-plans/upload/form-f1', [PurchasePlanController::class, 'uploadFormF1'])->name('purchase-plans.upload.form-f1');
+    Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
+
 
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');

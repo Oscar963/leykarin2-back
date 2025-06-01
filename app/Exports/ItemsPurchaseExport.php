@@ -28,6 +28,7 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
     {
         return ItemPurchase::where('project_id', $this->projectId)
             ->with('project', 'statusItemPurchase', 'typePurchase', 'budgetAllocation')
+            ->orderBy('item_number', 'desc')
             ->get();
     }
 
@@ -119,8 +120,8 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
     public function columnFormats(): array
     {
         return [
-            'D' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Monto
-            'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Total/Item
+            'D' => '"$ "#,##0', // Monto en CLP
+            'E' => '"$ "#,##0', // Total/Item en CLP
         ];
     }
 

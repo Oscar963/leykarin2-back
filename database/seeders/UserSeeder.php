@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
         $adminSistema = User::updateOrCreate(
             ['email' => 'admin.sistema@demo.com'],
             [
-                'rut' => '10000000-0',
+                'rut' => '11111111-1',
                 'name' => 'Admin',
                 'paternal_surname' => 'Sistema',
                 'maternal_surname' => 'Demo',
@@ -31,13 +31,46 @@ class UserSeeder extends Seeder
             ]
         );
         $adminSistema->assignRole('Administrador del Sistema');
+        
+        // Administrador municipal
+        $adminMunicipal = User::updateOrCreate(
+            ['email' => 'admin.municipal@demo.com'],
+            [
+                'rut' => '22222222-2',
+                'name' => 'Admin',
+                'paternal_surname' => 'Municipal',
+                'maternal_surname' => 'Demo',
+                'email' => 'admin.municipal@demo.com',
+                'status' => 1,
+                'password' => Hash::make('password123'),
+                'type_user_id' => 2,
+            ]
+        );
+        $adminMunicipal->assignRole('Administrador Municipal');
+
+        //Alcalde 
+        $alcalde = User::updateOrCreate(
+            ['email' => 'alcalde.arica@demo.com'],
+            [
+                'rut' => '33333333-3',
+                'name' => 'Alcalde',
+                'paternal_surname' => 'Arico', 
+                'maternal_surname' => 'Demo',
+                'email' => 'alcalde.arica@demo.com',
+                'status' => 1,
+                'password' => Hash::make('password123'),
+                'type_user_id' => 3,
+            ]
+        );
+        $alcalde->assignRole('Alcalde');
+        
 
         // Directores de las diferentes direcciones
         $directores = [
             // id = 1 (usado para Juzgados y otras direcciones)
             [
                 'email' => 'director.juzgado@demo.com',
-                'rut' => '11111111-1',
+                'rut' => '44444444-4',
                 'name' => 'Director',
                 'paternal_surname' => 'Juzgado',
                 'maternal_surname' => 'Demo',
@@ -46,7 +79,7 @@ class UserSeeder extends Seeder
             // id = 2
             [
                 'email' => 'director.alcaldia@demo.com',
-                'rut' => '22222222-2',
+                'rut' => '55555555-5',
                 'name' => 'Director',
                 'paternal_surname' => 'Alcaldia',
                 'maternal_surname' => 'Demo',
@@ -55,7 +88,7 @@ class UserSeeder extends Seeder
             // id = 3
             [
                 'email' => 'director.gabinete@demo.com',
-                'rut' => '33333333-3',
+                'rut' => '66666666-6',
                 'name' => 'Director',
                 'paternal_surname' => 'Gabinete',
                 'maternal_surname' => 'Demo',
@@ -64,7 +97,7 @@ class UserSeeder extends Seeder
             // id = 4
             [
                 'email' => 'director.secplan@demo.com',
-                'rut' => '44444444-4',
+                'rut' => '77777777-7',
                 'name' => 'Director',
                 'paternal_surname' => 'Secplan',
                 'maternal_surname' => 'Demo',
@@ -73,7 +106,7 @@ class UserSeeder extends Seeder
             // id = 5
             [
                 'email' => 'director.secmunicipal@demo.com',
-                'rut' => '55555555-5',
+                'rut' => '88888888-8',
                 'name' => 'Director',
                 'paternal_surname' => 'SecMunicipal',
                 'maternal_surname' => 'Demo',
@@ -82,7 +115,7 @@ class UserSeeder extends Seeder
             // id = 6
             [
                 'email' => 'director.daf@demo.com',
-                'rut' => '66666666-6',
+                'rut' => '99999999-9',
                 'name' => 'Director',
                 'paternal_surname' => 'DAF',
                 'maternal_surname' => 'Demo',
@@ -91,7 +124,7 @@ class UserSeeder extends Seeder
             // id = 7
             [
                 'email' => 'director.dimao@demo.com',
-                'rut' => '77777777-7',
+                'rut' => '10101010-0',
                 'name' => 'Director',
                 'paternal_surname' => 'DIMAO',
                 'maternal_surname' => 'Demo',
@@ -100,7 +133,7 @@ class UserSeeder extends Seeder
             // id = 8
             [
                 'email' => 'director.didec@demo.com',
-                'rut' => '88888888-8',
+                'rut' => '11111112-1',
                 'name' => 'Director',
                 'paternal_surname' => 'DIDEC',
                 'maternal_surname' => 'Demo',
@@ -109,7 +142,7 @@ class UserSeeder extends Seeder
             // id = 9
             [
                 'email' => 'director.dom@demo.com',
-                'rut' => '99999999-9',
+                'rut' => '12121212-2',
                 'name' => 'Director',
                 'paternal_surname' => 'DOM',
                 'maternal_surname' => 'Demo',
@@ -118,7 +151,7 @@ class UserSeeder extends Seeder
             // id = 10
             [
                 'email' => 'director.transito@demo.com',
-                'rut' => '10101010-0',
+                'rut' => '13131313-3',
                 'name' => 'Director',
                 'paternal_surname' => 'Transito',
                 'maternal_surname' => 'Demo',
@@ -127,7 +160,7 @@ class UserSeeder extends Seeder
             // id = 11
             [
                 'email' => 'director.dipreseh@demo.com',
-                'rut' => '11111112-1',
+                'rut' => '14141414-4',
                 'name' => 'Director',
                 'paternal_surname' => 'DIPRESEH',
                 'maternal_surname' => 'Demo',
@@ -136,7 +169,7 @@ class UserSeeder extends Seeder
             // id = 12
             [
                 'email' => 'director.rural@demo.com',
-                'rut' => '12121212-2',
+                'rut' => '15151515-5',
                 'name' => 'Director',
                 'paternal_surname' => 'Rural',
                 'maternal_surname' => 'Demo',
@@ -145,7 +178,7 @@ class UserSeeder extends Seeder
             // id = 13
             [
                 'email' => 'director.cultura@demo.com',
-                'rut' => '13131313-3',
+                'rut' => '16161616-6',
                 'name' => 'Director',
                 'paternal_surname' => 'Cultura',
                 'maternal_surname' => 'Demo',
@@ -154,7 +187,7 @@ class UserSeeder extends Seeder
             // id = 14
             [
                 'email' => 'director.turismo@demo.com',
-                'rut' => '14141414-4',
+                'rut' => '17171717-7',
                 'name' => 'Director',
                 'paternal_surname' => 'Turismo',
                 'maternal_surname' => 'Demo',
@@ -163,7 +196,7 @@ class UserSeeder extends Seeder
             // id = 15
             [
                 'email' => 'director.disam@demo.com',
-                'rut' => '15151515-5',
+                'rut' => '18181818-8',
                 'name' => 'Director',
                 'paternal_surname' => 'DISAM',
                 'maternal_surname' => 'Demo',
@@ -172,7 +205,7 @@ class UserSeeder extends Seeder
             // id = 16
             [
                 'email' => 'director.demuce@demo.com',
-                'rut' => '16161616-6',
+                'rut' => '19191919-9',
                 'name' => 'Director',
                 'paternal_surname' => 'DEMUCE',
                 'maternal_surname' => 'Demo',

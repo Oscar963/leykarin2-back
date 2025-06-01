@@ -24,8 +24,8 @@ class UploadFileDecretoRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
+            'name_file' => 'required|string|max:255',
+            'description_file' => 'nullable|string|max:255',
             'file' => 'required|file|mimes:pdf',
             'purchase_plan_id' => 'required|exists:purchase_plans,id',
         ];
@@ -34,11 +34,11 @@ class UploadFileDecretoRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => 'El nombre es requerido.',
-            'name.string' => 'El nombre debe ser un texto.',
-            'name.max' => 'El nombre debe tener máximo 255 caracteres.',
-            'description.string' => 'La descripción debe ser un texto.',
-            'description.max' => 'La descripción debe tener máximo 255 caracteres.',
+            'name_file.required' => 'El nombre es requerido.',
+            'name_file.string' => 'El nombre debe ser un texto.',
+            'name_file.max' => 'El nombre debe tener máximo 255 caracteres.',
+            'description_file.string' => 'La descripción debe ser un texto.',
+            'description_file.max' => 'La descripción debe tener máximo 255 caracteres.',
             'file.required' => 'El archivo es requerido.',
             'file.file' => 'El archivo debe ser un archivo válido.',
             'file.mimes' => 'El archivo debe ser un archivo válido.',
