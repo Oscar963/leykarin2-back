@@ -26,6 +26,9 @@ class PurchasePlanResource extends JsonResource
             'updated_at' => $this->updated_at,
             'projects' => ProjectResource::collection($this->whenLoaded('projects')),
             'available_budget' => $this->getAvailableBudget(),
+            'total_amount' => $this->getTotalAmount(),
+            'total_executed_amount' => $this->getTotalProjectsExecutedAmount(),
+            'total_executed_percentage' => $this->getTotalProjectsExecutedPercentage(),
         ];
     }
 }

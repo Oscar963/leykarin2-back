@@ -44,7 +44,17 @@ class Project extends Model
         return $lastItem ? $lastItem->item_number + 1 : 1;
     }
 
-    public function getExecutionPercentage()
+    public function getTotalItemsExecutedAmount()
+    {
+        return $this->itemPurchases->filter(function($item) {
+            $status = strtolower($item->statusItemPurchase->name ?? '');
+            return $status === 'pagado' || $status === 'comprado';
+        })->sum(function($item) {
+            return $item->getTotalAmount();
+        });
+    }
+
+    public function getExecutionItemsPercentage()
     {
         $items = $this->itemPurchases;
         if ($items->isEmpty()) {
@@ -53,7 +63,8 @@ class Project extends Model
 
         $totalItems = $items->count();
         $completedItems = $items->filter(function($item) {
-            return $item->statusItemPurchase->name === 'Pagado';
+            $status = strtolower($item->statusItemPurchase->name ?? '');
+            return $status === 'pagado' || $status === 'comprado';
         })->count();
 
         $percentage = ($completedItems / $totalItems) * 100;

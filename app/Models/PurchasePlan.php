@@ -69,4 +69,34 @@ class PurchasePlan extends Model
 
         return $this->amount_F1 - $totalProjectsAmount;
     }
+
+    public function getTotalAmount()
+    {
+        return $this->projects->sum(function($project) {
+            return $project->getTotalAmount();
+        });
+    }
+
+    public function getTotalProjectsExecutedAmount()
+    {
+        return $this->projects->sum(function($project) {
+            return $project->getTotalItemsExecutedAmount();
+        });
+    }
+    
+    public function getTotalProjectsExecutedPercentage()
+    {
+        $projects = $this->projects;
+        if ($projects->isEmpty()) {
+            return 0;
+        }
+
+        $sumPercentages = $projects->sum(function($project) {
+            return $project->getExecutionItemsPercentage();
+        });
+
+        $avg = $sumPercentages / $projects->count();
+        return fmod($avg, 1) == 0.0 ? (int)$avg : round($avg, 2);
+    }
+
 }
