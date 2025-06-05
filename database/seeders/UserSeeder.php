@@ -27,7 +27,6 @@ class UserSeeder extends Seeder
                 'email' => 'admin.sistema@demo.com',
                 'status' => 1,
                 'password' => Hash::make('password123'),
-                'type_user_id' => 1,
             ]
         );
         $adminSistema->assignRole('Administrador del Sistema');
@@ -43,7 +42,6 @@ class UserSeeder extends Seeder
                 'email' => 'admin.municipal@demo.com',
                 'status' => 1,
                 'password' => Hash::make('password123'),
-                'type_user_id' => 2,
             ]
         );
         $adminMunicipal->assignRole('Administrador Municipal');
@@ -59,7 +57,6 @@ class UserSeeder extends Seeder
                 'email' => 'alcalde.arica@demo.com',
                 'status' => 1,
                 'password' => Hash::make('password123'),
-                'type_user_id' => 3,
             ]
         );
         $alcalde->assignRole('Alcalde');
@@ -74,7 +71,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Juzgado',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 2
             [
@@ -83,7 +79,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Alcaldia',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 3
             [
@@ -92,7 +87,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Gabinete',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 4
             [
@@ -101,7 +95,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Secplan',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 5
             [
@@ -110,7 +103,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'SecMunicipal',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 6
             [
@@ -119,7 +111,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DAF',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 7
             [
@@ -128,7 +119,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DIMAO',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 8
             [
@@ -137,7 +127,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DIDEC',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 9
             [
@@ -146,7 +135,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DOM',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 10
             [
@@ -155,7 +143,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Transito',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 11
             [
@@ -164,7 +151,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DIPRESEH',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 12
             [
@@ -173,7 +159,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Rural',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 13
             [
@@ -182,7 +167,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Cultura',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 14
             [
@@ -191,7 +175,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'Turismo',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 15
             [
@@ -200,7 +183,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DISAM',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
             // id = 16
             [
@@ -209,7 +191,6 @@ class UserSeeder extends Seeder
                 'name' => 'Director',
                 'paternal_surname' => 'DEMUCE',
                 'maternal_surname' => 'Demo',
-                'type_user_id' => 2,
             ],
         ];
 
@@ -224,7 +205,6 @@ class UserSeeder extends Seeder
                     'email' => $director['email'],
                     'status' => 1,
                     'password' => Hash::make('password123'),
-                    'type_user_id' => $director['type_user_id'],
                 ]
             );
             $user->assignRole('Director');
