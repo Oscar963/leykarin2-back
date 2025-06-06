@@ -88,7 +88,7 @@ class PurchasePlanService
         $purchasePlan->year = $data['year'];
         $purchasePlan->amount_F1 = $data['amount_F1'];
         $purchasePlan->form_F1_id = $file->id;
-        $purchasePlan->status_id = self::DEFAULT_STATUS_ID;
+        $purchasePlan->status_purchase_plan_id = self::DEFAULT_STATUS_ID;
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
         $purchasePlan->save();
@@ -207,7 +207,15 @@ class PurchasePlanService
     public function sendPurchasePlan($purchasePlan, $statusId)
     {
         /* 1.- Borrador, 2.- Para aprobación, 3.- Aprobado, 4.- Decretado, 5.- Publicado */
-        $purchasePlan->status_id = $statusId;
+        $purchasePlan->status_purchase_plan_id = $statusId;
         $purchasePlan->save();
     }
+
+    public function updatePurchasePlanStatus($id, $data)
+    {
+        $purchasePlan = $this->getPurchasePlanById($id);
+        $purchasePlan->status_purchase_plan_id = $data['status_purchase_plan_id'];
+        $purchasePlan->save();
+        return $purchasePlan;
+    }   
 }

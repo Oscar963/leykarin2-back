@@ -13,6 +13,8 @@ use Exception;
 use Illuminate\Http\Request;
 use App\Mail\PurchasePlanSent;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\PurchasePlanApproved;
+use App\Mail\PurchasePlanRejected;
 
 class PurchasePlanController extends Controller
 {
@@ -175,18 +177,7 @@ class PurchasePlanController extends Controller
         }
     }
 
-    /**
-     * Envía el comprobante de envío del plan de compra por correo al usuario autenticado.
-     */
-    protected function sendPurchasePlanReceiptEmail($purchasePlan)
-    {
-        $user = auth()->user();
-        if ($user && $user->email) {
-            Mail::to('oscar.apata@municipalidadarica.cl')->send(new PurchasePlanSent($purchasePlan));
-            //Mail::to($user->email)->send(new PurchasePlanSent($purchasePlan));
-        }
-    }
-
+ 
     public function send(string $token, Request $request): JsonResponse
     {
         try {
@@ -204,6 +195,70 @@ class PurchasePlanController extends Controller
             return response()->json([
                 'message' => 'Error al enviar el plan de compra. ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function updateStatus(int $id, Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'status_purchase_plan_id' => 'required',
+            ]);
+
+            $purchasePlan = $this->purchasePlanService->getPurchasePlanById($id);
+            // Enviar notificación de aprobación o rechazo por correo
+            if ($validated['status_purchase_plan_id'] == 3) { // Aprobado
+                $this->sendPurchasePlanApprovalEmail($purchasePlan);
+            } else if ($validated['status_purchase_plan_id'] == 4) { // Rechazado
+                $this->sendPurchasePlanRejectionEmail($purchasePlan);
+            } 
+            $updated = $this->purchasePlanService->updatePurchasePlanStatus($id, $validated);
+            $this->logActivity('update_purchase_plan_status', 'Usuario actualizó el estado del plan de compra con ID: ' . $updated->id);
+
+            return response()->json([
+                'message' => 'Estado del plan de compra actualizado exitosamente',
+                'data' => new PurchasePlanResource($updated)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el estado del plan de compra. ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+       /**
+     * Envía el comprobante de envío del plan de compra por correo al usuario autenticado.
+     */
+    protected function sendPurchasePlanReceiptEmail($purchasePlan)
+    {
+        $user = auth()->user();
+        if ($user && $user->email) {
+            Mail::to('oscar.apata@municipalidadarica.cl')->send(new PurchasePlanSent($purchasePlan));
+            //Mail::to($user->email)->send(new PurchasePlanSent($purchasePlan));
+        }
+    }
+
+    /**
+     * Envía notificación de aprobación del plan de compra por correo.
+     */
+    protected function sendPurchasePlanApprovalEmail($purchasePlan)
+    {
+        $user = auth()->user();
+        if ($user && $user->email) {
+            Mail::to('oscar.apata@municipalidadarica.cl')->send(new PurchasePlanApproved($purchasePlan));
+            //Mail::to($user->email)->send(new PurchasePlanApproved($purchasePlan));
+        }
+    }
+
+    /**
+     * Envía notificación de rechazo del plan de compra por correo.
+     */
+    protected function sendPurchasePlanRejectionEmail($purchasePlan)
+    {
+        $user = auth()->user();
+        if ($user && $user->email) {
+            Mail::to('oscar.apata@municipalidadarica.cl')->send(new PurchasePlanRejected($purchasePlan));
+            //Mail::to($user->email)->send(new PurchasePlanRejected($purchasePlan, $rejectionReason));
         }
     }
 }

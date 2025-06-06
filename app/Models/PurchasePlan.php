@@ -16,7 +16,7 @@ class PurchasePlan extends Model
 
     public function status()
     {
-        return $this->belongsTo(StatusPlan::class);
+        return $this->belongsTo(StatusPurchasePlan::class, 'status_purchase_plan_id');
     }
 
     public function createdBy()

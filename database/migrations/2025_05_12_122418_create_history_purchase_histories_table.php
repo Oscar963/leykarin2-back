@@ -22,7 +22,7 @@ class CreateHistoryPurchaseHistoriesTable extends Migration
 
             // Relaciones con otras tablas
             $table->foreignId('purchase_plan_id')->constrained('purchase_plans')->onDelete('cascade'); // Plan de compra
-            $table->foreignId('status_id')->constrained('status_plans')->onDelete('cascade'); // Estado
+            $table->foreignId('status_purchase_plan_id')->constrained('status_purchase_plans')->onDelete('cascade'); // Estado
         });
     }
 

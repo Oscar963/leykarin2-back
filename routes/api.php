@@ -9,6 +9,7 @@ use App\Http\Controllers\ItemPurchaseController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchasePlanController;
 use App\Http\Controllers\StatusItemPurchaseController;
+use App\Http\Controllers\StatusPurchasePlanController;
 use App\Http\Controllers\TypePurchaseController;
 use App\Http\Controllers\UnitPurchasingController;
 use App\Http\Controllers\UserController;
@@ -43,7 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
     Route::post('purchase-plans/upload/form-f1', [PurchasePlanController::class, 'uploadFormF1'])->name('purchase-plans.upload.form-f1');
     Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
-
+    Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
+    
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
     Route::put('projects/token/{token}', [ProjectController::class, 'updateByToken'])->name('projects.update.token');
@@ -56,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('type-purchases', TypePurchaseController::class);
     Route::apiResource('unit-purchasings', UnitPurchasingController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
+    Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);
 
     Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');

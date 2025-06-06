@@ -19,6 +19,7 @@ class PurchasePlanResource extends JsonResource
             'formF1' => $this->formF1,
             'sending_date' => $this->sending_date,
             'modification_date' => $this->modification_date,
+            'status_purchase_plan_id' => $this->status_purchase_plan_id,
             'status' => $this->status,
             'created_by' => $this->createdBy,
             'updated_by' => $this->updatedBy,
