@@ -31,15 +31,19 @@ class ProjectService
      */
     public function getAllProjectsByToken(?string $query, int $perPage, string $token_purchase_plan)
     {
-        return Project::whereHas('purchasePlan', function ($q) use ($token_purchase_plan) {
+        $queryBuilder = Project::whereHas('purchasePlan', function ($q) use ($token_purchase_plan) {
             $q->where('token', $token_purchase_plan);
         })
-        ->when($query, function ($q) use ($query) {
-            $q->where('name', 'LIKE', "%{$query}%")
-                ->orWhere('description', 'LIKE', "%{$query}%");
-        })
-        ->orderBy('created_at', 'DESC')
-        ->paginate($perPage);
+        ->orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
     }
 
     /**

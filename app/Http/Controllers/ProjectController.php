@@ -44,7 +44,7 @@ class ProjectController extends Controller
             $projects = $this->projectService->getAllProjectsByToken($query, $perPage, $token_purchase_plan);
 
             return response()->json([
-                'data' => ProjectResource::collection($projects)
+                'data' => ProjectResource::collection($projects)->response()->getData(true)
             ], 200);
         } catch (Exception $e) {
             return response()->json([

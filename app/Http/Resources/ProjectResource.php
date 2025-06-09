@@ -16,7 +16,6 @@ class ProjectResource extends JsonResource
             'project_number' => $this->project_number,
             'token' => $this->token,
             'purchase_plan_id' => $this->purchase_plan_id,
-            'purchase_plan' => new PurchasePlanResource($this->purchasePlan),
             'unit_purchasing' => $this->unitPurchasing,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

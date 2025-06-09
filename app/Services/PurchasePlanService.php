@@ -228,4 +228,27 @@ class PurchasePlanService
         $purchasePlan->save();
         return $purchasePlan;
     }   
+
+    /**
+     * Crea un plan de compra por defecto para un año específico
+     *
+     * @param int $year Año para el plan de compra
+     * @return PurchasePlan
+     */
+    public function createDefaultPurchasePlan(int $year): PurchasePlan
+    {
+        $direction = auth()->user()->direction;
+        
+        $purchasePlan = new PurchasePlan();
+        $purchasePlan->name = "Plan de Compra {$year} - {$direction->name}";
+        $purchasePlan->date_created = now();
+        $purchasePlan->token = Str::random(32);
+        $purchasePlan->year = $year;
+        $purchasePlan->status_purchase_plan_id = self::DEFAULT_STATUS_ID;
+        $purchasePlan->created_by = auth()->id();
+        $purchasePlan->direction_id = $direction->id;
+        $purchasePlan->save();
+
+        return $purchasePlan;
+    }
 }
