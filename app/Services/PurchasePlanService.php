@@ -71,6 +71,16 @@ class PurchasePlanService
     }
 
     /**
+     * Obtiene un plan de compra por su año
+     *
+     * @param int $year Año del plan de compra
+     * @return PurchasePlan|null
+     */
+    public function getPurchasePlanByYear($year) {
+        return PurchasePlan::where('year', $year)->first();
+    }
+
+    /**
      * Crea un nuevo plan de compra
      *
      * @param array $data Datos del plan de compra

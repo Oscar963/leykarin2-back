@@ -90,6 +90,20 @@ class PurchasePlanController extends Controller
         }
     }
 
+    public function showByYear(int $year): JsonResponse
+    {
+        try {
+            $purchasePlan = $this->purchasePlanService->getPurchasePlanByYear($year);
+            return response()->json([
+                'data' => new PurchasePlanResource($purchasePlan)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Plan de compra no encontrado.'
+            ], 404);
+        }
+    }
+
     public function updateByToken(string $token, PurchasePlanRequest $request): JsonResponse
     {
         try {

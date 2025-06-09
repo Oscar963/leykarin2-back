@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('purchase-plans/upload/form-f1', [PurchasePlanController::class, 'uploadFormF1'])->name('purchase-plans.upload.form-f1');
     Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
     Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
+    Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
     
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
