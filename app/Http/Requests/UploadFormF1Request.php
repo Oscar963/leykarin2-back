@@ -24,10 +24,9 @@ class UploadFormF1Request extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'file' => 'required|file|mimes:xls,xlsx',
-            'purchase_plan_id' => 'required|exists:purchase_plans,id',
+            'token_purchase_plan' => 'required|exists:purchase_plans,token',
             'amount_F1' => 'required|numeric|min:0',
         ];
     }
@@ -35,16 +34,13 @@ class UploadFormF1Request extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => 'El nombre es requerido',
-            'name.string' => 'El nombre debe ser un texto',
-            'name.max' => 'El nombre debe tener máximo 255 caracteres',
             'description.string' => 'La descripción debe ser un texto',
             'description.max' => 'La descripción debe tener máximo 255 caracteres',
             'file.required' => 'El archivo es requerido',
             'file.file' => 'El archivo debe ser un archivo válido',
             'file.mimes' => 'El archivo debe ser un archivo XLS o XLSX',
-            'purchase_plan_id.required' => 'El plan de compra es requerido',
-            'purchase_plan_id.exists' => 'El plan de compra no existe',
+            'token_purchase_plan.required' => 'El token del plan de compra es requerido',
+            'token_purchase_plan.exists' => 'El token del plan de compra no existe',
             'amount_F1.required' => 'El monto es requerido',
             'amount_F1.numeric' => 'El monto debe ser un número',
             'amount_F1.min' => 'El monto debe ser mayor o igual a 0',

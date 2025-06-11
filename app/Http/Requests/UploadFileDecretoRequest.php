@@ -27,7 +27,7 @@ class UploadFileDecretoRequest extends FormRequest
             'name_file' => 'required|string|max:255',
             'description_file' => 'nullable|string|max:255',
             'file' => 'required|file|mimes:pdf',
-            'purchase_plan_id' => 'required|exists:purchase_plans,id',
+            'token_purchase_plan' => 'required|exists:purchase_plans,token',
         ];
     }
 
@@ -42,8 +42,8 @@ class UploadFileDecretoRequest extends FormRequest
             'file.required' => 'El archivo es requerido.',
             'file.file' => 'El archivo debe ser un archivo válido.',
             'file.mimes' => 'El archivo debe ser un archivo válido.',
-            'purchase_plan_id.required' => 'El plan de compra es requerido.',
-            'purchase_plan_id.exists' => 'El plan de compra no existe.',
+            'token_purchase_plan.required' => 'El token del plan de compra es requerido.',
+            'token_purchase_plan.exists' => 'El token del plan de compra no existe.',
         ];
     }
 }
