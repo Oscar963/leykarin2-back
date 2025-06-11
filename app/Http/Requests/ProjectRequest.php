@@ -18,6 +18,7 @@ class ProjectRequest extends FormRequest
             'description' => 'required|string',
             'unit_purchasing_id' => 'required|exists:unit_purchasings,id',
             'token_purchase_plan' => 'required|exists:purchase_plans,token',
+            'type_project_id' => 'required|exists:type_projects,id',
         ];
     }
 
@@ -31,6 +32,8 @@ class ProjectRequest extends FormRequest
             'unit_purchasing_id.exists' => 'La unidad de compra seleccionada no existe',
             'token_purchase_plan.required' => 'El token del plan de compra es requerido',
             'token_purchase_plan.exists' => 'El token del plan de compra seleccionado no existe',
+            'type_project_id.required' => 'El tipo de proyecto es requerido',
+            'type_project_id.exists' => 'El tipo de proyecto seleccionado no existe',
         ];
     }
 }

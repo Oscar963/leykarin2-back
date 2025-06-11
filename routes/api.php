@@ -10,6 +10,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchasePlanController;
 use App\Http\Controllers\StatusItemPurchaseController;
 use App\Http\Controllers\StatusPurchasePlanController;
+use App\Http\Controllers\TypeProjectController;
 use App\Http\Controllers\TypePurchaseController;
 use App\Http\Controllers\UnitPurchasingController;
 use App\Http\Controllers\UserController;
@@ -57,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::apiResource('budget-allocations', BudgetAllocationController::class);
     Route::apiResource('type-purchases', TypePurchaseController::class);
+    Route::apiResource('type-projects', TypeProjectController::class);
     Route::apiResource('unit-purchasings', UnitPurchasingController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
     Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);

@@ -19,6 +19,7 @@ class CreateProjectsTable extends Migration
             $table->foreignId('unit_purchasing_id')->constrained('unit_purchasings')->onDelete('cascade');
             $table->foreignId('direction_id')->constrained('directions')->onDelete('cascade');
             $table->foreignId('purchase_plan_id')->constrained('purchase_plans')->onDelete('cascade');
+            $table->foreignId('type_project_id')->constrained('type_projects')->onDelete('cascade');
             $table->timestamps();
         });
     }

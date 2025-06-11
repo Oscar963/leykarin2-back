@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UnitPurchasingSeeder::class);
         $this->call(DirectionSeeder::class);
         $this->call(TypePurchaseSeeder::class);
+        $this->call(TypeProjectSeeder::class);
         $this->call(StatusItemPurchasesSeeder::class);
     }
 }

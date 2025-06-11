@@ -84,6 +84,7 @@ class ProjectService
         $project->project_number = $purchasePlan->getNextProjectNumber();
         $project->description = $data['description'];
         $project->unit_purchasing_id = $data['unit_purchasing_id'];
+        $project->type_project_id = $data['type_project_id'];
         $project->direction_id = $purchasePlan->direction->id;
         $project->purchase_plan_id = $purchasePlan->id;
         $project->save();
@@ -104,6 +105,7 @@ class ProjectService
         $project->name = $data['name'];
         $project->description = $data['description'];
         $project->unit_purchasing_id = $data['unit_purchasing_id'];
+        $project->type_project_id = $data['type_project_id'];
         $project->save();
 
         return $project;
@@ -122,6 +124,7 @@ class ProjectService
         $project->name = $data['name'];
         $project->description = $data['description'];
         $project->unit_purchasing_id = $data['unit_purchasing_id'];
+        $project->type_project_id = $data['type_project_id'];
         $project->save();
 
         return $project;

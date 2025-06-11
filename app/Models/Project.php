@@ -28,9 +28,14 @@ class Project extends Model
         return $this->belongsTo(UnitPurchasing::class, 'unit_purchasing_id');
     }
 
+    public function typeProject()
+    {
+        return $this->belongsTo(TypeProject::class, 'type_project_id');
+    }
+
     public function getTotalAmount()
     {
-        return $this->itemPurchases->sum(function($item) {
+        return $this->itemPurchases->sum(function ($item) {
             return $item->getTotalAmount();
         });
     }
@@ -40,16 +45,16 @@ class Project extends Model
         $lastItem = $this->itemPurchases()
             ->orderBy('item_number', 'desc')
             ->first();
-            
+
         return $lastItem ? $lastItem->item_number + 1 : 1;
     }
 
     public function getTotalItemsExecutedAmount()
     {
-        return $this->itemPurchases->filter(function($item) {
+        return $this->itemPurchases->filter(function ($item) {
             $status = strtolower($item->statusItemPurchase->name ?? '');
             return $status === 'pagado' || $status === 'comprado';
-        })->sum(function($item) {
+        })->sum(function ($item) {
             return $item->getTotalAmount();
         });
     }
@@ -62,13 +67,13 @@ class Project extends Model
         }
 
         $totalItems = $items->count();
-        $completedItems = $items->filter(function($item) {
+        $completedItems = $items->filter(function ($item) {
             $status = strtolower($item->statusItemPurchase->name ?? '');
             return $status === 'pagado' || $status === 'comprado';
         })->count();
 
         $percentage = ($completedItems / $totalItems) * 100;
-        
+
         return round($percentage, 2);
     }
-} 
+}

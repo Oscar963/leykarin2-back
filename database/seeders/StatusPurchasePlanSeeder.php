@@ -23,7 +23,11 @@ class StatusPurchasePlanSeeder extends Seeder
         ]);
 
         StatusPurchasePlan::create([
-            'name' => 'Aprobado',
+            'name' => 'Visado',
+        ]);
+
+        StatusPurchasePlan::create([
+            'name' => 'Aprobado para decretar',
         ]);
 
         StatusPurchasePlan::create([
