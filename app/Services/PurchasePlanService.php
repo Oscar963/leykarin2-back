@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\File;
+use App\Models\FormF1;
 use App\Models\PurchasePlan;
 use Illuminate\Support\Str;
 
@@ -111,23 +112,24 @@ class PurchasePlanService
      * @param array $data Datos del plan de compra
      *                    - name: string Nombre del plan
      *                    - year: int Año del plan
-     *                    - amount_F1: float Monto del formulario F1
+     *                    - amount: float Monto del formulario F1
      *                    - file: UploadedFile Archivo del formulario F1
+     *                    - name_file: string (opcional) Nombre del archivo
+     *                    - description_file: string (opcional) Descripción del archivo
      * @return PurchasePlan Instancia del plan de compra creado
      * @throws \Exception Si hay error en la creación del archivo
      */
     public function createPurchasePlan(array $data)
     {
         $direction = auth()->user()->direction;
-        $file = $this->createFile($data);
+        $formF1 = $this->createFormF1($data);
 
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = $data['name'];
         $purchasePlan->date_created = now();
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $data['year'];
-        $purchasePlan->amount_F1 = $data['amount_F1'];
-        $purchasePlan->form_F1_id = $file->id;
+        $purchasePlan->form_f1_id = $formF1->id;
         $purchasePlan->status_purchase_plan_id = self::DEFAULT_STATUS_ID;
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
@@ -166,25 +168,34 @@ class PurchasePlanService
      * @param array $data Datos actualizados
      *                    - name: string Nombre del plan
      *                    - year: int Año del plan
-     *                    - amount_F1: float Monto del formulario F1
+     *                    - amount: float (opcional) Monto del formulario F1
      *                    - file: UploadedFile (opcional) Nuevo archivo del formulario F1
+     *                    - name_file: string (opcional) Nombre del archivo
+     *                    - description_file: string (opcional) Descripción del archivo
      * @return PurchasePlan Instancia del plan de compra actualizado
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Si el plan no existe
      */
     public function updatePurchasePlan($id, array $data)
     {
-        if (isset($data['file'])) {
-            $file = $this->createFile($data);
-        }
-
         $purchasePlan = $this->getPurchasePlanById($id);
+        
+        // Actualizar datos básicos del plan
         $purchasePlan->name = $data['name'];
         $purchasePlan->year = $data['year'];
-        $purchasePlan->amount_F1 = $data['amount_F1'];
-        $purchasePlan->form_F1_id = $file->id ?? $purchasePlan->form_F1_id; 
         $purchasePlan->updated_by = auth()->id();
-        $purchasePlan->save();
 
+        // Si se proporciona un nuevo archivo, crear/actualizar FormF1
+        if (isset($data['file'])) {
+            $formF1 = $this->createFormF1($data);
+            $purchasePlan->form_f1_id = $formF1->id;
+        } elseif (isset($data['amount']) && $purchasePlan->formF1) {
+            // Solo actualizar el monto si no hay archivo nuevo
+            $purchasePlan->formF1->amount = $data['amount'];
+            $purchasePlan->formF1->updated_by = auth()->id();
+            $purchasePlan->formF1->save();
+        }
+
+        $purchasePlan->save();
         return $purchasePlan;
     }
 
@@ -264,7 +275,7 @@ class PurchasePlanService
      * @param array $data Datos del archivo
      *                    - token_purchase_plan: string Token del plan de compra
      *                    - file: UploadedFile Archivo del formulario F1
-     *                    - amount_F1: float Monto del formulario F1
+     *                    - amount: float Monto del formulario F1
      *                    - name_file: string (opcional) Nombre personalizado del archivo
      *                    - description_file: string (opcional) Descripción del archivo
      * @return PurchasePlan Instancia del plan de compra actualizado
@@ -272,11 +283,10 @@ class PurchasePlanService
      */
     public function uploadFileFormF1(array $data)
     {
-        $file = $this->createFile($data);
+        $formF1 = $this->createFormF1($data);
 
         $purchasePlan = $this->getPurchasePlanByToken($data['token_purchase_plan']);
-        $purchasePlan->form_F1_id = $file->id;
-        $purchasePlan->amount_F1 = $data['amount_F1'];
+        $purchasePlan->form_f1_id = $formF1->id;
         $purchasePlan->save();
 
         return $purchasePlan;
@@ -285,6 +295,45 @@ class PurchasePlanService
     // ============================================================================
     // MÉTODOS PRIVADOS - UTILIDADES
     // ============================================================================
+
+    /**
+     * Crea un nuevo registro de FormF1 en la base de datos y almacena el archivo físico
+     *
+     * @param array $data Datos del archivo FormF1
+     *                    - file: UploadedFile Archivo del formulario F1
+     *                    - amount: float Monto del formulario F1
+     *                    - name_file: string (opcional) Nombre personalizado del archivo
+     *                    - description_file: string (opcional) Descripción del archivo
+     * @return FormF1 Instancia del FormF1 creado
+     * @throws \Exception Si hay error al guardar el archivo
+     */
+    private function createFormF1(array $data): FormF1
+    {
+        $direction = auth()->user()->direction;
+        $currentDate = now()->format('Y-m-d H:i');
+        $nameFile = $data['name_file'] ?? "{$currentDate} - {$direction->name} - FormF1";
+        
+        $formF1 = new FormF1();
+        $formF1->name = $nameFile;
+        $formF1->description = $data['description_file'] ?? "Formulario F1 generado automáticamente para el plan de compra de la dirección {$direction->name}";
+        $formF1->amount = $data['amount'] ?? 0;
+        $formF1->created_by = auth()->id();
+
+        if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
+            $formF1->size = $data['file']->getSize();
+            $formF1->type = $data['file']->getClientMimeType();
+            
+            // Generar nombre único para el archivo
+            $fileName = Str::slug($nameFile) . '-' . uniqid() . '.' . $data['file']->getClientOriginalExtension();
+            // Almacenar archivo en el disco público
+            $filePath = $data['file']->storeAs('uploads/form_f1', $fileName, 'public');
+            // Generar URL pública del archivo
+            $formF1->url = url('storage/' . $filePath);
+        }
+
+        $formF1->save(); 
+        return $formF1;
+    }
 
     /**
      * Crea un nuevo registro de archivo en la base de datos y almacena el archivo físico

@@ -41,7 +41,7 @@ class PurchasePlan extends Model
 
     public function formF1()
     {
-        return $this->belongsTo(File::class, 'form_F1_id');
+        return $this->belongsTo(FormF1::class, 'form_f1_id');
     }
 
     public function getNextProjectNumber()
@@ -54,7 +54,7 @@ class PurchasePlan extends Model
     }
 
     /**
-     * Calcula el presupuesto disponible restando la suma de los montos de todos los proyectos del amount_F1
+     * Calcula el presupuesto disponible restando la suma de los montos de todos los proyectos del amount del FormF1
      * 
      * @return float
      */
@@ -67,7 +67,8 @@ class PurchasePlan extends Model
                 return $project->getTotalAmount();
             });
 
-        return $this->amount_F1 - $totalProjectsAmount;
+        $formF1Amount = $this->formF1 ? $this->formF1->amount : 0;
+        return $formF1Amount - $totalProjectsAmount;
     }
 
     public function getTotalAmount()
