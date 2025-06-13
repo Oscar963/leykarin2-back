@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\BudgetAllocationController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\FormF1Controller;
 use App\Http\Controllers\ItemPurchaseController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchasePlanController;
@@ -62,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('unit-purchasings', UnitPurchasingController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
     Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);
+    Route::apiResource('form-f1', FormF1Controller::class);
 
     Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
