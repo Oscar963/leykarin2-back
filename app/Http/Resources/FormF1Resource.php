@@ -20,6 +20,7 @@ class FormF1Resource extends JsonResource
             'updated_by' => $this->updated_by,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'purchase_plan' =>  new PurchasePlanResource($this->purchasePlan),  // Relación 1:1 con PurchasePlan
             'created_by_user' => $this->whenLoaded('createdBy', function () {
                 return [
                     'id' => $this->createdBy->id,

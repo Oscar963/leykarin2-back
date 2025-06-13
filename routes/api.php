@@ -48,7 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
     Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
     Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
-    
+    Route::get('purchase-plans/year/{year}/index', [PurchasePlanController::class, 'indexByYear'])->name('purchase-plans.index.year'); // Lista todos los planes de compra con paginación y filtrado del año
+
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
     Route::put('projects/token/{token}', [ProjectController::class, 'updateByToken'])->name('projects.update.token');

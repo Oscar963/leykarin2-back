@@ -68,6 +68,14 @@ class PurchasePlanService
         return $queryBuilder->paginate($perPage);
     }
 
+    public function getAllPurchasePlansByYear(int $year)
+    {
+        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC')
+            ->where('year', $year);
+
+        return $queryBuilder->get();
+    }
+
     /**
      * Obtiene un plan de compra por su ID
      *
@@ -147,7 +155,7 @@ class PurchasePlanService
     public function createDefaultPurchasePlan(int $year): PurchasePlan
     {
         $direction = auth()->user()->direction;
-        
+
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = "Plan de Compra {$year} - {$direction->name}";
         $purchasePlan->date_created = now();
@@ -178,7 +186,7 @@ class PurchasePlanService
     public function updatePurchasePlan($id, array $data)
     {
         $purchasePlan = $this->getPurchasePlanById($id);
-        
+
         // Actualizar datos básicos del plan
         $purchasePlan->name = $data['name'];
         $purchasePlan->year = $data['year'];
@@ -312,7 +320,7 @@ class PurchasePlanService
         $direction = auth()->user()->direction;
         $currentDate = now()->format('Y-m-d H:i');
         $nameFile = $data['name_file'] ?? "{$currentDate} - {$direction->name} - FormF1";
-        
+
         $formF1 = new FormF1();
         $formF1->name = $nameFile;
         $formF1->description = $data['description_file'] ?? "Formulario F1 generado automáticamente para el plan de compra de la dirección {$direction->name}";
@@ -322,7 +330,7 @@ class PurchasePlanService
         if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
             $formF1->size = $data['file']->getSize();
             $formF1->type = $data['file']->getClientMimeType();
-            
+
             // Generar nombre único para el archivo
             $fileName = Str::slug($nameFile) . '-' . uniqid() . '.' . $data['file']->getClientOriginalExtension();
             // Almacenar archivo en el disco público
@@ -331,7 +339,7 @@ class PurchasePlanService
             $formF1->url = url('storage/' . $filePath);
         }
 
-        $formF1->save(); 
+        $formF1->save();
         return $formF1;
     }
 
@@ -350,7 +358,7 @@ class PurchasePlanService
         $direction = auth()->user()->direction;
         $currentDate = now()->format('Y-m-d H:i');
         $nameFile = $data['name_file'] ?? "{$currentDate} - {$direction->name}";
-        
+
         $file = new File();
         $file->name = $nameFile;
         $file->description = $data['description_file'] ?? "Archivo generado automáticamente para el plan de compra de la dirección {$direction->name}";
@@ -367,7 +375,7 @@ class PurchasePlanService
             $file->url = url('storage/' . $filePath);
         }
 
-        $file->save(); 
+        $file->save();
         return $file;
     }
 

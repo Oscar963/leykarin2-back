@@ -28,10 +28,6 @@ class PurchasePlanController extends Controller
     }
 
     /**
-     * Métodos de Consulta
-     */
-
-    /**
      * Lista todos los planes de compra con paginación y filtrado
      */
     public function index(Request $request): JsonResponse
@@ -50,6 +46,24 @@ class PurchasePlanController extends Controller
             ], 500);
         }
     }
+
+   /**
+     * Lista todos los planes de compra con paginación y filtrado del año 
+     */
+    public function indexByYear(int $year): JsonResponse
+    {
+        try {
+            $results = $this->purchasePlanService->getAllPurchasePlansByYear($year);
+
+            return response()->json([
+                'data' => PurchasePlanResource::collection($results)->response()->getData(true)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los planes de compra.'
+            ], 500);
+        }
+    }   
 
     /**
      * Muestra un plan de compra por su ID
