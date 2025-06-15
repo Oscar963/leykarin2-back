@@ -9,6 +9,7 @@ use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FormF1Controller extends Controller
 {
@@ -101,5 +102,13 @@ class FormF1Controller extends Controller
                 'message' => 'Error al eliminar el formulario F1. ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Descargar un archivo por ID.
+     */
+    public function download(int $id): BinaryFileResponse
+    {
+        return $this->formF1Service->downloadFile($id);
     }
 }

@@ -9,55 +9,15 @@ use Illuminate\Support\Str;
 
 /**
  * Servicio para gestión de Planes de Compra
- * 
- * Este servicio maneja todas las operaciones relacionadas con la creación,
- * actualización, eliminación y consulta de planes de compra, incluyendo
- * la gestión de archivos asociados y el control de permisos por roles.
- * 
- * @package App\Services
- * @author Sistema Plan de Compras
- * @version 1.0
  */
 class PurchasePlanService
 {
-    // ============================================================================
-    // CONSTANTES
-    // ============================================================================
-
     /**
-     * Roles que tienen acceso completo a todos los planes de compra
+     * Obtiene todos los planes de compra con paginación y filtrado por nombre
      */
-    private const ADMIN_ROLES = [
-        'Administrador del Sistema',
-        'Alcalde',
-        'Administrador Municipal'
-    ];
-
-    /**
-     * Estado por defecto para nuevos planes de compra
-     */
-    private const DEFAULT_STATUS_ID = 1; // Borrador
-
-    // ============================================================================
-    // MÉTODOS PÚBLICOS - CONSULTAS
-    // ============================================================================
-
-    /**
-     * Obtiene todos los planes de compra con paginación y filtrado
-     *
-     * @param string|null $query Término de búsqueda para filtrar por nombre
-     * @param int $perPage Número de elementos por página (por defecto 15)
-     * @return \Illuminate\Pagination\LengthAwarePaginator Lista paginada de planes de compra
-     */
-    public function getAllPurchasePlansByQuery(?string $query, int $perPage = 15)
+    public function getAllPurchasePlansByQuery(?string $query, int $perPage = 50)
     {
-        $user = auth()->user();
-        $directionId = $user->direction ? $user->direction->id : null;
-
-        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC')
-            ->when($directionId && !$this->canUserViewAllPlans($user), function ($q) use ($directionId) {
-                $q->where('direction_id', $directionId);
-            });
+        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC');
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
@@ -68,20 +28,25 @@ class PurchasePlanService
         return $queryBuilder->paginate($perPage);
     }
 
-    public function getAllPurchasePlansByYear(int $year)
+    /**
+     * Obtiene todos los planes de compra filtrados por año y opcionalmente por nombre
+     */
+    public function getAllPurchasePlansByYear(int $year, ?string $query = null, int $perPage = 50)
     {
         $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC')
             ->where('year', $year);
 
-        return $queryBuilder->get();
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
     }
 
     /**
      * Obtiene un plan de compra por su ID
-     *
-     * @param int $id ID del plan de compra
-     * @return PurchasePlan Instancia del plan de compra
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Si el plan no existe
      */
     public function getPurchasePlanById($id)
     {
@@ -90,9 +55,6 @@ class PurchasePlanService
 
     /**
      * Obtiene un plan de compra por su token único
-     *
-     * @param string $token Token único del plan de compra
-     * @return PurchasePlan|null Instancia del plan de compra o null si no existe
      */
     public function getPurchasePlanByToken($token)
     {
@@ -100,32 +62,15 @@ class PurchasePlanService
     }
 
     /**
-     * Obtiene un plan de compra por su año
-     *
-     * @param int $year Año del plan de compra
-     * @return PurchasePlan|null Instancia del plan de compra o null si no existe
+     * Obtiene un plan de compra por su año (retorna solo el primero)
      */
     public function getPurchasePlanByYear($year)
     {
         return PurchasePlan::where('year', $year)->first();
     }
 
-    // ============================================================================
-    // MÉTODOS PÚBLICOS - OPERACIONES CRUD
-    // ============================================================================
-
     /**
      * Crea un nuevo plan de compra
-     *
-     * @param array $data Datos del plan de compra
-     *                    - name: string Nombre del plan
-     *                    - year: int Año del plan
-     *                    - amount: float Monto del formulario F1
-     *                    - file: UploadedFile Archivo del formulario F1
-     *                    - name_file: string (opcional) Nombre del archivo
-     *                    - description_file: string (opcional) Descripción del archivo
-     * @return PurchasePlan Instancia del plan de compra creado
-     * @throws \Exception Si hay error en la creación del archivo
      */
     public function createPurchasePlan(array $data)
     {
@@ -138,7 +83,7 @@ class PurchasePlanService
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $data['year'];
         $purchasePlan->form_f1_id = $formF1->id;
-        $purchasePlan->status_purchase_plan_id = self::DEFAULT_STATUS_ID;
+        $purchasePlan->status_purchase_plan_id = 1; // Borrador
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
         $purchasePlan->save();
@@ -148,9 +93,6 @@ class PurchasePlanService
 
     /**
      * Crea un plan de compra por defecto para un año específico
-     *
-     * @param int $year Año para el plan de compra
-     * @return PurchasePlan Instancia del plan de compra creado
      */
     public function createDefaultPurchasePlan(int $year): PurchasePlan
     {
@@ -161,7 +103,7 @@ class PurchasePlanService
         $purchasePlan->date_created = now();
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $year;
-        $purchasePlan->status_purchase_plan_id = self::DEFAULT_STATUS_ID;
+        $purchasePlan->status_purchase_plan_id = 1; // Borrador
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
         $purchasePlan->save();
@@ -171,17 +113,6 @@ class PurchasePlanService
 
     /**
      * Actualiza un plan de compra existente
-     *
-     * @param int $id ID del plan de compra a actualizar
-     * @param array $data Datos actualizados
-     *                    - name: string Nombre del plan
-     *                    - year: int Año del plan
-     *                    - amount: float (opcional) Monto del formulario F1
-     *                    - file: UploadedFile (opcional) Nuevo archivo del formulario F1
-     *                    - name_file: string (opcional) Nombre del archivo
-     *                    - description_file: string (opcional) Descripción del archivo
-     * @return PurchasePlan Instancia del plan de compra actualizado
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Si el plan no existe
      */
     public function updatePurchasePlan($id, array $data)
     {
@@ -208,29 +139,7 @@ class PurchasePlanService
     }
 
     /**
-     * Elimina un plan de compra
-     *
-     * @param int $id ID del plan de compra a eliminar
-     * @return void
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Si el plan no existe
-     */
-    public function deletePurchasePlan($id)
-    {
-        $purchasePlan = $this->getPurchasePlanById($id);
-        $purchasePlan->delete();
-    }
-
-    // ============================================================================
-    // MÉTODOS PÚBLICOS - GESTIÓN DE ESTADO Y ARCHIVOS
-    // ============================================================================
-
-    /**
      * Actualiza el estado de un plan de compra
-     *
-     * @param PurchasePlan $purchasePlan Instancia del plan de compra
-     * @param int $statusId ID del nuevo estado
-     *                      1: Borrador, 2: Para aprobación, 3: Aprobado, 4: Decretado, 5: Publicado
-     * @return void
      */
     public function sendPurchasePlan($purchasePlan, $statusId)
     {
@@ -240,12 +149,6 @@ class PurchasePlanService
 
     /**
      * Actualiza el estado de un plan de compra por ID
-     *
-     * @param int $id ID del plan de compra
-     * @param array $data Datos con el nuevo estado
-     *                    - status_purchase_plan_id: int ID del estado
-     * @return PurchasePlan Instancia del plan de compra actualizado
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Si el plan no existe
      */
     public function updatePurchasePlanStatus($id, $data)
     {
@@ -256,15 +159,16 @@ class PurchasePlanService
     }
 
     /**
+     * Elimina un plan de compra
+     */
+    public function deletePurchasePlan($id)
+    {
+        $purchasePlan = $this->getPurchasePlanById($id);
+        $purchasePlan->delete();
+    }
+
+    /**
      * Sube y asocia un archivo de decreto al plan de compra
-     *
-     * @param array $data Datos del archivo
-     *                    - token_purchase_plan: string Token del plan de compra
-     *                    - file: UploadedFile Archivo del decreto
-     *                    - name_file: string (opcional) Nombre personalizado del archivo
-     *                    - description_file: string (opcional) Descripción del archivo
-     * @return PurchasePlan Instancia del plan de compra actualizado
-     * @throws \Exception Si hay error en la creación del archivo
      */
     public function uploadFileDecreto(array $data)
     {
@@ -279,15 +183,6 @@ class PurchasePlanService
 
     /**
      * Sube y asocia un archivo Form F1 al plan de compra
-     *
-     * @param array $data Datos del archivo
-     *                    - token_purchase_plan: string Token del plan de compra
-     *                    - file: UploadedFile Archivo del formulario F1
-     *                    - amount: float Monto del formulario F1
-     *                    - name_file: string (opcional) Nombre personalizado del archivo
-     *                    - description_file: string (opcional) Descripción del archivo
-     * @return PurchasePlan Instancia del plan de compra actualizado
-     * @throws \Exception Si hay error en la creación del archivo
      */
     public function uploadFileFormF1(array $data)
     {
@@ -300,20 +195,8 @@ class PurchasePlanService
         return $purchasePlan;
     }
 
-    // ============================================================================
-    // MÉTODOS PRIVADOS - UTILIDADES
-    // ============================================================================
-
     /**
-     * Crea un nuevo registro de FormF1 en la base de datos y almacena el archivo físico
-     *
-     * @param array $data Datos del archivo FormF1
-     *                    - file: UploadedFile Archivo del formulario F1
-     *                    - amount: float Monto del formulario F1
-     *                    - name_file: string (opcional) Nombre personalizado del archivo
-     *                    - description_file: string (opcional) Descripción del archivo
-     * @return FormF1 Instancia del FormF1 creado
-     * @throws \Exception Si hay error al guardar el archivo
+     * Crea un nuevo registro de FormF1 en la base de datos
      */
     private function createFormF1(array $data): FormF1
     {
@@ -344,14 +227,7 @@ class PurchasePlanService
     }
 
     /**
-     * Crea un nuevo registro de archivo en la base de datos y almacena el archivo físico
-     *
-     * @param array $data Datos del archivo
-     *                    - file: UploadedFile Archivo a subir
-     *                    - name_file: string (opcional) Nombre personalizado del archivo
-     *                    - description_file: string (opcional) Descripción del archivo
-     * @return File Instancia del archivo creado
-     * @throws \Exception Si hay error al guardar el archivo
+     * Crea un nuevo registro de archivo en la base de datos
      */
     private function createFile(array $data): File
     {
@@ -377,20 +253,5 @@ class PurchasePlanService
 
         $file->save();
         return $file;
-    }
-
-    /**
-     * Verifica si el usuario actual puede ver todos los planes de compra
-     * 
-     * Los usuarios con roles administrativos pueden ver todos los planes,
-     * mientras que otros usuarios solo pueden ver los de su dirección.
-     *
-     * @param \App\Models\User $user Usuario a verificar
-     * @return bool True si puede ver todos los planes, false si solo los de su dirección
-     */
-    private function canUserViewAllPlans($user): bool
-    {
-        $userRoles = $user->roles->pluck('name')->toArray();
-        return !empty(array_intersect($userRoles, self::ADMIN_ROLES));
     }
 }

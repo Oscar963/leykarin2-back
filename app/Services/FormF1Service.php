@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\FormF1;
 use App\Models\PurchasePlan;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FormF1Service
 {
@@ -120,6 +121,18 @@ class FormF1Service
     public function deleteFormF1($id)
     {
         $formF1 = $this->getFormF1ById($id);
+        $purchasePlan = PurchasePlan::where('form_f1_id', $id)->first();
+        if ($purchasePlan) {
+            $purchasePlan->form_f1_id = null;
+            $purchasePlan->save();
+        }
         $formF1->delete();
+    }
+
+    public function downloadFile(int $id): BinaryFileResponse
+    {
+        $formF1 = $this->getFormF1ById($id);
+        $filePath = str_replace(url('storage/'), '', $formF1->url);
+        return response()->download(storage_path("app/public/{$filePath}"), $formF1->name);
     }
 }

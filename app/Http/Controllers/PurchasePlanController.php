@@ -50,10 +50,13 @@ class PurchasePlanController extends Controller
    /**
      * Lista todos los planes de compra con paginación y filtrado del año 
      */
-    public function indexByYear(int $year): JsonResponse
+    public function indexByYear(int $year, Request $request): JsonResponse
     {
         try {
-            $results = $this->purchasePlanService->getAllPurchasePlansByYear($year);
+            $query = $request->query('q');
+            $perPage = $request->query('show');
+
+            $results = $this->purchasePlanService->getAllPurchasePlansByYear($year, $query, $perPage);
 
             return response()->json([
                 'data' => PurchasePlanResource::collection($results)->response()->getData(true)
@@ -314,6 +317,8 @@ class PurchasePlanController extends Controller
             ], 500);
         }
     }
+
+
 
     /**
      * Métodos de Notificación por Correo

@@ -15,7 +15,7 @@ class PurchasePlanResource extends JsonResource
             'token' => $this->token,
             'year' => $this->year,
             'decreto' => $this->decreto,
-            'form_f1' => $this->formF1,
+            'formF1' => new FormF1Resource($this->formF1),
             'sending_date' => $this->sending_date,
             'modification_date' => $this->modification_date,
             'status_purchase_plan_id' => $this->status_purchase_plan_id,

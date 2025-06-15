@@ -15,7 +15,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Crear planes de compra automáticamente cada 1 de junio a las 6:00 AM
+        $schedule->command('purchase-plans:create-annual')
+            ->yearlyOn(6, 1, '06:00')
+            ->description('Crear planes de compra anuales para todas las direcciones municipales');
     }
 
     /**

@@ -26,7 +26,7 @@ class FormF1Request extends FormRequest
         return [
             'file' => 'required|file|mimes:xls,xlsx',
             'purchase_plan_id' => 'required|exists:purchase_plans,id',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0|max:9999999999999.99|regex:/^\d{1,13}(\.\d{1,2})?$/',
         ];
     }
 
@@ -41,6 +41,8 @@ class FormF1Request extends FormRequest
             'amount.required' => 'El monto es requerido',
             'amount.numeric' => 'El monto debe ser un número',
             'amount.min' => 'El monto debe ser mayor o igual a 0',
+            'amount.max' => 'El monto debe ser menor o igual a 9999999999999.99',
+            'amount.regex' => 'El monto debe tener máximo 2 decimales',
         ];
     }
 }

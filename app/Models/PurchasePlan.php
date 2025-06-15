@@ -9,6 +9,21 @@ class PurchasePlan extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'token',
+        'date_created',
+        'year',
+        'sending_date',
+        'modification_date',
+        'decreto_id',
+        'form_f1_id',
+        'status_purchase_plan_id',
+        'created_by',
+        'updated_by',
+        'direction_id'
+    ];
+
     public function direction()
     {
         return $this->belongsTo(Direction::class);
