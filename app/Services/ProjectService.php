@@ -8,37 +8,36 @@ use Illuminate\Support\Str;
 
 class ProjectService
 {
-    /**
-     * Obtiene todos los proyectos de un plan de compra específico
-     *
-     * @param int $purchasePlanId ID del plan de compra
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAllProjectsByPlan(int $purchasePlanId)
-    {
-        return Project::where('purchase_plan_id', $purchasePlanId)
-            ->orderBy('created_at', 'DESC')
-            ->get();
-    }
 
     /**
-     * Obtiene proyectos paginados filtrados por token del plan de compra
-     *
-     * @param string|null $query Término de búsqueda
-     * @param int $perPage Número de elementos por página
-     * @param string $token_purchase_plan Token del plan de compra
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * Obtiene todos los proyectos con paginación y filtrado por nombre y descripción   
      */
-    public function getAllProjectsByToken(?string $query, int $perPage, string $token_purchase_plan)
+    public function getAllProjectsByQuery(?string $query, int $perPage = 50)
     {
-        $queryBuilder = Project::whereHas('purchasePlan', function ($q) use ($token_purchase_plan) {
-            $q->where('token', $token_purchase_plan);
-        })
-        ->orderBy('created_at', 'DESC');
+        $queryBuilder = Project::orderBy('created_at', 'DESC');
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%");
+            });
+        }
+
+        return $queryBuilder->paginate($perPage);
+    }
+
+
+    /**
+     * Obtiene todos los proyectos de un plan de compra paginados y filtrados por nombre y descripción  
+     */
+    public function getAllProjectsByPurchasePlan(int $purchasePlanId, ?string $query = null, int $perPage = 50)
+    {
+        $queryBuilder = Project::where('purchase_plan_id', $purchasePlanId)
+            ->orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%") 
                     ->orWhere('description', 'LIKE', "%{$query}%");
             });
         }
@@ -76,16 +75,16 @@ class ProjectService
      */
     public function createProject(array $data)
     {
-        $purchasePlan = PurchasePlan::where('token', $data['token_purchase_plan'])->firstOrFail();
+        $purchasePlan = PurchasePlan::where('id', $data['purchase_plan_id'])->firstOrFail();
 
         $project = new Project();
         $project->name = $data['name'];
         $project->token = Str::random(32);
         $project->project_number = $purchasePlan->getNextProjectNumber();
+        $project->created_by = auth()->user()->id;
         $project->description = $data['description'];
         $project->unit_purchasing_id = $data['unit_purchasing_id'];
         $project->type_project_id = $data['type_project_id'];
-        $project->direction_id = $purchasePlan->direction->id;
         $project->purchase_plan_id = $purchasePlan->id;
         $project->save();
 
@@ -106,6 +105,7 @@ class ProjectService
         $project->description = $data['description'];
         $project->unit_purchasing_id = $data['unit_purchasing_id'];
         $project->type_project_id = $data['type_project_id'];
+        $project->updated_by = auth()->user()->id;
         $project->save();
 
         return $project;
@@ -125,6 +125,7 @@ class ProjectService
         $project->description = $data['description'];
         $project->unit_purchasing_id = $data['unit_purchasing_id'];
         $project->type_project_id = $data['type_project_id'];
+        $project->updated_by = auth()->user()->id;
         $project->save();
 
         return $project;
@@ -140,9 +141,9 @@ class ProjectService
     {
         $project = Project::findOrFail($id);
         $purchasePlanId = $project->purchase_plan_id;
-        
+
         $project->delete();
-        
+
         $this->reorderProjectNumbers($purchasePlanId);
     }
 
@@ -157,7 +158,7 @@ class ProjectService
         $projects = Project::where('purchase_plan_id', $purchasePlanId)
             ->orderBy('project_number', 'ASC')
             ->get();
-            
+
         $projectNumber = 1;
         foreach ($projects as $project) {
             $project->project_number = $projectNumber;

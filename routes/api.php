@@ -44,15 +44,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('purchase-plans/token/{token}', [PurchasePlanController::class, 'showByToken'])->name('purchase-plans.show.token');
     Route::put('purchase-plans/token/{token}', [PurchasePlanController::class, 'updateByToken'])->name('purchase-plans.update.token');
     Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
-    Route::post('purchase-plans/upload/form-f1', [PurchasePlanController::class, 'uploadFormF1'])->name('purchase-plans.upload.form-f1');
     Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
     Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
     Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
     Route::get('purchase-plans/year/{year}/index', [PurchasePlanController::class, 'indexByYear'])->name('purchase-plans.index.year');
+    Route::get('purchase-plans/year/{year}/user', [PurchasePlanController::class, 'indexByYearForUser'])->name('purchase-plans.index.year.user');
 
     Route::apiResource('projects', ProjectController::class);
-    Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
-    Route::put('projects/token/{token}', [ProjectController::class, 'updateByToken'])->name('projects.update.token');
+    Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
 
     Route::apiResource('item-purchases', ItemPurchaseController::class);
     Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');

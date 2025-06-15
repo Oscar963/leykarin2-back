@@ -41,7 +41,28 @@ class ProjectController extends Controller
                 ], 404);
             }
 
-            $projects = $this->projectService->getAllProjectsByToken($query, $perPage, $token_purchase_plan);
+            $projects = $this->projectService->getAllProjectsByQuery($query, $perPage);
+
+            return response()->json([
+                'data' => ProjectResource::collection($projects)->response()->getData(true)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los proyectos.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Lista todos los proyectos de un plan de compra.
+     */
+    public function indexByPurchasePlan(int $purchasePlanId, Request $request): JsonResponse
+    {
+        try {
+            $query = $request->query('q');
+            $perPage = $request->query('show');
+
+            $projects = $this->projectService->getAllProjectsByPurchasePlan($purchasePlanId, $query, $perPage);
 
             return response()->json([
                 'data' => ProjectResource::collection($projects)->response()->getData(true)

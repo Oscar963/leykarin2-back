@@ -21,15 +21,16 @@ class TypeProjectController extends Controller
         $this->typeProjectService = $typeProjectService;
     }
 
-    public function index(Request $request): JsonResponse
+    /**
+     * Lista todos los tipos de proyecto
+     */
+    public function index(): JsonResponse
     {
         try {
-            $query = $request->query('q');
-            $perPage = $request->query('show');
-            $results = $this->typeProjectService->getAllTypeProjectsByQuery($query, $perPage);
+            $results = $this->typeProjectService->getAllTypeProjects();
 
             return response()->json([
-                'data' => TypeProjectResource::collection($results)->response()->getData(true)
+                'data' => TypeProjectResource::collection($results)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -38,6 +39,9 @@ class TypeProjectController extends Controller
         }
     }
 
+    /**
+     * Crea un nuevo tipo de proyecto
+     */
     public function store(TypeProjectRequest $request): JsonResponse
     {
         try {
@@ -55,6 +59,9 @@ class TypeProjectController extends Controller
         }
     }
 
+    /**
+     * Obtiene un tipo de proyecto por su ID
+     */
     public function show(int $id): JsonResponse
     {
         try {
@@ -70,6 +77,9 @@ class TypeProjectController extends Controller
         }
     }
 
+    /**
+     * Actualiza un tipo de proyecto
+     */
     public function update(int $id, TypeProjectRequest $request): JsonResponse
     {
         try {
@@ -87,6 +97,9 @@ class TypeProjectController extends Controller
         }
     }
 
+    /**
+     * Elimina un tipo de proyecto
+     */
     public function destroy(int $id): JsonResponse
     {
         try {

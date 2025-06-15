@@ -45,6 +45,18 @@ class PurchasePlanService
         return $queryBuilder->paginate($perPage);
     }
 
+    /** 
+     * Obtiene todos los planes de compra filtrados por año y opcionalmente por nombre para un usuario específico
+     */
+    public function getAllPurchasePlansByYearForUser(int $idDirection, int $year)
+    {
+        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC')
+            ->where('direction_id', $idDirection)
+            ->where('year', $year);
+
+        return $queryBuilder->first();
+    }
+
     /**
      * Obtiene un plan de compra por su ID
      */

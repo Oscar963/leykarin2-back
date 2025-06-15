@@ -16,8 +16,9 @@ class CreateProjectsTable extends Migration
             $table->string('description'); // Descripción del proyecto
 
             // Relaciones con otras tablas
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('unit_purchasing_id')->constrained('unit_purchasings')->onDelete('cascade');
-            $table->foreignId('direction_id')->constrained('directions')->onDelete('cascade');
             $table->foreignId('purchase_plan_id')->constrained('purchase_plans')->onDelete('cascade');
             $table->foreignId('type_project_id')->constrained('type_projects')->onDelete('cascade');
             $table->timestamps();

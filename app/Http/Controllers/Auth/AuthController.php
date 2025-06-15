@@ -137,7 +137,7 @@ class AuthController extends Controller
      */
     public function user(): JsonResponse
     {
-        $user = User::with('direction')->find(Auth::id());
+        $user = User::with('directions')->find(Auth::id());
 
         return response()->json([
             'data' => [
@@ -148,7 +148,7 @@ class AuthController extends Controller
                 'rut' => $user->rut,
                 'email' => $user->email,
                 'status' => $user->status,
-                'direction' => $user->direction->name,
+                'direction' => $user->directions->first()->name,
             ]
         ], 200);
     }

@@ -47,7 +47,7 @@ class PurchasePlanController extends Controller
         }
     }
 
-   /**
+    /**
      * Lista todos los planes de compra con paginación y filtrado del año 
      */
     public function indexByYear(int $year, Request $request): JsonResponse
@@ -66,7 +66,27 @@ class PurchasePlanController extends Controller
                 'message' => 'Error al obtener los planes de compra.'
             ], 500);
         }
-    }   
+    }
+
+    /**
+     * Lista todos los planes de compra con paginación y filtrado del año para un usuario específico
+     */
+    public function indexByYearForUser(int $year): JsonResponse
+    {
+        try {
+            $idDirection = auth()->user()->directions->first()->id;
+
+            $results = $this->purchasePlanService->getAllPurchasePlansByYearForUser($idDirection, $year);
+
+            return response()->json([
+                'data' => new PurchasePlanResource($results)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los planes de compra.'
+            ], 500);
+        }
+    }
 
     /**
      * Muestra un plan de compra por su ID
@@ -111,7 +131,7 @@ class PurchasePlanController extends Controller
     {
         try {
             $purchasePlan = $this->purchasePlanService->getPurchasePlanByYear($year);
-            
+
             // Si no existe un plan para el año especificado, lo creamos automáticamente
             if (!$purchasePlan) {
                 $purchasePlan = $this->purchasePlanService->createDefaultPurchasePlan($year);

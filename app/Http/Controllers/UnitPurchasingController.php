@@ -21,15 +21,16 @@ class UnitPurchasingController extends Controller
         $this->unitPurchasingService = $unitPurchasingService;
     }
 
-    public function index(Request $request): JsonResponse
+    /**
+     * Lista todas las unidades de compra
+     */
+    public function index(): JsonResponse
     {
         try {
-            $query = $request->query('q');
-            $perPage = $request->query('show');
-            $results = $this->unitPurchasingService->getAllUnitPurchasingsByQuery($query, $perPage);
+            $results = $this->unitPurchasingService->getAllUnitPurchasings();
 
             return response()->json([
-                'data' => UnitPurchasingResource::collection($results)->response()->getData(true)
+                'data' => UnitPurchasingResource::collection($results)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -38,6 +39,9 @@ class UnitPurchasingController extends Controller
         }
     }
 
+    /**
+     * Crea una nueva unidad de compra
+     */
     public function store(UnitPurchasingRequest $request): JsonResponse
     {
         try {
@@ -55,6 +59,9 @@ class UnitPurchasingController extends Controller
         }
     }
 
+    /**
+     * Obtiene una unidad de compra por su ID
+     */
     public function show(int $id): JsonResponse
     {
         try {
@@ -70,6 +77,9 @@ class UnitPurchasingController extends Controller
         }
     }
 
+    /**
+     * Actualiza una unidad de compra
+     */
     public function update(int $id, UnitPurchasingRequest $request): JsonResponse
     {
         try {
@@ -87,6 +97,9 @@ class UnitPurchasingController extends Controller
         }
     }
 
+    /**
+     * Elimina una unidad de compra
+     */
     public function destroy(int $id): JsonResponse
     {
         try {

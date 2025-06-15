@@ -24,6 +24,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'paternal_surname',
+        'maternal_surname',
+        'rut',
+        'status',
+        'direction_id'
     ];
 
     /**
@@ -50,8 +55,8 @@ class User extends Authenticatable
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    public function direction()
+    public function directions()
     {
-        return $this->hasOne(Direction::class, 'director_id');
+        return $this->belongsToMany(Direction::class);
     }
 }
