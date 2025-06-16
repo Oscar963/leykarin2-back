@@ -20,8 +20,10 @@ class CreateFilesTable extends Migration
             $table->string('url');
             $table->string('type');
             $table->integer('size');
+            $table->string('extension'); 
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('cascade');
+            $table->morphs('fileable');
             $table->timestamps();
         });
     }

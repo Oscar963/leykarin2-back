@@ -252,6 +252,7 @@ class PurchasePlanService
         $file->description = $data['description_file'] ?? "Archivo generado automáticamente para el plan de compra de la dirección {$direction->name}";
         $file->size = $data['file']->getSize();
         $file->type = $data['file']->getClientMimeType();
+        $file->extension = $data['file']->getClientOriginalExtension();
         $file->created_by = auth()->id();
 
         if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {

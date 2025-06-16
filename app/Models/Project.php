@@ -43,6 +43,11 @@ class Project extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function mediaVerifiers()
+    {
+        return $this->morphMany(File::class, 'fileable');
+    }
+
     public function getTotalAmount()
     {
         return $this->itemPurchases->sum(function ($item) {

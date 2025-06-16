@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\File;
 use App\Models\Project;
 use App\Models\PurchasePlan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectService
 {
@@ -37,7 +40,7 @@ class ProjectService
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
-                $q->where('name', 'LIKE', "%{$query}%") 
+                $q->where('name', 'LIKE', "%{$query}%")
                     ->orWhere('description', 'LIKE', "%{$query}%");
             });
         }
@@ -165,5 +168,36 @@ class ProjectService
             $project->save();
             $projectNumber++;
         }
+    }
+
+    /**
+     * Verifica si el proyecto ya existe en la base de datos
+     */
+    public function verification(array $data)
+    {
+        $project = $this->getProjectById($data['project_id']);
+
+        $fileService = new FileService();
+        $originalName = $data['file']->getClientOriginalName();
+        $data['name'] = pathinfo($originalName, PATHINFO_FILENAME);
+        $data['description'] = 'Verificación del proyecto ' . $project->name . ' - ' . $project->project_number;
+        $data['file'] = $data['file'];
+        $folder = 'proyectos/verificaciones/' . $project->id;
+        $data['folder'] = $folder;
+
+        // Agregar datos de la relación polimórfica
+        $data['fileable_type'] = Project::class;
+        $data['fileable_id'] = $project->id;
+
+        $fileService->createFile($data);
+
+        return $project;
+    }
+
+    public function downloadFileVerificationProject(int $fileId): BinaryFileResponse
+    {
+        $file = File::findOrFail($fileId);
+        $filePath = str_replace(url('storage/'), '', $file->url);
+        return response()->download(storage_path("app/public/{$filePath}"), $file->name);
     }
 }

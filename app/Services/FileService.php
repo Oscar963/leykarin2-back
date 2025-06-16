@@ -64,12 +64,20 @@ class FileService
         $file->description = $data['description'];
         $file->size = $data['file']->getSize();
         $file->type = $data['file']->getClientMimeType();
+        $file->extension = $data['file']->getClientOriginalExtension();
         $file->created_by = auth()->id();
 
         if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
             $fileName = Str::slug($data['name']) . '-' . uniqid() . '.' . $data['file']->getClientOriginalExtension();
-            $filePath = $data['file']->storeAs('uploads', $fileName, 'public');
+            $folder = $data['folder'] ?? 'uploads';
+            $filePath = $data['file']->storeAs($folder, $fileName, 'public');
             $file->url = url('storage/' . $filePath);
+        }
+
+        // Establecer la relación polimórfica si se proporciona
+        if (isset($data['fileable_type']) && isset($data['fileable_id'])) {
+            $file->fileable_type = $data['fileable_type'];
+            $file->fileable_id = $data['fileable_id'];
         }
 
         $file->save();

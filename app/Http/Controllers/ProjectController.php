@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProjectRequest;
 use App\Http\Resources\ProjectResource;
+use App\Http\Requests\VerificationRequest;
 use App\Models\PurchasePlan;
+use App\Http\Resources\FileResource;
 use App\Services\ProjectService;
 use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectController extends Controller
 {
@@ -181,5 +185,81 @@ class ProjectController extends Controller
                 'message' => 'Error al eliminar el proyecto. ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Verifica si el proyecto ya existe en la base de datos
+     */
+    public function verification(VerificationRequest $request): JsonResponse
+    {
+        try {
+            $project =  $this->projectService->verification($request->validated());
+            $this->logActivity('verification_project', 'Usuario verificó el proyecto con ID: ' . $project->id);
+
+            return response()->json([
+                'message' => 'Se ha subido el archivo correctamente los archivos de verificación',
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al subir el archivo. ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mostrar un proyecto de verificación.
+     */
+    public function showVerificationProject(int $projectId): JsonResponse
+    {
+        try {
+            $project = $this->projectService->getProjectById($projectId);
+            $mediaVerifiers = $project->mediaVerifiers;
+            $this->logActivity('list_media_verifiers', 'Usuario listó los medios verificadores del proyecto con ID: ' . $projectId);
+
+            return response()->json([
+                'data' => FileResource::collection($mediaVerifiers)
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al listar los medios verificadores del proyecto con ID: ' . $projectId . ' . ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar un proyecto de verificación.
+     */
+    public function deleteVerificationProject(int $projectId, int $fileId): JsonResponse
+    {
+        try {
+            $project = $this->projectService->getProjectById($projectId); // TODO: Verificar si el proyecto existe
+            $file = $project->mediaVerifiers()->findOrFail($fileId);
+
+            // Eliminar el archivo físico
+            if (Storage::disk('public')->exists(str_replace(url('storage/'), '', $file->url))) {
+                Storage::disk('public')->delete(str_replace(url('storage/'), '', $file->url));
+            }
+
+            // Eliminar el registro de la base de datos
+            $file->delete();
+
+            $this->logActivity('delete_media_verifier', 'Usuario eliminó el medio verificador con ID: ' . $fileId . ' del proyecto con ID: ' . $projectId);
+
+            return response()->json([
+                'message' => 'Medio verificador eliminado correctamente'
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el medio verificador: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Descargar un archivo por ID. 
+     */
+    public function downloadVerificationProject(int $fileId): BinaryFileResponse
+    {
+        return $this->projectService->downloadFileVerificationProject($fileId);
     }
 }

@@ -41,8 +41,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('isAuthenticated', [AuthController::class, 'isAuthenticated']);
 
     Route::apiResource('purchase-plans', PurchasePlanController::class);
-    Route::get('purchase-plans/token/{token}', [PurchasePlanController::class, 'showByToken'])->name('purchase-plans.show.token');
-    Route::put('purchase-plans/token/{token}', [PurchasePlanController::class, 'updateByToken'])->name('purchase-plans.update.token');
     Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
     Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
     Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
@@ -52,6 +50,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
+    Route::post('projects/verification', [ProjectController::class, 'verification'])->name('projects.verification');
+    Route::get('projects/verification/project/{projectId}/index', [ProjectController::class, 'showVerificationProject'])->name('projects.show.verification.project');
+    Route::delete('projects/{projectId}/verification/{fileId}', [ProjectController::class, 'deleteVerificationProject'])->name('projects.delete.verification.project');
+    Route::get('projects/verification/{fileId}/download', [ProjectController::class, 'downloadVerificationProject'])->name('projects.download.verification.project');
+
 
     Route::apiResource('item-purchases', ItemPurchaseController::class);
     Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');

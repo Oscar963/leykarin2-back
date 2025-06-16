@@ -19,4 +19,9 @@ class File extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function fileable()
+    {
+        return $this->morphTo();
+    }
 }
