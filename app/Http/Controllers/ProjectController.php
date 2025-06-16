@@ -213,7 +213,7 @@ class ProjectController extends Controller
     {
         try {
             $project = $this->projectService->getProjectById($projectId);
-            $mediaVerifiers = $project->mediaVerifiers;
+            $mediaVerifiers = $project->mediaVerifiers()->orderBy('id', 'DESC')->get();
             $this->logActivity('list_media_verifiers', 'Usuario listó los medios verificadores del proyecto con ID: ' . $projectId);
 
             return response()->json([
