@@ -35,7 +35,7 @@ class ItemPurchaseService
      */
     public function getAllItemPurchasesByQuery(?string $query, int $perPage = 15, ?string $projectToken = null)
     {
-        $project = $this->getItemPurchaseByToken($projectToken);
+        $project = $this->getProjectByToken($projectToken);
         $projectId = $project->id;
 
         $queryBuilder = ItemPurchase::with(['budgetAllocation', 'typePurchase'])
@@ -71,9 +71,14 @@ class ItemPurchaseService
      * @param string $token Token del proyecto
      * @return Project|null
      */
-    public function getItemPurchaseByToken($token)
+    public function getProjectById($id)
     {
-        return Project::where('token', $token)->first();
+        return Project::findOrFail($id);
+    }
+
+    public function getProjectByToken($token)
+    {
+        return Project::where('token', $token)->firstOrFail();
     }
 
     /**
@@ -84,7 +89,7 @@ class ItemPurchaseService
      */
     public function createItemPurchase(array $data)
     {
-        $project = $this->getItemPurchaseByToken($data['project_token']);
+        $project = $this->getProjectById($data['project_id']);
 
         $itemPurchase = new ItemPurchase();
         $itemPurchase->product_service = trim($data['product_service']);
@@ -115,7 +120,7 @@ class ItemPurchaseService
      */
     public function updateItemPurchase($id, array $data)
     {
-        $project = $this->getItemPurchaseByToken($data['project_token']);
+        $project = $this->getProjectById($data['project_id']);
         $itemPurchase = $this->getItemPurchaseById($id);
 
         $itemPurchase->product_service = trim($data['product_service']);

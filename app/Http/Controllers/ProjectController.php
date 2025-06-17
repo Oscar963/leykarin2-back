@@ -96,6 +96,9 @@ class ProjectController extends Controller
         }
     }
 
+    /**
+     * Mostrar un proyecto por token.
+     */
     public function showByToken(string $token): JsonResponse
     {
         try {

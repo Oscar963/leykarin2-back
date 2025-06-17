@@ -21,15 +21,13 @@ class BudgetAllocationController extends Controller
         $this->budgetAllocationService = $budgetAllocationService;
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         try {
-            $query = $request->query('q');
-            $perPage = $request->query('show');
-            $results = $this->budgetAllocationService->getAllBudgetAllocationsByQuery($query, $perPage);
+            $results = $this->budgetAllocationService->getAllBudgetAllocations();
 
             return response()->json([
-                'data' => BudgetAllocationResource::collection($results)->response()->getData(true)
+                'data' => BudgetAllocationResource::collection($results),
             ], 200);
         } catch (Exception $e) {
             return response()->json([

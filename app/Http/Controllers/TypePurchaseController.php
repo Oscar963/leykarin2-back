@@ -21,15 +21,13 @@ class TypePurchaseController extends Controller
         $this->typePurchaseService = $typePurchaseService;
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         try {
-            $query = $request->query('q');
-            $perPage = $request->query('show');
-            $results = $this->typePurchaseService->getAllTypePurchasesByQuery($query, $perPage);
+            $results = $this->typePurchaseService->getAllTypePurchases();
 
             return response()->json([
-                'data' => TypePurchaseResource::collection($results)->response()->getData(true)
+                'data' => TypePurchaseResource::collection($results),
             ], 200);
         } catch (Exception $e) {
             return response()->json([

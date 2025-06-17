@@ -34,10 +34,7 @@ class ItemPurchaseRequest extends FormRequest
             'cod_budget_allocation_type' => 'required|string',
             'budget_allocation_id' => 'required|exists:budget_allocations,id',
             'type_purchase_id' => 'required|exists:type_purchases,id',
-            'project_token' => [
-                $isUpdate ? 'nullable' : 'required',
-                'string',
-            ],
+            'project_id' => 'required|exists:projects,id', 
 
         ];
     }
@@ -64,8 +61,8 @@ class ItemPurchaseRequest extends FormRequest
             'total_price.min' => 'El precio total debe ser mayor o igual a 0',
             'status_id.required' => 'El estado es requerido',
             'status_id.exists' => 'El estado seleccionado no existe',
-            'project_token.required' => 'El token del proyecto es requerido',
-            'project_token.string' => 'El token del proyecto debe ser una cadena de caracteres',
+            'project_id.required' => 'El proyecto es requerido',
+            'project_id.exists' => 'El proyecto seleccionado no existe',
         ];
     }
 }
