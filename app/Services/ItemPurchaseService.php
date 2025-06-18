@@ -90,6 +90,9 @@ class ItemPurchaseService
     public function createItemPurchase(array $data)
     {
         $project = $this->getProjectById($data['project_id']);
+        
+        // Validar que no se exceda el presupuesto del FormF1
+        $this->validateBudgetLimit($project, $data);
 
         $itemPurchase = new ItemPurchase();
         $itemPurchase->product_service = trim($data['product_service']);
@@ -112,6 +115,35 @@ class ItemPurchaseService
     }
 
     /**
+     * Valida que el monto total de todos los proyectos no exceda el presupuesto del FormF1
+     *
+     * @param Project $project Proyecto al que se agregará el ítem
+     * @param array $data Datos del nuevo ítem
+     * @throws \Exception Si se excede el presupuesto
+     */
+    private function validateBudgetLimit(Project $project, array $data)
+    {
+        $purchasePlan = $project->purchasePlan;
+        
+        if (!$purchasePlan || !$purchasePlan->formF1) {
+            throw new \Exception('No se encontró el FormF1 asociado al plan de compra.');
+        }
+
+        $formF1Amount = $purchasePlan->formF1->amount;
+        $currentTotalAmount = $purchasePlan->getTotalAmount();
+        $newItemAmount = $data['amount_item'] * $data['quantity_item'];
+        $projectedTotal = $currentTotalAmount + $newItemAmount;
+
+        if ($projectedTotal > $formF1Amount) {
+            throw new \Exception(
+                "No es posible guardar el ítem de compra porque el monto total, incluyendo este ítem, excede el presupuesto disponible definido en el Formulario F1. " .
+                "(Presupuesto F1: $formF1Amount, Total Proyectado: $projectedTotal, Disponible: " . ($formF1Amount - $currentTotalAmount) . "). " .
+                "Por favor, revise el monto ingresado o ajuste otros ítems para no superar el límite presupuestario."
+            );
+        }
+    }
+
+    /**
      * Actualiza un item de compra existente
      *
      * @param int $id ID del item de compra
@@ -121,8 +153,10 @@ class ItemPurchaseService
     public function updateItemPurchase($id, array $data)
     {
         $project = $this->getProjectById($data['project_id']);
-        $itemPurchase = $this->getItemPurchaseById($id);
 
+        $this->validateBudgetLimit($project, $data); // Validar que no se exceda el presupuesto del FormF1
+
+        $itemPurchase = $this->getItemPurchaseById($id);
         $itemPurchase->product_service = trim($data['product_service']);
         $itemPurchase->quantity_item = $data['quantity_item'];
         $itemPurchase->amount_item = $data['amount_item'];

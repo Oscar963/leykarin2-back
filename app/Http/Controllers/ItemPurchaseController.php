@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Exports\ItemsPurchaseExport;
 
 class ItemPurchaseController extends Controller
@@ -53,7 +52,13 @@ class ItemPurchaseController extends Controller
                 'message' => 'Ítem de compra ha sido guardado exitosamente',
                 'data' => new ItemPurchaseResource($itemPurchase)
             ], 201);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'No es posible guardar el ítem de compra')) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 403);
+            }
+
             return response()->json([
                 'message' => 'Error al guardar el ítem de compra. ' . $e->getMessage()
             ], 500);
@@ -85,7 +90,13 @@ class ItemPurchaseController extends Controller
                 'message' => 'Ítem de compra ha sido actualizado exitosamente',
                 'data' => new ItemPurchaseResource($updated)
             ], 200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'No es posible actualizar el ítem de compra')) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 403);
+            }
+
             return response()->json([
                 'message' => 'Error al actualizar el ítem de compra. ' . $e->getMessage()
             ], 500);
