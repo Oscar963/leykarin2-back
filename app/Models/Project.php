@@ -68,7 +68,7 @@ class Project extends Model
     {
         return $this->itemPurchases->filter(function ($item) {
             $status = strtolower($item->statusItemPurchase->name ?? '');
-            return $status === 'pagado' || $status === 'comprado';
+            return $status === 'pagado';
         })->sum(function ($item) {
             return $item->getTotalAmount();
         });
@@ -84,7 +84,7 @@ class Project extends Model
         $totalItems = $items->count();
         $completedItems = $items->filter(function ($item) {
             $status = strtolower($item->statusItemPurchase->name ?? '');
-            return $status === 'pagado' || $status === 'comprado';
+            return $status === 'pagado';
         })->count();
 
         $percentage = ($completedItems / $totalItems) * 100;

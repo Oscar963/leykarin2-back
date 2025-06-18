@@ -13,6 +13,7 @@ class ProjectResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'amount' => $this->getTotalAmount(),
+            'amount_executed' => $this->getTotalItemsExecutedAmount(),
             'project_number' => $this->project_number,
             'token' => $this->token,
             'purchase_plan_id' => $this->purchase_plan_id,
