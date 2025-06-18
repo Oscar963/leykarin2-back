@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Direction;
 use App\Models\PurchasePlan;
+use App\Models\PurchasePlanStatus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -104,7 +105,6 @@ class AnnualPurchasePlanService
             'token' => $this->generateUniqueToken(),
             'date_created' => now(),
             'year' => $year,
-            'status_purchase_plan_id' => 1, // Borrador
             'direction_id' => $direction->id,
             'created_by' => $direction->director_id,
         ];
@@ -112,6 +112,10 @@ class AnnualPurchasePlanService
         if ($existingPlan && $force) {
             // Actualizar plan existente
             $existingPlan->update($planData);
+            
+            // Crear estado inicial si no existe
+            $this->createInitialStatus($existingPlan);
+            
             Log::info("Plan de compra actualizado para: {$direction->name}");
             return [
                 'created' => false,
@@ -122,6 +126,10 @@ class AnnualPurchasePlanService
         } else {
             // Crear nuevo plan
             $newPlan = PurchasePlan::create($planData);
+            
+            // Crear estado inicial
+            $this->createInitialStatus($newPlan);
+            
             Log::info("Plan de compra creado para: {$direction->name}");
             return [
                 'created' => true,
@@ -129,6 +137,34 @@ class AnnualPurchasePlanService
                 'plan' => $newPlan,
                 'message' => "Plan creado para {$direction->name}"
             ];
+        }
+    }
+
+    /**
+     * Crea el estado inicial (Borrador) para un plan de compra
+     *
+     * @param PurchasePlan $purchasePlan
+     * @return void
+     */
+    private function createInitialStatus(PurchasePlan $purchasePlan): void
+    {
+        // Verificar si ya existe un estado inicial
+        $existingStatus = PurchasePlanStatus::where('purchase_plan_id', $purchasePlan->id)
+            ->where('status_purchase_plan_id', 1) // Borrador
+            ->first();
+
+        if (!$existingStatus) {
+            PurchasePlanStatus::create([
+                'purchase_plan_id' => $purchasePlan->id,
+                'status_purchase_plan_id' => 1, // Borrador
+                'sending_date' => now(),
+                'plan_name' => $purchasePlan->name,
+                'plan_year' => $purchasePlan->year,
+                'total_amount' => 0,
+                'available_budget' => 0,
+                'sending_comment' => 'Plan de compra creado automáticamente en estado borrador',
+                'created_by' => $purchasePlan->created_by,
+            ]);
         }
     }
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\FormF1Controller;
 use App\Http\Controllers\ItemPurchaseController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchasePlanController;
+use App\Http\Controllers\PurchasePlanStatusController;
 use App\Http\Controllers\StatusItemPurchaseController;
 use App\Http\Controllers\StatusPurchasePlanController;
 use App\Http\Controllers\TypeProjectController;
@@ -42,11 +43,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('purchase-plans', PurchasePlanController::class);
     Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
-    Route::post('purchase-plans/send/{token}', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
+    Route::post('purchase-plans/{token}/send', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
     Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
     Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
     Route::get('purchase-plans/year/{year}/index', [PurchasePlanController::class, 'indexByYear'])->name('purchase-plans.index.year');
     Route::get('purchase-plans/year/{year}/user', [PurchasePlanController::class, 'indexByYearForUser'])->name('purchase-plans.index.year.user');
+
+    // Rutas para el historial de estados de planes de compra
+    Route::get('purchase-plans/{purchasePlanId}/status-history', [PurchasePlanStatusController::class, 'getStatusHistory'])->name('purchase-plans.status-history');
+    Route::get('purchase-plans/{purchasePlanId}/current-status', [PurchasePlanStatusController::class, 'getCurrentStatus'])->name('purchase-plans.current-status');
+    Route::post('purchase-plan-statuses', [PurchasePlanStatusController::class, 'store'])->name('purchase-plan-statuses.store');
+    Route::get('purchase-plan-statuses/{id}', [PurchasePlanStatusController::class, 'show'])->name('purchase-plan-statuses.show');
 
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');

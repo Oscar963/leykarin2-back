@@ -25,7 +25,6 @@ class CreatePurchasePlansTable extends Migration
             // Relaciones con otras tablas
             $table->foreignId('decreto_id')->nullable()->constrained('files')->onDelete('cascade'); // Decreto aprobado
             $table->foreignId('form_f1_id')->nullable()->unique()->constrained('form_f1')->onDelete('cascade'); // Formulario F1 (relación 1:1)
-            $table->foreignId('status_purchase_plan_id')->constrained('status_purchase_plans')->onDelete('cascade'); // Estado del plan de compra
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null'); // Usuario que crea el plan de compra
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null'); // Usuario que actualiza el plan de compra           
             $table->foreignId('direction_id')->constrained('directions')->onDelete('cascade'); // Dirección del plan de compra

@@ -18,7 +18,6 @@ class PurchasePlan extends Model
         'modification_date',
         'decreto_id',
         'form_f1_id',
-        'status_purchase_plan_id',
         'created_by',
         'updated_by',
         'direction_id'
@@ -29,9 +28,28 @@ class PurchasePlan extends Model
         return $this->belongsTo(Direction::class);
     }
 
-    public function status()
+    /**
+     * Relación muchos a muchos con estados a través de la tabla pivote
+     */
+    public function statuses()
     {
-        return $this->belongsTo(StatusPurchasePlan::class, 'status_purchase_plan_id');
+        return $this->hasMany(PurchasePlanStatus::class);
+    }
+
+    /**
+     * Obtiene el estado actual del plan de compra
+     */
+    public function currentStatus()
+    {
+        return $this->hasOne(PurchasePlanStatus::class)->latest();
+    }
+
+    /**
+     * Obtiene el historial completo de estados
+     */
+    public function statusHistory()
+    {
+        return $this->hasMany(PurchasePlanStatus::class)->with(['status', 'createdBy'])->orderBy('created_at', 'asc');
     }
 
     public function createdBy()
@@ -115,4 +133,29 @@ class PurchasePlan extends Model
         return fmod($avg, 1) == 0.0 ? (int)$avg : round($avg, 2);
     }
 
+    /**
+     * Obtiene el estado actual del plan de compra
+     */
+    public function getCurrentStatus()
+    {
+        return $this->currentStatus()->with('status')->first();
+    }
+
+    /**
+     * Obtiene el ID del estado actual
+     */
+    public function getCurrentStatusId()
+    {
+        $currentStatus = $this->getCurrentStatus();
+        return $currentStatus ? $currentStatus->status_purchase_plan_id : null;
+    }
+
+    /**
+     * Obtiene el nombre del estado actual
+     */
+    public function getCurrentStatusName()
+    {
+        $currentStatus = $this->getCurrentStatus();
+        return $currentStatus && $currentStatus->status ? $currentStatus->status->name : null;
+    }
 }

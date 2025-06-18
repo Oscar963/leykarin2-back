@@ -95,10 +95,18 @@ class PurchasePlanService
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $data['year'];
         $purchasePlan->form_f1_id = $formF1->id;
-        $purchasePlan->status_purchase_plan_id = 1; // Borrador
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
         $purchasePlan->save();
+
+        // Crear el estado inicial (Borrador)
+        $this->createPurchasePlanStatus($purchasePlan->id, 1, [
+            'plan_name' => $purchasePlan->name,
+            'plan_year' => $purchasePlan->year,
+            'total_amount' => 0,
+            'available_budget' => $formF1->amount ?? 0,
+            'sending_comment' => 'Plan de compra creado en estado borrador'
+        ]);
 
         return $purchasePlan;
     }
@@ -115,10 +123,18 @@ class PurchasePlanService
         $purchasePlan->date_created = now();
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $year;
-        $purchasePlan->status_purchase_plan_id = 1; // Borrador
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
         $purchasePlan->save();
+
+        // Crear el estado inicial (Borrador)
+        $this->createPurchasePlanStatus($purchasePlan->id, 1, [
+            'plan_name' => $purchasePlan->name,
+            'plan_year' => $purchasePlan->year,
+            'total_amount' => 0,
+            'available_budget' => 0,
+            'sending_comment' => 'Plan de compra creado automáticamente en estado borrador'
+        ]);
 
         return $purchasePlan;
     }
@@ -153,10 +169,17 @@ class PurchasePlanService
     /**
      * Actualiza el estado de un plan de compra
      */
-    public function sendPurchasePlan($purchasePlan, $statusId)
+    public function sendPurchasePlan($purchasePlan, $statusId, $additionalData = [])
     {
-        $purchasePlan->status_purchase_plan_id = $statusId;
-        $purchasePlan->save();
+        $data = array_merge([
+            'plan_name' => $purchasePlan->name,
+            'plan_year' => $purchasePlan->year,
+            'total_amount' => $purchasePlan->getTotalAmount(),
+            'available_budget' => $purchasePlan->getAvailableBudget(),
+            'sending_comment' => 'Plan de compras enviado para aprobación de la administración municipal'
+        ], $additionalData);
+
+        $this->createPurchasePlanStatus($purchasePlan->id, $statusId, $data);
     }
 
     /**
@@ -165,9 +188,38 @@ class PurchasePlanService
     public function updatePurchasePlanStatus($id, $data)
     {
         $purchasePlan = $this->getPurchasePlanById($id);
-        $purchasePlan->status_purchase_plan_id = $data['status_purchase_plan_id'];
-        $purchasePlan->save();
+        
+        $additionalData = [
+            'plan_name' => $purchasePlan->name,
+            'plan_year' => $purchasePlan->year,
+            'total_amount' => $purchasePlan->getTotalAmount(),
+            'available_budget' => $purchasePlan->getAvailableBudget(),
+            'sending_comment' => $data['sending_comment'] ?? 'Estado actualizado'
+        ];
+
+        $this->createPurchasePlanStatus($purchasePlan->id, $data['status_purchase_plan_id'], $additionalData);
+        
         return $purchasePlan;
+    }
+
+    /**
+     * Crea un nuevo registro de estado para un plan de compra
+     */
+    private function createPurchasePlanStatus($purchasePlanId, $statusId, $data = [])
+    {
+        $purchasePlanStatus = new \App\Models\PurchasePlanStatus();
+        $purchasePlanStatus->purchase_plan_id = $purchasePlanId;
+        $purchasePlanStatus->status_purchase_plan_id = $statusId;
+        $purchasePlanStatus->sending_date = $data['sending_date'] ?? now();
+        $purchasePlanStatus->plan_name = $data['plan_name'] ?? null;
+        $purchasePlanStatus->plan_year = $data['plan_year'] ?? null;
+        $purchasePlanStatus->total_amount = $data['total_amount'] ?? 0;
+        $purchasePlanStatus->available_budget = $data['available_budget'] ?? 0;
+        $purchasePlanStatus->sending_comment = $data['sending_comment'] ?? null;
+        $purchasePlanStatus->created_by = auth()->id();
+        $purchasePlanStatus->save();
+
+        return $purchasePlanStatus;
     }
 
     /**

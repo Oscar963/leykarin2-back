@@ -268,7 +268,18 @@ class PurchasePlanController extends Controller
     {
         try {
             $purchasePlan = $this->purchasePlanService->getPurchasePlanByToken($token);
-            $this->purchasePlanService->sendPurchasePlan($purchasePlan, $request->status_id);
+            
+            // Preparar datos adicionales para el estado
+            $additionalData = [
+                'sending_date' => $request->sending_date ?? now(),
+                'plan_name' => $request->plan_name ?? $purchasePlan->name,
+                'plan_year' => $request->plan_year ?? $purchasePlan->year,
+                'total_amount' => $request->total_amount ?? $purchasePlan->getTotalAmount(),
+                'available_budget' => $request->available_budget ?? $purchasePlan->getAvailableBudget(),
+                'sending_comment' => $request->sending_comment ?? 'Plan de compras enviado para aprobación de la administración municipal'
+            ];
+
+            $this->purchasePlanService->sendPurchasePlan($purchasePlan, $request->status_id, $additionalData);
 
             $this->sendPurchasePlanReceiptEmail($purchasePlan);
             $this->logActivity('send_purchase_plan', 'Usuario envió el plan de compra con ID: ' . $purchasePlan->id);
@@ -291,6 +302,7 @@ class PurchasePlanController extends Controller
         try {
             $validated = $request->validate([
                 'status_purchase_plan_id' => 'required',
+                'sending_comment' => 'nullable|string',
             ]);
 
             $purchasePlan = $this->purchasePlanService->getPurchasePlanById($id);
