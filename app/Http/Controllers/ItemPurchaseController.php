@@ -29,7 +29,7 @@ class ItemPurchaseController extends Controller
         try {
             $query = $request->query('q');
             $perPage = $request->query('show');
-            $projectToken = $request->query('project_token');
+            $projectToken = $request->query('projectToken');
 
             $results = $this->itemPurchaseService->getAllItemPurchasesByQuery($query, $perPage, $projectToken);
 
