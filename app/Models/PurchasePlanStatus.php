@@ -13,18 +13,12 @@ class PurchasePlanStatus extends Model
         'purchase_plan_id',
         'status_purchase_plan_id',
         'sending_date',
-        'plan_name',
-        'plan_year',
-        'total_amount',
-        'available_budget',
         'sending_comment',
         'created_by'
     ];
 
     protected $casts = [
-        'sending_date' => 'datetime',
-        'total_amount' => 'decimal:2',
-        'available_budget' => 'decimal:2',
+        'sending_date' => 'datetime',       
     ];
 
     /**

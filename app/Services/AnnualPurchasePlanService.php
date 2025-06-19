@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Direction;
+use App\Models\HistoryPurchaseHistory;
 use App\Models\PurchasePlan;
 use App\Models\PurchasePlanStatus;
 use Illuminate\Support\Facades\Log;
@@ -116,6 +117,18 @@ class AnnualPurchasePlanService
             // Crear estado inicial si no existe
             $this->createInitialStatus($existingPlan);
             
+            // Registrar en el historial
+            HistoryPurchaseHistory::logAction(
+                $existingPlan->id,
+                'update_auto',
+                'Plan de compra actualizado automáticamente',
+                [
+                    'name' => $existingPlan->name,
+                    'year' => $existingPlan->year,
+                    'direction' => $direction->name
+                ]
+            );
+            
             Log::info("Plan de compra actualizado para: {$direction->name}");
             return [
                 'created' => false,
@@ -129,6 +142,18 @@ class AnnualPurchasePlanService
             
             // Crear estado inicial
             $this->createInitialStatus($newPlan);
+            
+            // Registrar en el historial
+            HistoryPurchaseHistory::logAction(
+                $newPlan->id,
+                'create_auto',
+                'Plan de compra creado automáticamente',
+                [
+                    'name' => $newPlan->name,
+                    'year' => $newPlan->year,
+                    'direction' => $direction->name
+                ]
+            );
             
             Log::info("Plan de compra creado para: {$direction->name}");
             return [

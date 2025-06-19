@@ -39,4 +39,14 @@ class ItemPurchase extends Model
     {
         return $this->amount_item * $this->quantity_item;
     }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 }

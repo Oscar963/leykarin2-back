@@ -13,11 +13,7 @@ La nueva tabla incluye los siguientes campos:
 - `purchase_plan_id` - ID del plan de compra
 - `status_purchase_plan_id` - ID del estado
 - `sending_date` - Fecha de envío/cambio de estado
-- `plan_name` - Nombre del plan en el momento del cambio
-- `plan_year` - Año del plan
-- `total_amount` - Monto total del plan
-- `available_budget` - Presupuesto disponible
-- `sending_comment` - Comentario del cambio de estado
+- `sending_comment` - Comentario del cambio de estado 
 - `created_by` - Usuario que realizó el cambio
 - `created_at` y `updated_at` - Timestamps
 
@@ -117,10 +113,6 @@ php artisan migrate
 const formData = new FormData();
 formData.append('status_id', '2'); // Para aprobación
 formData.append('sending_date', new Date().toISOString());
-formData.append('plan_name', plan.name);
-formData.append('plan_year', plan.year.toString());
-formData.append('total_amount', plan.total_amount?.toString() || '0');
-formData.append('available_budget', plan.available_budget?.toString() || '0');
 formData.append('sending_comment', 'Plan de compras enviado para aprobación de la administración municipal');
 
 fetch(`/api/purchase-plans/${token}/send`, {

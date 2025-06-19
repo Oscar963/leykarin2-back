@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\File;
 use App\Models\FormF1;
+use App\Models\HistoryPurchaseHistory;
 use App\Models\PurchasePlan;
+use App\Models\PurchasePlanStatus;
 use Illuminate\Support\Str;
 
 /**
@@ -101,12 +103,21 @@ class PurchasePlanService
 
         // Crear el estado inicial (Borrador)
         $this->createPurchasePlanStatus($purchasePlan->id, 1, [
-            'plan_name' => $purchasePlan->name,
-            'plan_year' => $purchasePlan->year,
-            'total_amount' => 0,
-            'available_budget' => $formF1->amount ?? 0,
             'sending_comment' => 'Plan de compra creado en estado borrador'
         ]);
+
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'create',
+            'Plan de compra creado',
+            [
+                'name' => $purchasePlan->name,
+                'year' => $purchasePlan->year,
+                'direction' => $direction->name,
+                'form_f1_id' => $formF1->id
+            ]
+        );
 
         return $purchasePlan;
     }
@@ -129,12 +140,20 @@ class PurchasePlanService
 
         // Crear el estado inicial (Borrador)
         $this->createPurchasePlanStatus($purchasePlan->id, 1, [
-            'plan_name' => $purchasePlan->name,
-            'plan_year' => $purchasePlan->year,
-            'total_amount' => 0,
-            'available_budget' => 0,
             'sending_comment' => 'Plan de compra creado automáticamente en estado borrador'
         ]);
+
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'create_auto',
+            'Plan de compra creado automáticamente',
+            [
+                'name' => $purchasePlan->name,
+                'year' => $purchasePlan->year,
+                'direction' => $direction->name
+            ]
+        );
 
         return $purchasePlan;
     }
@@ -145,6 +164,10 @@ class PurchasePlanService
     public function updatePurchasePlan($id, array $data)
     {
         $purchasePlan = $this->getPurchasePlanById($id);
+        $oldData = [
+            'name' => $purchasePlan->name,
+            'year' => $purchasePlan->year
+        ];
 
         // Actualizar datos básicos del plan
         $purchasePlan->name = $data['name'];
@@ -163,63 +186,22 @@ class PurchasePlanService
         }
 
         $purchasePlan->save();
+
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'update',
+            'Plan de compra actualizado',
+            [
+                'old_data' => $oldData,
+                'new_data' => [
+                    'name' => $purchasePlan->name,
+                    'year' => $purchasePlan->year
+                ]
+            ]
+        );
+
         return $purchasePlan;
-    }
-
-    /**
-     * Actualiza el estado de un plan de compra
-     */
-    public function sendPurchasePlan($purchasePlan, $statusId, $additionalData = [])
-    {
-        $data = array_merge([
-            'plan_name' => $purchasePlan->name,
-            'plan_year' => $purchasePlan->year,
-            'total_amount' => $purchasePlan->getTotalAmount(),
-            'available_budget' => $purchasePlan->getAvailableBudget(),
-            'sending_comment' => 'Plan de compras enviado para aprobación de la administración municipal'
-        ], $additionalData);
-
-        $this->createPurchasePlanStatus($purchasePlan->id, $statusId, $data);
-    }
-
-    /**
-     * Actualiza el estado de un plan de compra por ID
-     */
-    public function updatePurchasePlanStatus($id, $data)
-    {
-        $purchasePlan = $this->getPurchasePlanById($id);
-        
-        $additionalData = [
-            'plan_name' => $purchasePlan->name,
-            'plan_year' => $purchasePlan->year,
-            'total_amount' => $purchasePlan->getTotalAmount(),
-            'available_budget' => $purchasePlan->getAvailableBudget(),
-            'sending_comment' => $data['sending_comment'] ?? 'Estado actualizado'
-        ];
-
-        $this->createPurchasePlanStatus($purchasePlan->id, $data['status_purchase_plan_id'], $additionalData);
-        
-        return $purchasePlan;
-    }
-
-    /**
-     * Crea un nuevo registro de estado para un plan de compra
-     */
-    private function createPurchasePlanStatus($purchasePlanId, $statusId, $data = [])
-    {
-        $purchasePlanStatus = new \App\Models\PurchasePlanStatus();
-        $purchasePlanStatus->purchase_plan_id = $purchasePlanId;
-        $purchasePlanStatus->status_purchase_plan_id = $statusId;
-        $purchasePlanStatus->sending_date = $data['sending_date'] ?? now();
-        $purchasePlanStatus->plan_name = $data['plan_name'] ?? null;
-        $purchasePlanStatus->plan_year = $data['plan_year'] ?? null;
-        $purchasePlanStatus->total_amount = $data['total_amount'] ?? 0;
-        $purchasePlanStatus->available_budget = $data['available_budget'] ?? 0;
-        $purchasePlanStatus->sending_comment = $data['sending_comment'] ?? null;
-        $purchasePlanStatus->created_by = auth()->id();
-        $purchasePlanStatus->save();
-
-        return $purchasePlanStatus;
     }
 
     /**
@@ -228,7 +210,86 @@ class PurchasePlanService
     public function deletePurchasePlan($id)
     {
         $purchasePlan = $this->getPurchasePlanById($id);
+        $planData = [
+            'name' => $purchasePlan->name,
+            'year' => $purchasePlan->year,
+            'direction' => $purchasePlan->direction->name ?? 'N/A'
+        ];
+
         $purchasePlan->delete();
+
+        // Registrar en el historial (antes de eliminar)
+        HistoryPurchaseHistory::logAction(
+            $id,
+            'delete',
+            'Plan de compra eliminado',
+            $planData
+        );
+    }
+
+    /**
+     * Actualiza el estado de un plan de compra
+     */
+    public function sendPurchasePlan($purchasePlan, $statusId, $request = []) 
+    {       
+        $oldStatusId = $purchasePlan->getCurrentStatusId();
+        $oldStatusName = $purchasePlan->getCurrentStatusName();
+        
+        $this->createPurchasePlanStatus($purchasePlan->id, $statusId, $request);
+
+        $newStatus = \App\Models\StatusPurchasePlan::find($statusId);
+        
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'status_change',
+            "Estado cambiado de '{$oldStatusName}' a '{$newStatus->name}'",
+            [
+                'old_status' => [
+                    'id' => $oldStatusId,
+                    'name' => $oldStatusName
+                ],
+                'new_status' => [
+                    'id' => $statusId,
+                    'name' => $newStatus->name
+                ],
+                'request_data' => $request
+            ]
+        );
+    }
+
+    /**
+     * Actualiza el estado de un plan de compra por ID
+     */
+    public function updatePurchasePlanStatus($id, $data)
+    {
+        $purchasePlan = $this->getPurchasePlanById($id);
+        $oldStatusId = $purchasePlan->getCurrentStatusId();
+        $oldStatusName = $purchasePlan->getCurrentStatusName();
+        
+        $this->createPurchasePlanStatus($purchasePlan->id, $data['status_purchase_plan_id'], $data);
+
+        $newStatus = \App\Models\StatusPurchasePlan::find($data['status_purchase_plan_id']);
+
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'status_change',
+            "Estado actualizado de '{$oldStatusName}' a '{$newStatus->name}'",
+            [
+                'old_status' => [
+                    'id' => $oldStatusId,
+                    'name' => $oldStatusName
+                ],
+                'new_status' => [
+                    'id' => $data['status_purchase_plan_id'],
+                    'name' => $newStatus->name
+                ],
+                'comment' => $data['sending_comment'] ?? null
+            ]
+        );
+
+        return $purchasePlan;
     }
 
     /**
@@ -241,6 +302,19 @@ class PurchasePlanService
         $purchasePlan = $this->getPurchasePlanByToken($data['token_purchase_plan']);
         $purchasePlan->decreto_id = $file->id;
         $purchasePlan->save();
+
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'file_upload',
+            'Archivo de decreto subido',
+            [
+                'file_name' => $file->name,
+                'file_size' => $file->size,
+                'file_type' => $file->type,
+                'file_url' => $file->url
+            ]
+        );
 
         return $purchasePlan;
     }
@@ -256,7 +330,37 @@ class PurchasePlanService
         $purchasePlan->form_f1_id = $formF1->id;
         $purchasePlan->save();
 
+        // Registrar en el historial
+        HistoryPurchaseHistory::logAction(
+            $purchasePlan->id,
+            'file_upload',
+            'Archivo Form F1 subido',
+            [
+                'file_name' => $formF1->name,
+                'file_size' => $formF1->size,
+                'file_type' => $formF1->type,
+                'file_url' => $formF1->url,
+                'amount' => $formF1->amount
+            ]
+        );
+
         return $purchasePlan;
+    }
+
+    /**
+     * Crea un nuevo registro de estado para un plan de compra
+     */
+    private function createPurchasePlanStatus($purchasePlanId, $statusId, $data = [])
+    {
+        $purchasePlanStatus = new PurchasePlanStatus();
+        $purchasePlanStatus->purchase_plan_id = $purchasePlanId;
+        $purchasePlanStatus->status_purchase_plan_id = $statusId;
+        $purchasePlanStatus->sending_date = now();
+        $purchasePlanStatus->sending_comment = $data['sending_comment'] ?? null;
+        $purchasePlanStatus->created_by = auth()->id();
+        $purchasePlanStatus->save();
+
+        return $purchasePlanStatus;
     }
 
     /**

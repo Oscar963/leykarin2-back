@@ -16,7 +16,6 @@ class FileResource extends JsonResource
             'type' => $this->getFriendlyFileType($this->type),
             'size' => round($this->size / (1024 * 1024), 2), // Tamaño en MB, redondeado a 2 decimales
             'created_at' => $this->created_at ? $this->created_at->format('d-m-Y H:i:s') : null,
-            'updated_at' => $this->updated_at ? $this->updated_at->format('d-m-Y H:i:s') : null,
             'created_by' => new UserResource($this->createdBy),
             'updated_by' => $this->updatedBy ? new UserResource($this->updatedBy) : null,
         ];
@@ -41,8 +40,8 @@ class FileResource extends JsonResource
             'image/gif' => 'Imagen GIF',
             'image/bmp' => 'Imagen BMP',
             'image/webp' => 'Imagen WebP',
-            'application/zip' => 'Archivo ZIP', 
-            'application/octet-stream' => 'Archivo ZIP', 
+            'application/zip' => 'Archivo ZIP',
+            'application/octet-stream' => 'Archivo ZIP',
             'application/x-zip-compressed' => 'Archivo ZIP',
             // Agregar más tipos según sea necesario
         ];

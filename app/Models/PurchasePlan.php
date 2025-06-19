@@ -14,8 +14,6 @@ class PurchasePlan extends Model
         'token',
         'date_created',
         'year',
-        'sending_date',
-        'modification_date',
         'decreto_id',
         'form_f1_id',
         'created_by',
@@ -50,6 +48,14 @@ class PurchasePlan extends Model
     public function statusHistory()
     {
         return $this->hasMany(PurchasePlanStatus::class)->with(['status', 'createdBy'])->orderBy('created_at', 'asc');
+    }
+
+    /**
+     * Obtiene el historial completo de movimientos
+     */
+    public function movementHistory()
+    {
+        return $this->hasMany(HistoryPurchaseHistory::class)->with(['status', 'user'])->orderBy('date', 'desc');
     }
 
     public function createdBy()

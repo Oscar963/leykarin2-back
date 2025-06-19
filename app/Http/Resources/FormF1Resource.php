@@ -19,7 +19,6 @@ class FormF1Resource extends JsonResource
             'created_by' => new UserResource($this->createdBy),
             'updated_by' => new UserResource($this->updatedBy),
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
         ];
     }
 } 

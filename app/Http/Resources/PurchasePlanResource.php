@@ -16,15 +16,7 @@ class PurchasePlanResource extends JsonResource
             'year' => $this->year,
             'decreto' => $this->decreto,
             'formF1' => new FormF1Resource($this->formF1),
-            'sending_date' => $this->sending_date,
-            'modification_date' => $this->modification_date,
-            'current_status' => $this->whenLoaded('currentStatus', function() {
-                return [
-                    'id' => $this->getCurrentStatusId(),
-                    'name' => $this->getCurrentStatusName(),
-                    'status_data' => $this->getCurrentStatus()
-                ];
-            }),
+            'current_status' => new PurchasePlanStatusResource($this->currentStatus),
             'status_history' => $this->whenLoaded('statusHistory', function() {
                 return $this->statusHistory->map(function($status) {
                     return [
@@ -42,8 +34,25 @@ class PurchasePlanResource extends JsonResource
                     ];
                 });
             }),
-            'created_by' => $this->createdBy,
-            'updated_by' => $this->updatedBy,
+            'movement_history' => $this->whenLoaded('movementHistory', function() {
+                return $this->movementHistory->map(function($movement) {
+                    return [
+                        'id' => $movement->id,
+                        'date' => $movement->date,
+                        'description' => $movement->description,
+                        'user' => $movement->user,
+                        'action_type' => $movement->action_type,
+                        'details' => $movement->details,
+                        'status' => $movement->status ? [
+                            'id' => $movement->status->id,
+                            'name' => $movement->status->name
+                        ] : null,
+                        'created_at' => $movement->created_at
+                    ];
+                });
+            }),
+            'created_by' => new UserResource($this->createdBy),
+            'updated_by' => new UserResource($this->updatedBy),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'projects' => ProjectResource::collection($this->whenLoaded('projects')),

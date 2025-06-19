@@ -109,6 +109,7 @@ class ItemPurchaseService
         $itemPurchase->project_id = $project->id;
         $itemPurchase->budget_allocation_id = $data['budget_allocation_id'];
         $itemPurchase->type_purchase_id = $data['type_purchase_id'];
+        $itemPurchase->created_by = auth()->id();
         $itemPurchase->save();
 
         return $itemPurchase;
@@ -170,6 +171,7 @@ class ItemPurchaseService
         $itemPurchase->project_id = $project->id;
         $itemPurchase->budget_allocation_id = $data['budget_allocation_id'];
         $itemPurchase->type_purchase_id = $data['type_purchase_id'];
+        $itemPurchase->updated_by = auth()->id();
         $itemPurchase->save();
 
         return $itemPurchase;
@@ -223,6 +225,7 @@ class ItemPurchaseService
     {
         $itemPurchase = $this->getItemPurchaseById($id);
         $itemPurchase->status_item_purchase_id = $data['status_item_purchase_id'];
+        $itemPurchase->updated_by = auth()->id();
         $itemPurchase->save();
         return $itemPurchase;
     }

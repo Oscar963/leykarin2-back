@@ -23,11 +23,19 @@ class StatusItemPurchasesSeeder extends Seeder
         ]);
 
         StatusItemPurchase::create([
-            'name' => 'Comprado',
+            'name' => 'Comprado sin recepción del producto',
+        ]);
+
+        StatusItemPurchase::create([
+            'name' => 'Comprado con recepción del producto',
         ]);
 
         StatusItemPurchase::create([
             'name' => 'Pagado',
+        ]);
+
+        StatusItemPurchase::create([
+            'name' => 'Rendido',
         ]);
     }
 }

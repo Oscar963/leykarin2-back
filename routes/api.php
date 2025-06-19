@@ -18,6 +18,7 @@ use App\Http\Controllers\UnitPurchasingController;
 use App\Http\Controllers\UserController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HistoryPurchaseHistoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +55,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('purchase-plans/{purchasePlanId}/current-status', [PurchasePlanStatusController::class, 'getCurrentStatus'])->name('purchase-plans.current-status');
     Route::post('purchase-plan-statuses', [PurchasePlanStatusController::class, 'store'])->name('purchase-plan-statuses.store');
     Route::get('purchase-plan-statuses/{id}', [PurchasePlanStatusController::class, 'show'])->name('purchase-plan-statuses.show');
+
+    // Rutas para el historial de movimientos de planes de compra
+    Route::get('purchase-plans/{purchasePlanId}/movement-history', [HistoryPurchaseHistoryController::class, 'getMovementHistory'])->name('purchase-plans.movement-history');
+    Route::get('purchase-plans/{purchasePlanId}/movement-statistics', [HistoryPurchaseHistoryController::class, 'getStatistics'])->name('purchase-plans.movement-statistics');
+    Route::get('purchase-plans/{purchasePlanId}/movement-export', [HistoryPurchaseHistoryController::class, 'export'])->name('purchase-plans.movement-export');
+    Route::get('movement-history/{id}', [HistoryPurchaseHistoryController::class, 'show'])->name('movement-history.show');
 
     Route::apiResource('projects', ProjectController::class);
     Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');

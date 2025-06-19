@@ -65,10 +65,6 @@ class PurchasePlanStatusController extends Controller
                 'purchase_plan_id' => 'required|exists:purchase_plans,id',
                 'status_purchase_plan_id' => 'required|exists:status_purchase_plans,id',
                 'sending_date' => 'nullable|date',
-                'plan_name' => 'nullable|string',
-                'plan_year' => 'nullable|integer',
-                'total_amount' => 'nullable|numeric',
-                'available_budget' => 'nullable|numeric',
                 'sending_comment' => 'nullable|string',
             ]);
 

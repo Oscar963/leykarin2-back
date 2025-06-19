@@ -20,7 +20,6 @@ class CreatePurchasePlansTable extends Migration
             $table->dateTime('date_created');
             $table->year('year');
             $table->dateTime('sending_date')->nullable();
-            $table->dateTime('modification_date')->nullable();
 
             // Relaciones con otras tablas
             $table->foreignId('decreto_id')->nullable()->constrained('files')->onDelete('cascade'); // Decreto aprobado
