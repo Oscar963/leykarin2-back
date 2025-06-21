@@ -42,13 +42,14 @@ class HistoryPurchaseHistory extends Model
     public static function logAction($purchasePlanId, $actionType, $description, $details = null)
     {
         $user = auth()->user();
+        $purchasePlan = PurchasePlan::find($purchasePlanId);
         
         return self::create([
             'date' => now(),
             'description' => $description,
             'user' => $user ? $user->name : 'Sistema',
             'purchase_plan_id' => $purchasePlanId,
-            'status_purchase_plan_id' => PurchasePlan::find($purchasePlanId)->getCurrentStatusId() ?? 1,
+            'status_purchase_plan_id' => $purchasePlan ? $purchasePlan->getCurrentStatusId() : 1,
             'action_type' => $actionType,
             'details' => $details
         ]);

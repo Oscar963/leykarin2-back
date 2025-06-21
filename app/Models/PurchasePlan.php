@@ -12,7 +12,6 @@ class PurchasePlan extends Model
     protected $fillable = [
         'name',
         'token',
-        'date_created',
         'year',
         'decreto_id',
         'form_f1_id',

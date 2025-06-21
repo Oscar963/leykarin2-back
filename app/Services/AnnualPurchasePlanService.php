@@ -102,9 +102,8 @@ class AnnualPurchasePlanService
 
         // Preparar datos del plan de compra
         $planData = [
-            'name' => "{$direction->name} - {$year}",
+            'name' => "{$direction->name}",
             'token' => $this->generateUniqueToken(),
-            'date_created' => now(),
             'year' => $year,
             'direction_id' => $direction->id,
             'created_by' => $direction->director_id,

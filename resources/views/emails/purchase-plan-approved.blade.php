@@ -109,7 +109,7 @@
                 <h3>Detalles del Plan de Compra</h3>
                 <p><strong>Año:</strong> {{ $purchasePlan->year }}</p>
                 <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->amount_F1, 0, ',', '.') }}</p>
-                <p><strong>Fecha de creación:</strong> {{ $purchasePlan->date_created }}</p>
+                <p><strong>Fecha de creación:</strong> {{ $purchasePlan->created_at }}</p> 
                 <p><strong>Estado actual:</strong> Aprobado</p>
             </div>
 

@@ -11,11 +11,11 @@ class PurchasePlanResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'date_created' => $this->date_created,
             'token' => $this->token,
             'year' => $this->year,
             'decreto' => $this->decreto,
             'formF1' => new FormF1Resource($this->formF1),
+            'direction' => new DirectionResource($this->direction),
             'current_status' => new PurchasePlanStatusResource($this->currentStatus),
             'status_history' => $this->whenLoaded('statusHistory', function() {
                 return $this->statusHistory->map(function($status) {

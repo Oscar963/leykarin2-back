@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Direction;
 use App\Models\File;
 use App\Models\FormF1;
 use App\Models\HistoryPurchaseHistory;
@@ -19,11 +20,14 @@ class PurchasePlanService
      */
     public function getAllPurchasePlansByQuery(?string $query, int $perPage = 50)
     {
-        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC');
+        $queryBuilder = PurchasePlan::with('direction')->orderBy('created_at', 'DESC');
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%");
+                $q->orWhereHas('direction', function ($directionQuery) use ($query) {
+                    $directionQuery->where('alias', 'LIKE', "%{$query}%");
+                });
             });
         }
 
@@ -41,6 +45,9 @@ class PurchasePlanService
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%");
+                $q->orWhereHas('direction', function ($directionQuery) use ($query) {
+                    $directionQuery->where('alias', 'LIKE', "%{$query}%");
+                });
             });
         }
 
@@ -88,15 +95,12 @@ class PurchasePlanService
      */
     public function createPurchasePlan(array $data)
     {
-        $direction = auth()->user()->direction;
-        $formF1 = $this->createFormF1($data);
+        $direction = Direction::findOrFail($data['direction']);
 
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = $data['name'];
-        $purchasePlan->date_created = now();
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $data['year'];
-        $purchasePlan->form_f1_id = $formF1->id;
         $purchasePlan->created_by = auth()->id();
         $purchasePlan->direction_id = $direction->id;
         $purchasePlan->save();
@@ -114,8 +118,7 @@ class PurchasePlanService
             [
                 'name' => $purchasePlan->name,
                 'year' => $purchasePlan->year,
-                'direction' => $direction->name,
-                'form_f1_id' => $formF1->id
+                'direction' => $direction->name
             ]
         );
 
@@ -131,7 +134,6 @@ class PurchasePlanService
 
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = "Plan de Compra {$year} - {$direction->name}";
-        $purchasePlan->date_created = now();
         $purchasePlan->token = Str::random(32);
         $purchasePlan->year = $year;
         $purchasePlan->created_by = auth()->id();
@@ -216,29 +218,29 @@ class PurchasePlanService
             'direction' => $purchasePlan->direction->name ?? 'N/A'
         ];
 
-        $purchasePlan->delete();
-
-        // Registrar en el historial (antes de eliminar)
+        // Registrar en el historial ANTES de eliminar
         HistoryPurchaseHistory::logAction(
             $id,
             'delete',
             'Plan de compra eliminado',
             $planData
         );
+
+        $purchasePlan->delete();
     }
 
     /**
      * Actualiza el estado de un plan de compra
      */
-    public function sendPurchasePlan($purchasePlan, $statusId, $request = []) 
-    {       
+    public function sendPurchasePlan($purchasePlan, $statusId, $request = [])
+    {
         $oldStatusId = $purchasePlan->getCurrentStatusId();
         $oldStatusName = $purchasePlan->getCurrentStatusName();
-        
+
         $this->createPurchasePlanStatus($purchasePlan->id, $statusId, $request);
 
         $newStatus = \App\Models\StatusPurchasePlan::find($statusId);
-        
+
         // Registrar en el historial
         HistoryPurchaseHistory::logAction(
             $purchasePlan->id,
@@ -266,7 +268,7 @@ class PurchasePlanService
         $purchasePlan = $this->getPurchasePlanById($id);
         $oldStatusId = $purchasePlan->getCurrentStatusId();
         $oldStatusName = $purchasePlan->getCurrentStatusName();
-        
+
         $this->createPurchasePlanStatus($purchasePlan->id, $data['status_purchase_plan_id'], $data);
 
         $newStatus = \App\Models\StatusPurchasePlan::find($data['status_purchase_plan_id']);
