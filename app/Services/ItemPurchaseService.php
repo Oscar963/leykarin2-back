@@ -104,6 +104,7 @@ class ItemPurchaseService
         $itemPurchase->months_oc = $data['months_oc'];
         $itemPurchase->regional_distribution = $data['regional_distribution'];
         $itemPurchase->cod_budget_allocation_type = $data['cod_budget_allocation_type'];
+        $itemPurchase->publication_month_id = $data['publication_month_id'] ?? null;
 
         // Relaciones
         $itemPurchase->project_id = $project->id;
@@ -166,6 +167,7 @@ class ItemPurchaseService
         $itemPurchase->months_oc = $data['months_oc'];
         $itemPurchase->regional_distribution = $data['regional_distribution'];
         $itemPurchase->cod_budget_allocation_type = $data['cod_budget_allocation_type'];
+        $itemPurchase->publication_month_id = $data['publication_month_id'] ?? null;
 
         // Relaciones
         $itemPurchase->project_id = $project->id;

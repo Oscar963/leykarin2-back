@@ -34,8 +34,8 @@ class ItemPurchaseRequest extends FormRequest
             'cod_budget_allocation_type' => 'required|string',
             'budget_allocation_id' => 'required|exists:budget_allocations,id',
             'type_purchase_id' => 'required|exists:type_purchases,id',
-            'project_id' => 'required|exists:projects,id', 
-
+            'project_id' => 'required|exists:projects,id',
+            'publication_month_id' => 'required|exists:publication_months,id',
         ];
     }
 
@@ -63,6 +63,7 @@ class ItemPurchaseRequest extends FormRequest
             'status_id.exists' => 'El estado seleccionado no existe',
             'project_id.required' => 'El proyecto es requerido',
             'project_id.exists' => 'El proyecto seleccionado no existe',
+            'publication_month_id.exists' => 'El mes de publicación seleccionado no existe',
         ];
     }
 }

@@ -69,6 +69,7 @@ class ItemPurchaseController extends Controller
     {
         try {
             $itemPurchase = $this->itemPurchaseService->getItemPurchaseById($id);
+            $itemPurchase->load('publicationMonth');
 
             return response()->json([
                 'data' => new ItemPurchaseResource($itemPurchase)

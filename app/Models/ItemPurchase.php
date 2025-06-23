@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ItemPurchase extends Model
 {
@@ -13,6 +14,7 @@ class ItemPurchase extends Model
         'product_service',
         'quantity_item',
         'amount_item',
+        'publication_month_id',
     ];
 
     public function budgetAllocation()
@@ -33,6 +35,25 @@ class ItemPurchase extends Model
     public function statusItemPurchase()
     {
         return $this->belongsTo(StatusItemPurchase::class, 'status_item_purchase_id');
+    }
+
+    /**
+     * Relación con PublicationMonth
+     */
+    public function publicationMonth(): BelongsTo
+    {
+        return $this->belongsTo(PublicationMonth::class);
+    }
+
+    /**
+     * Accessor para obtener el formato "Dic 2025"
+     */
+    public function getPublicationDateFormattedAttribute(): ?string
+    {
+        if ($this->publicationMonth) {
+            return $this->publicationMonth->formatted_date;
+        }
+        return null;
     }
 
     public function getTotalAmount()

@@ -29,6 +29,7 @@ class CreateItemPurchasesTable extends Migration
             $table->foreignId('budget_allocation_id')->constrained('budget_allocations')->onDelete('cascade'); // Asignación de presupuesto
             $table->foreignId('type_purchase_id')->constrained('type_purchases')->onDelete('cascade'); // Tipo de compra
             $table->foreignId('status_item_purchase_id')->constrained('status_item_purchases')->onDelete('cascade'); // Estado
+            $table->foreignId('publication_month_id')->nullable()->constrained('publication_months')->onDelete('set null'); // Mes de publicación
 
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');

@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TypePurchaseSeeder::class);
         $this->call(TypeProjectSeeder::class);
         $this->call(StatusItemPurchasesSeeder::class);
+        $this->call(PublicationMonthSeeder::class);
         
         // Corregir usuarios jerárquicos para que cumplan la regla de dirección única
         $this->call(FixHierarchicalUserDirectionsSeeder::class);

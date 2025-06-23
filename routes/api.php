@@ -9,6 +9,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\FormF1Controller;
 use App\Http\Controllers\ItemPurchaseController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\PublicationMonthController;
 use App\Http\Controllers\PurchasePlanController;
 use App\Http\Controllers\PurchasePlanStatusController;
 use App\Http\Controllers\StatusItemPurchaseController;
@@ -127,6 +128,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('type-purchases', TypePurchaseController::class);
     Route::apiResource('budget-allocations', BudgetAllocationController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
+    Route::apiResource('publication-months', PublicationMonthController::class);
+    Route::get('publication-months/select', [PublicationMonthController::class, 'getForSelect'])->name('publication-months.select');
+    Route::get('publication-months/by-year', [PublicationMonthController::class, 'getByYear'])->name('publication-months.by-year');
+    Route::get('publication-months/years', [PublicationMonthController::class, 'getAvailableYears'])->name('publication-months.years');
+    Route::post('publication-months/create-for-year', [PublicationMonthController::class, 'createMonthsForYear'])->name('publication-months.create-for-year');
+    Route::get('publication-months/stats', [PublicationMonthController::class, 'getStats'])->name('publication-months.stats');
+    Route::get('publication-months/search', [PublicationMonthController::class, 'search'])->name('publication-months.search');
 
     // Rutas para gestionar relaciones director-dirección
     Route::middleware(['permission:directions.list'])->group(function () {
