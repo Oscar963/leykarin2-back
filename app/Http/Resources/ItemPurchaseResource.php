@@ -24,6 +24,7 @@ class ItemPurchaseResource extends JsonResource
             'months_oc' => $this->months_oc,
             'regional_distribution' =>  $this->regional_distribution,
             'cod_budget_allocation_type' =>  $this->cod_budget_allocation_type,
+            'total_item' => $this->getTotalAmount(), 
             'budget_allocation' => new BudgetAllocationResource($this->budgetAllocation),
             'type_purchase' => new TypePurchaseResource($this->typePurchase),
             'project' => new ProjectResource($this->project),

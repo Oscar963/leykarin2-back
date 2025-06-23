@@ -12,14 +12,15 @@ class PurchasePlanRejected extends Mailable
     use Queueable, SerializesModels;
 
     public $purchasePlan;
+    public $comment;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(PurchasePlan $purchasePlan)
+    public function __construct(PurchasePlan $purchasePlan, $comment = null)
     {
         $this->purchasePlan = $purchasePlan;
-                
+        $this->comment = $comment;
     }
 
     /**
@@ -31,6 +32,7 @@ class PurchasePlanRejected extends Mailable
                     ->view('emails.purchase-plan-rejected')
                     ->with([
                         'purchasePlan' => $this->purchasePlan,
+                        'comment' => $this->comment,
                         'user' => auth()->user(),
                     ]);
     }

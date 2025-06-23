@@ -43,57 +43,122 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
     Route::get('isAuthenticated', [AuthController::class, 'isAuthenticated']);
 
-    Route::apiResource('purchase-plans', PurchasePlanController::class);
-    Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
-    Route::post('purchase-plans/{token}/send', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
-    Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
-    Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
-    Route::get('purchase-plans/year/{year}/index', [PurchasePlanController::class, 'indexByYear'])->name('purchase-plans.index.year');
-    Route::get('purchase-plans/year/{year}/user', [PurchasePlanController::class, 'indexByYearForUser'])->name('purchase-plans.index.year.user');
+    // Rutas protegidas por roles específicos
+    Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
+        Route::apiResource('users', UserController::class)->middleware('validate.hierarchical.user');
+        Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::get('directions-stats/users', [DirectionController::class, 'getUserStats'])->name('directions.user-stats');
+    });
+
+    // Rutas protegidas por permisos específicos
+    Route::middleware(['permission:purchase_plans.list'])->group(function () {
+        Route::apiResource('purchase-plans', PurchasePlanController::class);
+        Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
+        Route::get('purchase-plans/year/{year}/index', [PurchasePlanController::class, 'indexByYear'])->name('purchase-plans.index.year');
+        Route::get('purchase-plans/available-directions', [PurchasePlanController::class, 'getAvailableDirections'])->name('purchase-plans.available-directions');
+    });
+
+    Route::middleware(['permission:purchase_plans.create'])->group(function () {
+        Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
+    });
+
+    // Rutas para cambio de estado de planes de compra
+    Route::middleware(['permission:purchase_plans.visar|purchase_plans.approve', 'validate.purchase.plan.status'])->group(function () {
+        Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
+    });
+
+    // Ruta de envío restringida solo a administradores, directores y visadores
+    Route::middleware(['permission:purchase_plans.send|purchase_plans.visar', 'can.send.purchase.plan', 'validate.purchase.plan.status'])->group(function () {
+        Route::post('purchase-plans/{token}/send', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
+    });
 
     // Rutas para el historial de estados de planes de compra
-    Route::get('purchase-plans/{purchasePlanId}/status-history', [PurchasePlanStatusController::class, 'getStatusHistory'])->name('purchase-plans.status-history');
-    Route::get('purchase-plans/{purchasePlanId}/current-status', [PurchasePlanStatusController::class, 'getCurrentStatus'])->name('purchase-plans.current-status');
-    Route::post('purchase-plan-statuses', [PurchasePlanStatusController::class, 'store'])->name('purchase-plan-statuses.store');
-    Route::get('purchase-plan-statuses/{id}', [PurchasePlanStatusController::class, 'show'])->name('purchase-plan-statuses.show');
+    Route::middleware(['permission:purchase_plan_statuses.history'])->group(function () {
+        Route::get('purchase-plans/{purchasePlanId}/status-history', [PurchasePlanStatusController::class, 'getStatusHistory'])->name('purchase-plans.status-history');
+        Route::get('purchase-plans/{purchasePlanId}/current-status', [PurchasePlanStatusController::class, 'getCurrentStatus'])->name('purchase-plans.current-status');
+        Route::get('purchase-plan-statuses/{id}', [PurchasePlanStatusController::class, 'show'])->name('purchase-plan-statuses.show');
+    });
+
+    Route::middleware(['permission:purchase_plan_statuses.create'])->group(function () {
+        Route::post('purchase-plan-statuses', [PurchasePlanStatusController::class, 'store'])->name('purchase-plan-statuses.store');
+    });
 
     // Rutas para el historial de movimientos de planes de compra
-    Route::get('purchase-plans/{purchasePlanId}/movement-history', [HistoryPurchaseHistoryController::class, 'getMovementHistory'])->name('purchase-plans.movement-history');
-    Route::get('purchase-plans/{purchasePlanId}/movement-statistics', [HistoryPurchaseHistoryController::class, 'getStatistics'])->name('purchase-plans.movement-statistics');
-    Route::get('purchase-plans/{purchasePlanId}/movement-export', [HistoryPurchaseHistoryController::class, 'export'])->name('purchase-plans.movement-export');
-    Route::get('movement-history/{id}', [HistoryPurchaseHistoryController::class, 'show'])->name('movement-history.show');
+    Route::middleware(['permission:history_purchase_histories.list'])->group(function () {
+        Route::get('purchase-plans/{purchasePlanId}/movement-history', [HistoryPurchaseHistoryController::class, 'getMovementHistory'])->name('purchase-plans.movement-history');
+        Route::get('purchase-plans/{purchasePlanId}/movement-statistics', [HistoryPurchaseHistoryController::class, 'getStatistics'])->name('purchase-plans.movement-statistics');
+        Route::get('purchase-plans/{purchasePlanId}/movement-export', [HistoryPurchaseHistoryController::class, 'export'])->name('purchase-plans.movement-export');
+        Route::get('movement-history/{id}', [HistoryPurchaseHistoryController::class, 'show'])->name('movement-history.show');
+    });
 
-    Route::apiResource('projects', ProjectController::class);
-    Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
-    Route::post('projects/verification', [ProjectController::class, 'verification'])->name('projects.verification');
-    Route::get('projects/verification/project/{projectId}/index', [ProjectController::class, 'showVerificationProject'])->name('projects.show.verification.project');
-    Route::delete('projects/{projectId}/verification/{fileId}', [ProjectController::class, 'deleteVerificationProject'])->name('projects.delete.verification.project');
-    Route::get('projects/verification/{fileId}/download', [ProjectController::class, 'downloadVerificationProject'])->name('projects.download.verification.project');
-    Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
+    // Rutas para proyectos
+    Route::middleware(['permission:projects.list'])->group(function () {
+        Route::apiResource('projects', ProjectController::class);
+        Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
+        Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
+    });
 
-    Route::apiResource('item-purchases', ItemPurchaseController::class);
-    Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');
-    Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export'])->name('item-purchases.export');
-    
-    Route::apiResource('budget-allocations', BudgetAllocationController::class);
-    Route::apiResource('type-purchases', TypePurchaseController::class);
+    Route::middleware(['permission:projects.verification'])->group(function () {
+        Route::post('projects/verification', [ProjectController::class, 'verification'])->name('projects.verification');
+        Route::get('projects/verification/project/{projectId}/index', [ProjectController::class, 'showVerificationProject'])->name('projects.show.verification.project');
+        Route::delete('projects/{projectId}/verification/{fileId}', [ProjectController::class, 'deleteVerificationProject'])->name('projects.delete.verification.project');
+        Route::get('projects/verification/{fileId}/download', [ProjectController::class, 'downloadVerificationProject'])->name('projects.download.verification.project');
+    });
+
+    // Rutas para ítems de compra
+    Route::middleware(['permission:item_purchases.list'])->group(function () {
+        Route::apiResource('item-purchases', ItemPurchaseController::class);
+        Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export'])->name('item-purchases.export');
+    });
+
+    Route::middleware(['permission:item_purchases.update_status'])->group(function () {
+        Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');
+    });
+
+    // Rutas para configuraciones (solo administradores)
+    Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
+        Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);
+        Route::apiResource('directions', DirectionController::class);
+    });
+
+    // Rutas para módulos de configuración (todos los usuarios autenticados)
     Route::apiResource('type-projects', TypeProjectController::class);
     Route::apiResource('unit-purchasings', UnitPurchasingController::class);
+    Route::apiResource('type-purchases', TypePurchaseController::class);
+    Route::apiResource('budget-allocations', BudgetAllocationController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
-    Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);
-    Route::apiResource('directions', DirectionController::class);
 
-    Route::apiResource('form-f1', FormF1Controller::class);
-    Route::get('/form-f1/{id}/download', [FormF1Controller::class, 'download'])->name('form-f1.download');
+    // Rutas para gestionar relaciones director-dirección
+    Route::middleware(['permission:directions.list'])->group(function () {
+        Route::get('directions/{direction}/director', [DirectionController::class, 'getDirector'])->name('directions.director');
+        Route::get('directions/{direction}/users', [DirectionController::class, 'getUsers'])->name('directions.users');
+        Route::get('directions/{direction}/users-by-role', [DirectionController::class, 'getUsersByRole'])->name('directions.users-by-role');
+    });
 
+    Route::middleware(['permission:directions.edit'])->group(function () {
+        Route::post('directions/{direction}/assign-director', [DirectionController::class, 'assignDirector'])->name('directions.assign-director');
+        Route::post('directions/{direction}/assign-users', [DirectionController::class, 'assignUsers'])->name('directions.assign-users')->middleware('validate.hierarchical.user');
+        Route::delete('directions/{direction}/remove-users', [DirectionController::class, 'removeUsers'])->name('directions.remove-users');
+    });
 
-    Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    // Rutas para archivos
+    Route::middleware(['permission:files.list'])->group(function () {
+        Route::apiResource('files', FileController::class);
+        Route::get('/files/{id}/download', [FileController::class, 'download']);
+    });
+
+    // Rutas para formularios F1
+    Route::middleware(['permission:form_f1.list'])->group(function () {
+        Route::apiResource('form-f1', FormF1Controller::class);
+    });
+
+    // Ruta específica para descarga de formularios F1
+    Route::middleware(['permission:form_f1.download'])->group(function () {
+        Route::get('/form-f1/{id}/download', [FormF1Controller::class, 'download'])->name('form-f1.download');
+    });
+
+    // Rutas de perfil de usuario
     Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
     Route::post('/users/update-profile', [UserController::class, 'updateProfile'])->name('users.update-profile');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
-    Route::apiResource('users', UserController::class);
-
-    Route::apiResource('files', FileController::class);
-    Route::get('/files/{id}/download', [FileController::class, 'download']);
-
 });

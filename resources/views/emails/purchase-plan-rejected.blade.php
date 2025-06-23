@@ -111,6 +111,9 @@
                 <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->amount_F1, 0, ',', '.') }}</p>
                 <p><strong>Fecha de creación:</strong> {{ $purchasePlan->created_at }}</p>
                 <p><strong>Estado actual:</strong> Rechazado</p>
+                @if($comment)
+                <p><strong>Motivo del rechazo:</strong> {{ $comment }}</p>
+                @endif
             </div>
 
             <p>Por favor, revise los detalles mencionados y realice las correcciones necesarias. Una vez realizadas las modificaciones, puede volver a enviar su plan de compra para su revisión.</p>

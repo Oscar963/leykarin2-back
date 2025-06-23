@@ -137,9 +137,9 @@ class ItemPurchaseService
 
         if ($projectedTotal > $formF1Amount) {
             throw new \Exception(
-                "No es posible guardar el ítem de compra porque el monto total, incluyendo este ítem, excede el presupuesto disponible definido en el Formulario F1. " .
-                "(Presupuesto F1: $formF1Amount, Total Proyectado: $projectedTotal, Disponible: " . ($formF1Amount - $currentTotalAmount) . "). " .
-                "Por favor, revise el monto ingresado o ajuste otros ítems para no superar el límite presupuestario."
+                "El monto total excede el presupuesto disponible del Formulario F1. " .
+                "Presupuesto disponible: $" . number_format($formF1Amount - $currentTotalAmount, 0, ',', '.') . ". " .
+                "Ajuste el monto o reduzca otros ítems."
             );
         }
     }

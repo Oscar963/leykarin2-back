@@ -68,7 +68,10 @@ class AuthController extends Controller
     protected function sendFailedLoginResponse(): JsonResponse
     {
         return response()->json([
-            'message' => 'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.'
+            'status' => 401,
+            'error' => [
+                'message' => 'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.'
+            ]
         ], 401);
     }
 
@@ -80,7 +83,10 @@ class AuthController extends Controller
     protected function sendSuspendedAccountResponse(): JsonResponse
     {
         return response()->json([
-            'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.'
+            'status' => 403,
+            'error' => [
+                'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.' 
+            ]
         ], 403);
     }
 
@@ -148,7 +154,10 @@ class AuthController extends Controller
                 'rut' => $user->rut,
                 'email' => $user->email,
                 'status' => $user->status,
-                'direction' => $user->directions->first()->name,
+                'direction' => $user->directions->first() ? $user->directions->first()->name : null,
+                'direction_id' => $user->directions->first() ? $user->directions->first()->id : null,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
         ], 200);
     }

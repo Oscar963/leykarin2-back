@@ -163,4 +163,38 @@ class PurchasePlan extends Model
         $currentStatus = $this->getCurrentStatus();
         return $currentStatus && $currentStatus->status ? $currentStatus->status->name : null;
     }
+
+    /**
+     * Verifica si existe un plan de compras para una dirección y año específicos
+     * 
+     * @param int $directionId
+     * @param int $year
+     * @param int|null $excludeId - ID del plan a excluir (útil para validaciones en actualizaciones)
+     * @return bool
+     */
+    public static function existsForDirectionAndYear(int $directionId, int $year, ?int $excludeId = null): bool
+    {
+        $query = self::where('direction_id', $directionId)
+            ->where('year', $year);
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Obtiene el plan de compras para una dirección y año específicos
+     * 
+     * @param int $directionId
+     * @param int $year
+     * @return PurchasePlan|null
+     */
+    public static function getByDirectionAndYear(int $directionId, int $year): ?PurchasePlan
+    {
+        return self::where('direction_id', $directionId)
+            ->where('year', $year)
+            ->first();
+    }
 }

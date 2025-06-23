@@ -65,5 +65,12 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'direction.permission' => \App\Http\Middleware\CheckDirectionPermission::class,
+        'validate.hierarchical.user' => \App\Http\Middleware\ValidateHierarchicalUserDirection::class,
+        'can.send.purchase.plan' => \App\Http\Middleware\CanSendPurchasePlan::class,
+        'validate.purchase.plan.status' => \App\Http\Middleware\ValidatePurchasePlanStatusChange::class,
+        'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
     ];
 }

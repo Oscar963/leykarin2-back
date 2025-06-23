@@ -17,7 +17,7 @@ class CreateDirectionsTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('alias');
-            $table->foreignId('director_id')->constrained('users')->onDelete('cascade'); // Estado del plan de compra
+            $table->foreignId('director_id')->nullable()->constrained('users')->onDelete('cascade'); // Estado del plan de compra
             $table->timestamps();
         });
     }

@@ -97,6 +97,11 @@ class PurchasePlanService
     {
         $direction = Direction::findOrFail($data['direction']);
 
+        // Validar que no exista ya un plan de compras para esta dirección y año
+        if (PurchasePlan::existsForDirectionAndYear($direction->id, $data['year'])) {
+            throw new \Exception("Ya existe un plan de compras para la dirección '{$direction->name}' en el año {$data['year']}. No se puede crear otro plan para la misma dirección y año.");
+        }
+
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = $data['name'];
         $purchasePlan->token = Str::random(32);
@@ -128,9 +133,14 @@ class PurchasePlanService
     /**
      * Crea un plan de compra por defecto para un año específico
      */
-    public function createDefaultPurchasePlan(int $year): PurchasePlan
+    public function createDefaultPurchasePlan(int $year, int $directionId): PurchasePlan
     {
-        $direction = auth()->user()->direction;
+        $direction = Direction::findOrFail($directionId);
+
+        // Validar que no exista ya un plan de compras para esta dirección y año
+        if (PurchasePlan::existsForDirectionAndYear($direction->id, $year)) {
+            throw new \Exception("Ya existe un plan de compras para la dirección '{$direction->name}' en el año {$year}. No se puede crear otro plan para la misma dirección y año.");
+        }
 
         $purchasePlan = new PurchasePlan();
         $purchasePlan->name = "Plan de Compra {$year} - {$direction->name}";
@@ -165,40 +175,39 @@ class PurchasePlanService
      */
     public function updatePurchasePlan($id, array $data)
     {
+        $direction = Direction::findOrFail($data['direction']);
+
         $purchasePlan = $this->getPurchasePlanById($id);
         $oldData = [
             'name' => $purchasePlan->name,
-            'year' => $purchasePlan->year
+            'year' => $purchasePlan->year,
+            'direction' => $purchasePlan->direction->name
         ];
+
+        // Validar que no exista otro plan de compras para esta dirección y año (excluyendo el actual)
+        if (PurchasePlan::existsForDirectionAndYear($direction->id, $data['year'], $id)) {
+            throw new \Exception("Ya existe otro plan de compras para la dirección '{$direction->name}' en el año {$data['year']}. No se puede actualizar este plan para usar la misma dirección y año.");
+        }
 
         // Actualizar datos básicos del plan
         $purchasePlan->name = $data['name'];
         $purchasePlan->year = $data['year'];
+        $purchasePlan->direction_id = $direction->id;
         $purchasePlan->updated_by = auth()->id();
-
-        // Si se proporciona un nuevo archivo, crear/actualizar FormF1
-        if (isset($data['file'])) {
-            $formF1 = $this->createFormF1($data);
-            $purchasePlan->form_f1_id = $formF1->id;
-        } elseif (isset($data['amount']) && $purchasePlan->formF1) {
-            // Solo actualizar el monto si no hay archivo nuevo
-            $purchasePlan->formF1->amount = $data['amount'];
-            $purchasePlan->formF1->updated_by = auth()->id();
-            $purchasePlan->formF1->save();
-        }
 
         $purchasePlan->save();
 
         // Registrar en el historial
         HistoryPurchaseHistory::logAction(
-            $purchasePlan->id,
+            $purchasePlan->id, 
             'update',
             'Plan de compra actualizado',
             [
                 'old_data' => $oldData,
                 'new_data' => [
                     'name' => $purchasePlan->name,
-                    'year' => $purchasePlan->year
+                    'year' => $purchasePlan->year,
+                    'direction' => $direction->name
                 ]
             ]
         );
@@ -370,13 +379,16 @@ class PurchasePlanService
      */
     private function createFormF1(array $data): FormF1
     {
-        $direction = auth()->user()->direction;
+        $user = auth()->user();
+        $direction = $user->directions->first();
+        $directionName = $direction ? $direction->name : 'Sistema';
+
         $currentDate = now()->format('Y-m-d H:i');
-        $nameFile = $data['name_file'] ?? "{$currentDate} - {$direction->name} - FormF1";
+        $nameFile = $data['name_file'] ?? "{$currentDate} - {$directionName} - FormF1";
 
         $formF1 = new FormF1();
         $formF1->name = $nameFile;
-        $formF1->description = $data['description_file'] ?? "Formulario F1 generado automáticamente para el plan de compra de la dirección {$direction->name}";
+        $formF1->description = $data['description_file'] ?? "Formulario F1 generado automáticamente para el plan de compra de {$directionName}";
         $formF1->amount = $data['amount'] ?? 0;
         $formF1->created_by = auth()->id();
 
@@ -401,13 +413,16 @@ class PurchasePlanService
      */
     private function createFile(array $data): File
     {
-        $direction = auth()->user()->direction;
+        $user = auth()->user();
+        $direction = $user->directions->first();
+        $directionName = $direction ? $direction->name : 'Sistema';
+
         $currentDate = now()->format('Y-m-d H:i');
-        $nameFile = $data['name_file'] ?? "{$currentDate} - {$direction->name}";
+        $nameFile = $data['name_file'] ?? "{$currentDate} - {$directionName}";
 
         $file = new File();
         $file->name = $nameFile;
-        $file->description = $data['description_file'] ?? "Archivo generado automáticamente para el plan de compra de la dirección {$direction->name}";
+        $file->description = $data['description_file'] ?? "Archivo generado automáticamente para el plan de compra de {$directionName}";
         $file->size = $data['file']->getSize();
         $file->type = $data['file']->getClientMimeType();
         $file->extension = $data['file']->getClientOriginalExtension();

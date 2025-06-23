@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\UniqueDirectionYearPlan;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PurchasePlanRequest extends FormRequest
@@ -24,6 +25,7 @@ class PurchasePlanRequest extends FormRequest
     public function rules()
     {
         $isUpdate = $this->isMethod('PUT') || $this->isMethod('patch');
+        $excludeId = $isUpdate ? $this->route('purchase_plan') : null;
 
         return [
             'name' => [
@@ -34,6 +36,7 @@ class PurchasePlanRequest extends FormRequest
             'year' => [
                 'required',
                 'integer',
+                new UniqueDirectionYearPlan($excludeId),
             ],
             'direction' => [
                 'required',
@@ -53,7 +56,7 @@ class PurchasePlanRequest extends FormRequest
             'year.integer' => 'El año del plan de compra debe ser un número entero.',
 
             'direction.required' => 'La dirección es obligatoria.',
-            'direction.exists' => 'La dirección seleccionada no es válida.',
+            'direction.exists' => 'La dirección seleccionada no es válida.', 
         ];
     }
 }

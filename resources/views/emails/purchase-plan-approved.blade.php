@@ -111,6 +111,9 @@
                 <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->amount_F1, 0, ',', '.') }}</p>
                 <p><strong>Fecha de creación:</strong> {{ $purchasePlan->created_at }}</p> 
                 <p><strong>Estado actual:</strong> Aprobado</p>
+                @if($comment)
+                <p><strong>Comentario:</strong> {{ $comment }}</p>
+                @endif
             </div>
 
             <p>Su plan de compra ha sido revisado y aprobado por las autoridades correspondientes. Puede proceder con los siguientes pasos del proceso.</p>
