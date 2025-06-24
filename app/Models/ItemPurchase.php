@@ -11,10 +11,22 @@ class ItemPurchase extends Model
     use HasFactory;
 
     protected $fillable = [
+        'item_number',
         'product_service',
         'quantity_item',
         'amount_item',
+        'quantity_oc',
+        'months_oc',
+        'regional_distribution',
+        'cod_budget_allocation_type',
+        'comment',
+        'project_id',
+        'budget_allocation_id',
+        'type_purchase_id',
+        'status_item_purchase_id',
         'publication_month_id',
+        'created_by',
+        'updated_by',
     ];
 
     public function budgetAllocation()

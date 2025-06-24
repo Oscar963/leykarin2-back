@@ -108,9 +108,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas para ítems de compra
     Route::middleware(['permission:item_purchases.list'])->group(function () {
+        Route::get('item-purchases/template', [ItemPurchaseController::class, 'downloadTemplate'])->name('item-purchases.template');
         Route::apiResource('item-purchases', ItemPurchaseController::class);
         Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export'])->name('item-purchases.export');
-    });
+        Route::post('item-purchases/import/{projectId}', [ItemPurchaseController::class, 'import'])->name('item-purchases.import');    });
 
     Route::middleware(['permission:item_purchases.update_status'])->group(function () {
         Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');
@@ -129,12 +130,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('budget-allocations', BudgetAllocationController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
     Route::apiResource('publication-months', PublicationMonthController::class);
-    Route::get('publication-months/select', [PublicationMonthController::class, 'getForSelect'])->name('publication-months.select');
-    Route::get('publication-months/by-year', [PublicationMonthController::class, 'getByYear'])->name('publication-months.by-year');
-    Route::get('publication-months/years', [PublicationMonthController::class, 'getAvailableYears'])->name('publication-months.years');
-    Route::post('publication-months/create-for-year', [PublicationMonthController::class, 'createMonthsForYear'])->name('publication-months.create-for-year');
-    Route::get('publication-months/stats', [PublicationMonthController::class, 'getStats'])->name('publication-months.stats');
-    Route::get('publication-months/search', [PublicationMonthController::class, 'search'])->name('publication-months.search');
+
 
     // Rutas para gestionar relaciones director-dirección
     Route::middleware(['permission:directions.list'])->group(function () {

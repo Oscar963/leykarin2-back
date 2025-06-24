@@ -11,6 +11,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ItemsPurchaseExport;
+use App\Exports\ItemsPurchaseTemplateExport;
+use App\Imports\ItemsPurchaseImport;
+use Illuminate\Support\Facades\Response;
 
 class ItemPurchaseController extends Controller
 {
@@ -144,5 +147,61 @@ class ItemPurchaseController extends Controller
     {
         $this->logActivity('download_file', 'Usuario exporto el excel de ítems de compra');
         return Excel::download(new ItemsPurchaseExport($projectId), 'items-purchases.xlsx');
+    }
+
+    public function import(Request $request, $projectId)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls|max:10240', // Máximo 10MB
+            ]);
+
+            $import = new ItemsPurchaseImport($projectId);
+            
+            Excel::import($import, $request->file('file'));
+            
+            $stats = $import->getImportStats();
+            $errors = $import->getErrors();
+            
+            $this->logActivity('import_file', "Usuario importó {$stats['imported']} ítems de compra para el proyecto {$projectId}");
+
+            return response()->json([
+                'message' => 'Importación completada exitosamente',
+                'stats' => $stats,
+                'errors' => $errors,
+                'success' => true
+            ], 200);
+
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            
+            foreach ($failures as $failure) {
+                $errors[] = [
+                    'row' => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors' => $failure->errors(),
+                    'values' => $failure->values()
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Errores de validación en el archivo',
+                'errors' => $errors,
+                'success' => false
+            ], 422);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al importar el archivo: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        $this->logActivity('download_template', 'Usuario descargó la plantilla de ítems de compra');
+        return Excel::download(new ItemsPurchaseTemplateExport(), 'plantilla-items-compra.xlsx');
     }
 }
