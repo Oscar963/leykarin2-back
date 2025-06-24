@@ -35,9 +35,11 @@ class ItemsPurchaseTemplateExport implements FromArray, WithHeadings, WithStyles
                 'Producto o Servicio' => 'Ejemplo: Laptop HP ProBook 450 G8 (OBLIGATORIO)',
                 'Cantidad' => '5 (OBLIGATORIO)',
                 'Monto' => '500000 (OBLIGATORIO)',
+                'Total/Item' => '2500000 (CALCULADO AUTOMÁTICAMENTE)',
                 'Cantidad OC' => '2 (OBLIGATORIO)',
                 'Meses envio OC' => 'Ene, Feb (OBLIGATORIO)',
-                'Dist. Regional' => 'Región Metropolitana (OBLIGATORIO)',
+                'Dist. Regional' => '15-1 (POR DEFECTO)',
+                'Asignación Presupuestaria' => '123456 - Descripción (OBLIGATORIO)',
                 'Cod. Gasto Presupuestario' => '123456 (OBLIGATORIO)',
                 'Tipo de Compra' => 'Bienes (OBLIGATORIO)',
                 'Mes de publicación' => 'Dic 2025 (OBLIGATORIO)',
@@ -48,9 +50,11 @@ class ItemsPurchaseTemplateExport implements FromArray, WithHeadings, WithStyles
                 'Producto o Servicio' => 'Ejemplo: Servicio de mantenimiento',
                 'Cantidad' => '12',
                 'Monto' => '25000',
+                'Total/Item' => '300000',
                 'Cantidad OC' => '1',
                 'Meses envio OC' => 'Mar',
-                'Dist. Regional' => 'Valparaíso',
+                'Dist. Regional' => '15-1',
+                'Asignación Presupuestaria' => '789012 - Descripción',
                 'Cod. Gasto Presupuestario' => '789012',
                 'Tipo de Compra' => 'Servicios',
                 'Mes de publicación' => 'Ene 2026',
@@ -66,9 +70,11 @@ class ItemsPurchaseTemplateExport implements FromArray, WithHeadings, WithStyles
             'Producto o Servicio',
             'Cantidad',
             'Monto',
+            'Total/Item',
             'Cantidad OC',
             'Meses envio OC',
             'Dist. Regional',
+            'Asignación Presupuestaria',
             'Cod. Gasto Presupuestario',
             'Tipo de Compra',
             'Mes de publicación',
@@ -79,7 +85,7 @@ class ItemsPurchaseTemplateExport implements FromArray, WithHeadings, WithStyles
     public function styles(Worksheet $sheet)
     {
         // Encabezados: fondo azul y texto blanco
-        $sheet->getStyle('A1:K1')->applyFromArray([
+        $sheet->getStyle('A1:M1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -92,7 +98,7 @@ class ItemsPurchaseTemplateExport implements FromArray, WithHeadings, WithStyles
         ]);
 
         // Datos de ejemplo con fondo amarillo claro
-        $sheet->getStyle('A2:K3')->applyFromArray([
+        $sheet->getStyle('A2:M3')->applyFromArray([
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'startColor' => ['rgb' => 'FFF2CC']
@@ -100,7 +106,7 @@ class ItemsPurchaseTemplateExport implements FromArray, WithHeadings, WithStyles
         ]);
 
         // Bordes para todas las celdas
-        $sheet->getStyle('A1:K3')->applyFromArray([
+        $sheet->getStyle('A1:M3')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -131,9 +137,11 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
                 'Producto o Servicio' => 'Ejemplo: Laptop HP ProBook 450 G8 (OBLIGATORIO)',
                 'Cantidad' => '5 (OBLIGATORIO)',
                 'Monto' => '500000 (OBLIGATORIO)',
+                'Total/Item' => '2500000 (CALCULADO AUTOMÁTICAMENTE)',
                 'Cantidad OC' => '2 (OBLIGATORIO)',
                 'Meses envio OC' => 'Ene, Feb (OBLIGATORIO)',
-                'Dist. Regional' => 'Región Metropolitana (OBLIGATORIO)',
+                'Dist. Regional' => '15-1 (POR DEFECTO)',
+                'Asignación Presupuestaria' => '123456 - Descripción (OBLIGATORIO)',
                 'Cod. Gasto Presupuestario' => '123456 (OBLIGATORIO)',
                 'Tipo de Compra' => 'Bienes (OBLIGATORIO)',
                 'Mes de publicación' => 'Dic 2025 (OBLIGATORIO)',
@@ -144,9 +152,11 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
                 'Producto o Servicio' => 'Ejemplo: Servicio de mantenimiento',
                 'Cantidad' => '12',
                 'Monto' => '25000',
+                'Total/Item' => '300000',
                 'Cantidad OC' => '1',
                 'Meses envio OC' => 'Mar',
-                'Dist. Regional' => 'Valparaíso',
+                'Dist. Regional' => '15-1',
+                'Asignación Presupuestaria' => '789012 - Descripción',
                 'Cod. Gasto Presupuestario' => '789012',
                 'Tipo de Compra' => 'Servicios',
                 'Mes de publicación' => 'Ene 2026',
@@ -162,9 +172,11 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
             'Producto o Servicio',
             'Cantidad',
             'Monto',
+            'Total/Item',
             'Cantidad OC',
             'Meses envio OC',
             'Dist. Regional',
+            'Asignación Presupuestaria',
             'Cod. Gasto Presupuestario',
             'Tipo de Compra',
             'Mes de publicación',
@@ -175,7 +187,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
     public function styles(Worksheet $sheet)
     {
         // Encabezados: fondo azul y texto blanco
-        $sheet->getStyle('A1:K1')->applyFromArray([
+        $sheet->getStyle('A1:M1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -188,7 +200,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         ]);
 
         // Datos de ejemplo con fondo amarillo claro
-        $sheet->getStyle('A2:K3')->applyFromArray([
+        $sheet->getStyle('A2:M3')->applyFromArray([
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'startColor' => ['rgb' => 'FFF2CC']
@@ -196,7 +208,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         ]);
 
         // Bordes para todas las celdas
-        $sheet->getStyle('A1:K3')->applyFromArray([
+        $sheet->getStyle('A1:M3')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -210,8 +222,38 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
 
         // Agregar validación de datos con listas desplegables
         
-        // Validación para Cod. Gasto Presupuestario (columna H)
-        $budgetValidation = $sheet->getCell('H2')->getDataValidation();
+        // Validación para Asignación Presupuestaria (columna I)
+        $allocationValidation = $sheet->getCell('I2')->getDataValidation();
+        $allocationValidation->setType(DataValidation::TYPE_LIST);
+        $allocationValidation->setErrorStyle(DataValidation::STYLE_INFORMATION);
+        $allocationValidation->setAllowBlank(false);
+        $allocationValidation->setShowInputMessage(true);
+        $allocationValidation->setShowErrorMessage(true);
+        $allocationValidation->setShowDropDown(true);
+        $allocationValidation->setErrorTitle('Error de entrada');
+        $allocationValidation->setError('Debe seleccionar una asignación presupuestaria válida.');
+        $allocationValidation->setPromptTitle('Asignación Presupuestaria');
+        $allocationValidation->setPrompt('Seleccione una asignación presupuestaria de la lista.');
+        $allocationValidation->setFormula1('\'Asignaciones Presupuestarias\'!$C$2:$C$100');
+        
+        // Aplicar validación a todo el rango de la columna I
+        for ($row = 2; $row <= 100; $row++) {
+            $sheet->getCell('I' . $row)->setDataValidation(clone $allocationValidation);
+        }
+        
+        // Agregar fórmula para autocompletar Cod. Gasto Presupuestario basado en Asignación Presupuestaria
+        // La fórmula busca en la hoja Asignaciones Presupuestarias el cod_budget_allocation_type
+        // basado en el valor seleccionado en la columna I (Asignación Presupuestaria)
+        // Optimizado para reducir uso de memoria - solo primeras 100 filas
+        for ($row = 2; $row <= 100; $row++) {
+            // INDEX y MATCH para buscar en columna C y retornar valor de columna A
+            // MATCH busca la posición en columna C, INDEX retorna el valor de columna A en esa posición
+            $formula = "=IF(I{$row}<>\"\",INDEX('Asignaciones Presupuestarias'!A:A,MATCH(I{$row},'Asignaciones Presupuestarias'!C:C,0)),\"\")";
+            $sheet->getCell('J' . $row)->setValue($formula);
+        }
+        
+        // Validación para Cod. Gasto Presupuestario (columna J - antes era I)
+        $budgetValidation = $sheet->getCell('J2')->getDataValidation();
         $budgetValidation->setType(DataValidation::TYPE_LIST);
         $budgetValidation->setErrorStyle(DataValidation::STYLE_INFORMATION);
         $budgetValidation->setAllowBlank(false);
@@ -222,15 +264,15 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         $budgetValidation->setError('Debe seleccionar un código de gasto presupuestario válido.');
         $budgetValidation->setPromptTitle('Código de Gasto Presupuestario');
         $budgetValidation->setPrompt('Seleccione un código de gasto presupuestario de la lista.');
-        $budgetValidation->setFormula1('\'Asignaciones Presupuestarias\'!$A$2:$A$1000');
+        $budgetValidation->setFormula1('\'Asignaciones Presupuestarias\'!$B$2:$B$100');
         
-        // Aplicar validación a todo el rango de la columna H
-        for ($row = 2; $row <= 1000; $row++) {
-            $sheet->getCell('H' . $row)->setDataValidation(clone $budgetValidation);
+        // Aplicar validación a todo el rango de la columna J (optimizado)
+        for ($row = 2; $row <= 100; $row++) {
+            $sheet->getCell('J' . $row)->setDataValidation(clone $budgetValidation);
         }
 
-        // Validación para Tipo de Compra (columna I)
-        $typeValidation = $sheet->getCell('I2')->getDataValidation();
+        // Validación para Tipo de Compra (columna K - antes era J)
+        $typeValidation = $sheet->getCell('K2')->getDataValidation();
         $typeValidation->setType(DataValidation::TYPE_LIST);
         $typeValidation->setErrorStyle(DataValidation::STYLE_INFORMATION);
         $typeValidation->setAllowBlank(false);
@@ -241,15 +283,15 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         $typeValidation->setError('Debe seleccionar un tipo de compra válido.');
         $typeValidation->setPromptTitle('Tipo de Compra');
         $typeValidation->setPrompt('Seleccione un tipo de compra de la lista.');
-        $typeValidation->setFormula1('\'Tipos de Compra\'!$A$2:$A$1000');
+        $typeValidation->setFormula1('\'Tipos de Compra\'!$A$2:$A$100');
         
-        // Aplicar validación a todo el rango de la columna I
-        for ($row = 2; $row <= 1000; $row++) {
-            $sheet->getCell('I' . $row)->setDataValidation(clone $typeValidation);
+        // Aplicar validación a todo el rango de la columna K (optimizado)
+        for ($row = 2; $row <= 100; $row++) {
+            $sheet->getCell('K' . $row)->setDataValidation(clone $typeValidation);
         }
 
-        // Validación para Mes de publicación (columna J)
-        $monthValidation = $sheet->getCell('J2')->getDataValidation();
+        // Validación para Mes de publicación (columna L - antes era K)
+        $monthValidation = $sheet->getCell('L2')->getDataValidation();
         $monthValidation->setType(DataValidation::TYPE_LIST);
         $monthValidation->setErrorStyle(DataValidation::STYLE_INFORMATION);
         $monthValidation->setAllowBlank(false);
@@ -260,11 +302,11 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         $monthValidation->setError('Debe seleccionar un mes de publicación válido.');
         $monthValidation->setPromptTitle('Mes de Publicación');
         $monthValidation->setPrompt('Seleccione un mes de publicación de la lista.');
-        $monthValidation->setFormula1('\'Meses de Publicación\'!$A$2:$A$1000');
+        $monthValidation->setFormula1('\'Meses de Publicación\'!$A$2:$A$100');
         
-        // Aplicar validación a todo el rango de la columna J
-        for ($row = 2; $row <= 1000; $row++) {
-            $sheet->getCell('J' . $row)->setDataValidation(clone $monthValidation);
+        // Aplicar validación a todo el rango de la columna L (optimizado)
+        for ($row = 2; $row <= 100; $row++) {
+            $sheet->getCell('L' . $row)->setDataValidation(clone $monthValidation);
         }
 
         return [];
@@ -280,12 +322,12 @@ class BudgetAllocationsSheet implements FromArray, WithHeadings, WithStyles, Sho
 {
     public function array(): array
     {
-        $allocations = BudgetAllocation::select('code', 'description')->get();
+        $allocations = BudgetAllocation::select('cod_budget_allocation_type', 'code', 'description')->get();
         
         return $allocations->map(function($allocation) {
             return [
-                'Código' => $allocation->code,
-                'Descripción' => $allocation->description,
+                'cod_budget_allocation_type' => $allocation->cod_budget_allocation_type,
+                'code' => $allocation->code,
                 'Formato para importar' => $allocation->code . ' - ' . $allocation->description,
             ];
         })->toArray();
@@ -294,8 +336,8 @@ class BudgetAllocationsSheet implements FromArray, WithHeadings, WithStyles, Sho
     public function headings(): array
     {
         return [
-            'Código',
-            'Descripción',
+            'cod_budget_allocation_type',
+            'code',
             'Formato para importar',
         ];
     }

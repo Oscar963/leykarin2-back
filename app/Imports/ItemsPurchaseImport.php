@@ -25,7 +25,7 @@ use Exception;
 class ItemsPurchaseImport implements WithMultipleSheets
 {
     protected $projectId;
-    protected $sheetImport;
+    public $sheetImport;
 
     public function __construct($projectId)
     {
@@ -54,7 +54,6 @@ class ItemsPurchaseImport implements WithMultipleSheets
 class ItemsPurchaseSheetImport implements 
     ToModel, 
     WithHeadingRow, 
-    WithValidation, 
     WithBatchInserts, 
     WithChunkReading, 
     WithCalculatedFormulas,
@@ -68,10 +67,56 @@ class ItemsPurchaseSheetImport implements
     protected $errors = [];
     protected $importedCount = 0;
     protected $skippedCount = 0;
+    
+    // Caché para optimizar consultas
+    public $budgetAllocationsCache = [];
+    public $typePurchasesCache = [];
+    public $publicationMonthsCache = [];
+    public $defaultStatusId = null;
 
     public function __construct($projectId)
     {
         $this->projectId = $projectId;
+        $this->initializeCache();
+    }
+
+    /**
+     * Inicializar caché de relaciones para evitar consultas repetidas
+     */
+    protected function initializeCache()
+    {
+        // Cargar todas las asignaciones presupuestarias en caché
+        $budgetAllocations = BudgetAllocation::all();
+        foreach ($budgetAllocations as $allocation) {
+            $this->budgetAllocationsCache[$allocation->code] = $allocation->id;
+            // También cachear por descripción
+            $this->budgetAllocationsCache[strtolower($allocation->description)] = $allocation->id;
+        }
+
+        // Cargar todos los tipos de compra en caché
+        $typePurchases = TypePurchase::all();
+        foreach ($typePurchases as $type) {
+            $this->typePurchasesCache[strtolower($type->name)] = $type->id;
+            if ($type->cod_purchase_type) {
+                $this->typePurchasesCache[strtolower($type->cod_purchase_type)] = $type->id;
+            }
+        }
+
+        // Cargar todos los meses de publicación en caché
+        $publicationMonths = PublicationMonth::all();
+        foreach ($publicationMonths as $month) {
+            $key = strtolower($month->short_name . ' ' . $month->year);
+            $this->publicationMonthsCache[$key] = $month->id;
+            $key = strtolower($month->name . ' ' . $month->year);
+            $this->publicationMonthsCache[$key] = $month->id;
+        }
+
+        // Obtener ID del estado por defecto
+        $defaultStatus = StatusItemPurchase::where('name', 'like', '%pendiente%')
+            ->orWhere('name', 'like', '%borrador%')
+            ->orWhere('name', 'like', '%draft%')
+            ->first();
+        $this->defaultStatusId = $defaultStatus ? $defaultStatus->id : StatusItemPurchase::first()->id;
     }
 
     /**
@@ -122,14 +167,8 @@ class ItemsPurchaseSheetImport implements
         // Mapear las claves del array para normalizar los nombres
         $row = $this->mapRowKeys($row);
         
-        // Log para debugging
-        Log::info('Fila procesada:', $row);
-        
         // Verificar si estamos leyendo la hoja correcta
-        // Si la fila contiene campos como 'codigo', 'descripcion', 'formato_para_importar'
-        // significa que estamos leyendo la hoja de asignaciones presupuestarias
         if (isset($row['codigo']) || isset($row['descripcion']) || isset($row['formato_para_importar'])) {
-            Log::warning('Se está leyendo la hoja incorrecta. Esta fila parece ser de asignaciones presupuestarias:', $row);
             return null; // Ignorar esta fila
         }
         
@@ -173,7 +212,6 @@ class ItemsPurchaseSheetImport implements
             'cod_gasto_presupuestario',
             'tipo_de_compra',
             'mes_de_publicacion',
-            // 'comentario' - Este campo es opcional
         ];
         
         foreach ($requiredFields as $field) {
@@ -189,19 +227,10 @@ class ItemsPurchaseSheetImport implements
         }
 
         try {
-            // Mapear las relaciones
-            $budgetAllocationId = $this->getBudgetAllocationId($row['cod_gasto_presupuestario'] ?? '');
-            $typePurchaseId = $this->getTypePurchaseId($row['tipo_de_compra'] ?? '');
-            $publicationMonthId = $this->getPublicationMonthId($row['mes_de_publicacion'] ?? '');
-            $statusItemPurchaseId = $this->getDefaultStatusId();
-
-            // Log de debugging para las relaciones
-            Log::info('Relaciones mapeadas:', [
-                'budget_allocation_id' => $budgetAllocationId,
-                'type_purchase_id' => $typePurchaseId,
-                'publication_month_id' => $publicationMonthId,
-                'status_item_purchase_id' => $statusItemPurchaseId,
-            ]);
+            // Mapear las relaciones usando caché
+            $budgetAllocationId = $this->getBudgetAllocationIdFromCache($row['cod_gasto_presupuestario'] ?? '');
+            $typePurchaseId = $this->getTypePurchaseIdFromCache($row['tipo_de_compra'] ?? '');
+            $publicationMonthId = $this->getPublicationMonthIdFromCache($row['mes_de_publicacion'] ?? '');
 
             // Crear el modelo
             $itemPurchase = new ItemPurchase([
@@ -213,19 +242,16 @@ class ItemsPurchaseSheetImport implements
                 'months_oc' => $row['meses_envio_oc'] ?? '',
                 'regional_distribution' => $row['dist_regional'] ?? '',
                 'cod_budget_allocation_type' => $row['cod_gasto_presupuestario'] ?? '',
-                'comment' => $row['comentario'] ?? '',
                 // Relaciones
                 'project_id' => $this->projectId,
                 'budget_allocation_id' => $budgetAllocationId,
                 'type_purchase_id' => $typePurchaseId,
-                'status_item_purchase_id' => $statusItemPurchaseId,
+                'status_item_purchase_id' => $this->defaultStatusId,
                 'publication_month_id' => $publicationMonthId,
                 // Usuario que importa
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
-
-            Log::info('ItemPurchase creado:', $itemPurchase->toArray());
 
             $this->importedCount++;
             return $itemPurchase;
@@ -237,145 +263,83 @@ class ItemsPurchaseSheetImport implements
                 'data' => $row
             ];
             $this->skippedCount++;
-            Log::error('Error importing item purchase row: ' . $e->getMessage(), $row);
             return null;
         }
     }
 
     /**
-     * Obtener ID de asignación presupuestaria por código
+     * Obtener ID de asignación presupuestaria desde caché
      */
-    protected function getBudgetAllocationId($code)
+    public function getBudgetAllocationIdFromCache($code)
     {
         if (empty($code)) {
-            Log::warning('Código de asignación presupuestaria vacío');
             return null;
         }
 
-        // Buscar por código exacto
-        $budgetAllocation = BudgetAllocation::where('code', trim($code))->first();
+        $code = trim($code);
         
-        if ($budgetAllocation) {
-            Log::info("Asignación presupuestaria encontrada por código exacto: {$code} -> ID {$budgetAllocation->id}");
-            return $budgetAllocation->id;
+        // Buscar en caché por código exacto
+        if (isset($this->budgetAllocationsCache[$code])) {
+            return $this->budgetAllocationsCache[$code];
         }
 
-        // Si no encuentra, buscar por descripción que contenga el código
-        $budgetAllocation = BudgetAllocation::where('description', 'like', '%' . trim($code) . '%')->first();
-        
-        if ($budgetAllocation) {
-            Log::info("Asignación presupuestaria encontrada por descripción: {$code} -> ID {$budgetAllocation->id}");
-            return $budgetAllocation->id;
+        // Buscar en caché por descripción
+        $codeLower = strtolower($code);
+        if (isset($this->budgetAllocationsCache[$codeLower])) {
+            return $this->budgetAllocationsCache[$codeLower];
         }
 
         // Si no encuentra, buscar en el formato "código - descripción"
         if (strpos($code, ' - ') !== false) {
             $parts = explode(' - ', $code);
-            $budgetAllocation = BudgetAllocation::where('code', trim($parts[0]))->first();
-            
-            if ($budgetAllocation) {
-                Log::info("Asignación presupuestaria encontrada por formato código-descripción: {$code} -> ID {$budgetAllocation->id}");
-                return $budgetAllocation->id;
+            $codePart = trim($parts[0]);
+            if (isset($this->budgetAllocationsCache[$codePart])) {
+                return $this->budgetAllocationsCache[$codePart];
             }
         }
 
-        // Si no encuentra nada, usar la primera disponible como fallback
-        $fallbackAllocation = BudgetAllocation::first();
-        if ($fallbackAllocation) {
-            Log::warning("No se encontró asignación presupuestaria para '{$code}', usando fallback ID {$fallbackAllocation->id}");
-            return $fallbackAllocation->id;
-        }
-
-        Log::error("No hay asignaciones presupuestarias disponibles en el sistema");
-        return null;
+        // Fallback: usar la primera disponible
+        return reset($this->budgetAllocationsCache) ?: null;
     }
 
     /**
-     * Obtener ID de tipo de compra por nombre
+     * Obtener ID de tipo de compra desde caché
      */
-    protected function getTypePurchaseId($name)
+    public function getTypePurchaseIdFromCache($name)
     {
         if (empty($name)) {
-            Log::warning('Nombre de tipo de compra vacío');
             return null;
         }
 
-        $typePurchase = TypePurchase::where('name', 'like', '%' . trim($name) . '%')
-            ->orWhere('cod_purchase_type', trim($name))
-            ->first();
-
-        if ($typePurchase) {
-            Log::info("Tipo de compra encontrado: {$name} -> ID {$typePurchase->id}");
-            return $typePurchase->id;
+        $nameLower = strtolower(trim($name));
+        
+        // Buscar en caché
+        if (isset($this->typePurchasesCache[$nameLower])) {
+            return $this->typePurchasesCache[$nameLower];
         }
 
         // Fallback: usar el primer tipo disponible
-        $fallbackType = TypePurchase::first();
-        if ($fallbackType) {
-            Log::warning("No se encontró tipo de compra para '{$name}', usando fallback ID {$fallbackType->id}");
-            return $fallbackType->id;
-        }
-
-        Log::error("No hay tipos de compra disponibles en el sistema");
-        return null;
+        return reset($this->typePurchasesCache) ?: null;
     }
 
     /**
-     * Obtener ID de mes de publicación
+     * Obtener ID de mes de publicación desde caché
      */
-    protected function getPublicationMonthId($monthYear)
+    public function getPublicationMonthIdFromCache($monthYear)
     {
         if (empty($monthYear)) {
-            Log::warning('Mes de publicación vacío');
             return null;
         }
 
-        // Buscar por formato "Dic 2025"
-        $publicationMonth = PublicationMonth::where('formatted_date', trim($monthYear))->first();
+        $monthYearLower = strtolower(trim($monthYear));
         
-        if ($publicationMonth) {
-            Log::info("Mes de publicación encontrado por formato: {$monthYear} -> ID {$publicationMonth->id}");
-            return $publicationMonth->id;
-        }
-
-        // Buscar por nombre corto y año
-        $parts = explode(' ', trim($monthYear));
-        if (count($parts) >= 2) {
-            $shortName = $parts[0];
-            $year = $parts[1];
-            
-            $publicationMonth = PublicationMonth::where('short_name', $shortName)
-                ->where('year', $year)
-                ->first();
-                
-            if ($publicationMonth) {
-                Log::info("Mes de publicación encontrado por partes: {$monthYear} -> ID {$publicationMonth->id}");
-                return $publicationMonth->id;
-            }
+        // Buscar en caché
+        if (isset($this->publicationMonthsCache[$monthYearLower])) {
+            return $this->publicationMonthsCache[$monthYearLower];
         }
 
         // Fallback: usar el primer mes disponible
-        $fallbackMonth = PublicationMonth::first();
-        if ($fallbackMonth) {
-            Log::warning("No se encontró mes de publicación para '{$monthYear}', usando fallback ID {$fallbackMonth->id}");
-            return $fallbackMonth->id;
-        }
-
-        Log::error("No hay meses de publicación disponibles en el sistema");
-        return null;
-    }
-
-    /**
-     * Obtener ID del estado por defecto
-     */
-    protected function getDefaultStatusId()
-    {
-        $defaultStatus = StatusItemPurchase::where('name', 'like', '%pendiente%')
-            ->orWhere('name', 'like', '%borrador%')
-            ->orWhere('name', 'like', '%draft%')
-            ->first();
-
-        return $defaultStatus ? $defaultStatus->id : StatusItemPurchase::first()->id;
+        return reset($this->publicationMonthsCache) ?: null;
     }
 
     /**
@@ -407,48 +371,11 @@ class ItemsPurchaseSheetImport implements
     }
 
     /**
-     * Reglas de validación
-     */
-    public function rules(): array
-    {
-        return [
-            'linea' => 'required|numeric|min:1',
-            'producto_o_servicio' => 'required|string|max:255',
-            'cantidad' => 'required|numeric|min:1',
-            'monto' => 'required|numeric|min:0',
-            'cantidad_oc' => 'required|numeric|min:0',
-            'meses_envio_oc' => 'required|string|max:100',
-            'dist_regional' => 'required|string|max:255',
-            'cod_gasto_presupuestario' => 'required|string|max:100',
-            'tipo_de_compra' => 'required|string|max:255',
-            'mes_de_publicacion' => 'required|string|max:100',
-            'comentario' => 'nullable|string|max:500',
-        ];
-    }
-
-    /**
-     * Mensajes de validación personalizados
-     */
-    public function customValidationMessages()
-    {
-        return [
-            'producto_o_servicio.required' => 'El campo Producto o Servicio es obligatorio.',
-            'producto_o_servicio.string' => 'El campo Producto o Servicio debe ser texto.',
-            'cantidad.required' => 'El campo Cantidad es obligatorio.',
-            'cantidad.numeric' => 'El campo Cantidad debe ser numérico.',
-            'cantidad.min' => 'El campo Cantidad debe ser mayor a 0.',
-            'monto.required' => 'El campo Monto es obligatorio.',
-            'monto.numeric' => 'El campo Monto debe ser numérico.',
-            'monto.min' => 'El campo Monto debe ser mayor o igual a 0.',
-        ];
-    }
-
-    /**
      * Número de filas por lote
      */
     public function batchSize(): int
     {
-        return 100;
+        return 10;
     }
 
     /**
@@ -456,7 +383,7 @@ class ItemsPurchaseSheetImport implements
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 10;
     }
 
     /**
@@ -507,6 +434,5 @@ class ItemsPurchaseSheetImport implements
             'data' => []
         ];
         $this->skippedCount++;
-        Log::error('Error during import: ' . $e->getMessage());
     }
 } 

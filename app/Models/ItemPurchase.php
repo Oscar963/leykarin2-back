@@ -19,7 +19,6 @@ class ItemPurchase extends Model
         'months_oc',
         'regional_distribution',
         'cod_budget_allocation_type',
-        'comment',
         'project_id',
         'budget_allocation_id',
         'type_purchase_id',

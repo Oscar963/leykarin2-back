@@ -158,7 +158,8 @@ class ItemPurchaseController extends Controller
 
             $import = new ItemsPurchaseImport($projectId);
             
-            Excel::import($import, $request->file('file'));
+            // Importar sin validación automática para mejor rendimiento
+            Excel::import($import, $request->file('file'), null, \Maatwebsite\Excel\Excel::XLSX);
             
             $stats = $import->getImportStats();
             $errors = $import->getErrors();

@@ -25,12 +25,14 @@ El sistema de importación Excel permite cargar múltiples ítems de compra desd
 | Producto o Servicio | Texto | **Sí** | Descripción del producto o servicio |
 | Cantidad | Número | **Sí** | Cantidad de unidades |
 | Monto | Número | **Sí** | Precio por unidad |
+| Total/Item | Número | No | Total del ítem (calculado automáticamente) |
 | Cantidad OC | Número | No | Cantidad de órdenes de compra |
 | Meses envio OC | Texto | No | Meses de envío de OC |
-| Dist. Regional | Texto | No | Distribución regional |
-| Cod. Gasto Presupuestario | Texto | No | Código de gasto presupuestario |
-| Tipo de Compra | Texto | No | Tipo de compra (se mapea automáticamente) |
-| Mes de publicación | Texto | No | Mes de publicación (formato: "Dic 2025") |
+| Dist. Regional | Texto | No | Distribución regional (por defecto: "15-1") |
+| Asignación Presupuestaria | Combobox | No | Asignación presupuestaria (lista desplegable con formato: "código - descripción") |
+| Cod. Gasto Presupuestario | Combobox | No | Código de gasto presupuestario (lista desplegable) |
+| Tipo de Compra | Combobox | No | Tipo de compra (lista desplegable) |
+| Mes de publicación | Combobox | No | Mes de publicación (lista desplegable, formato: "Dic 2025") |
 | Comentario | Texto | No | Comentarios adicionales |
 
 ## Endpoints Disponibles
@@ -99,13 +101,40 @@ Content-Type: multipart/form-data
 El archivo debe tener exactamente estos encabezados en la primera fila:
 
 ```
-Línea | Producto o Servicio | Cantidad | Monto | Cantidad OC | Meses envio OC | Dist. Regional | Cod. Gasto Presupuestario | Tipo de Compra | Mes de publicación | Comentario
+Línea | Producto o Servicio | Cantidad | Monto | Total/Item | Cantidad OC | Meses envio OC | Dist. Regional | Asignación Presupuestaria | Cod. Gasto Presupuestario | Tipo de Compra | Mes de publicación | Comentario
 ```
+
+### **Validaciones de Datos (Comboboxes)**
+La plantilla incluye validaciones de datos con listas desplegables para facilitar la entrada de datos:
+
+- **Asignación Presupuestaria:** Lista desplegable con valores de la hoja "Asignaciones Presupuestarias" (columna "Formato para importar")
+- **Cod. Gasto Presupuestario:** Se autocompleta automáticamente al seleccionar una Asignación Presupuestaria
+- **Tipo de Compra:** Lista desplegable con tipos de la hoja "Tipos de Compra" (columna "Nombre")
+- **Mes de publicación:** Lista desplegable con meses de la hoja "Meses de Publicación"
+
+### **Funcionalidades Automáticas**
+
+#### **Autocompletado de Cod. Gasto Presupuestario**
+- Al seleccionar una "Asignación Presupuestaria" en la columna I, la columna J "Cod. Gasto Presupuestario" se completa automáticamente
+- El valor autocompletado corresponde al `cod_budget_allocation_type` de la hoja "Asignaciones Presupuestarias" (columna A)
+- **Fórmula utilizada:** `INDEX('Asignaciones Presupuestarias'!A:A,MATCH(I{row},'Asignaciones Presupuestarias'!C:C,0))`
+- **Ejemplo:** Si seleccionas "22-01-001 - Alimentos y Bebidas Para Personas", se autocompleta con "82"
+- **Rango aplicado:** Filas 2-100 (optimizado para rendimiento)
+- Esta funcionalidad reduce errores y agiliza el proceso de llenado de datos
+
+### **Estructura de Hojas de Referencia**
+
+#### **Hoja "Asignaciones Presupuestarias"**
+| Columna | Campo | Descripción |
+|---------|-------|-------------|
+| A | cod_budget_allocation_type | Tipo de asignación presupuestaria |
+| B | code | Código de la asignación |
+| C | Formato para importar | Formato combinado "código - descripción" |
 
 ### **Ejemplo de Datos**
 ```
-1 | Laptop HP ProBook 450 G8 | 5 | 500000 | 2 | Ene, Feb | Región Metropolitana | 123456 | Bienes | Dic 2025 | Equipos informáticos
-2 | Servicio de mantenimiento | 12 | 25000 | 1 | Mar | Valparaíso | 789012 | Servicios | Ene 2026 | Mantenimiento anual
+1 | Laptop HP ProBook 450 G8 | 5 | 500000 | 2500000 | 2 | Ene, Feb | 15-1 | 123456 - Descripción | 123456 | Bienes | Dic 2025 | Equipos informáticos
+2 | Servicio de mantenimiento | 12 | 25000 | 300000 | 1 | Mar | 15-1 | 789012 - Descripción | 789012 | Servicios | Ene 2026 | Mantenimiento anual
 ```
 
 ## Mapeo Automático de Relaciones
@@ -136,10 +165,12 @@ Asigna automáticamente un estado "pendiente" o "borrador" al importar.
 - **Producto o Servicio:** Requerido, máximo 255 caracteres
 - **Cantidad:** Requerido, numérico, mínimo 1
 - **Monto:** Requerido, numérico, mínimo 0
+- **Total/Item:** Opcional, numérico, mínimo 0 (calculado automáticamente por el sistema)
 - **Línea:** Opcional, numérico, mínimo 1
 - **Cantidad OC:** Opcional, numérico, mínimo 0
 - **Meses envio OC:** Opcional, máximo 100 caracteres
-- **Dist. Regional:** Opcional, máximo 255 caracteres
+- **Dist. Regional:** Opcional, máximo 255 caracteres (por defecto: "15-1")
+- **Asignación Presupuestaria:** Opcional, máximo 255 caracteres (formato: "código - descripción")
 - **Cod. Gasto Presupuestario:** Opcional, máximo 100 caracteres
 - **Tipo de Compra:** Opcional, máximo 255 caracteres
 - **Mes de publicación:** Opcional, máximo 100 caracteres
@@ -302,3 +333,12 @@ Log::error('Error importing item purchase row: ' . $e->getMessage(), $row);
 - [ ] Validación en tiempo real
 - [ ] Soporte para archivos CSV
 - [ ] Importación incremental 
+
+### **Validaciones de Datos Disponibles:**
+
+| Columna | Tipo | Fuente de Datos | Descripción |
+|---------|------|-----------------|-------------|
+| I - Asignación Presupuestaria | Combobox | Asignaciones Presupuestarias (columna C) | Formato: "código - descripción" |
+| J - Cod. Gasto Presupuestario | Autocompletado | Asignaciones Presupuestarias (columna A) | Se completa automáticamente al seleccionar Asignación Presupuestaria |
+| K - Tipo de Compra | Combobox | Tipos de Compra (columna A) | Nombres de tipos |
+| L - Mes de publicación | Combobox | Meses de Publicación (columna A) | Formato: "Dic 2025" | 
