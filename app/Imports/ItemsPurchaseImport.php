@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithLimit;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Exception;
@@ -59,7 +60,8 @@ class ItemsPurchaseSheetImport implements
     WithCalculatedFormulas,
     SkipsOnError,
     SkipsEmptyRows,
-    WithStartRow
+    WithStartRow,
+    WithLimit
 {
     use SkipsErrors;
     
@@ -131,12 +133,16 @@ class ItemsPurchaseSheetImport implements
             'producto o servicio' => 'producto_o_servicio',
             'cantidad' => 'cantidad',
             'monto' => 'monto',
+            'total_item' => 'total_item', // Solo informativa, no se guarda en BD
+            'total ítem' => 'total_item', // Solo informativa, no se guarda en BD
             'cantidad_oc' => 'cantidad_oc',
             'cantidad oc' => 'cantidad_oc',
             'meses_envio_oc' => 'meses_envio_oc',
             'meses envio oc' => 'meses_envio_oc',
             'dist_regional' => 'dist_regional',
             'dist. regional' => 'dist_regional',
+            'asignacion_presupuestaria' => 'asignacion_presupuestaria', // Solo informativa, no se guarda en BD
+            'asignación presupuestaria' => 'asignacion_presupuestaria', // Solo informativa, no se guarda en BD
             'cod_gasto_presupuestario' => 'cod_gasto_presupuestario',
             'cod. gasto presupuestario' => 'cod_gasto_presupuestario',
             'tipo_de_compra' => 'tipo_de_compra',
@@ -179,9 +185,11 @@ class ItemsPurchaseSheetImport implements
             'producto_o_servicio',
             'cantidad',
             'monto',
+            'total_item', // Solo informativa
             'cantidad_oc',
             'meses_envio_oc',
             'dist_regional',
+            'asignacion_presupuestaria', // Solo informativa
             'cod_gasto_presupuestario',
             'tipo_de_compra',
             'mes_de_publicacion',
@@ -212,6 +220,9 @@ class ItemsPurchaseSheetImport implements
             'cod_gasto_presupuestario',
             'tipo_de_compra',
             'mes_de_publicacion',
+            // 'total_item' - Solo informativa, no es obligatoria
+            // 'asignacion_presupuestaria' - Solo informativa, no es obligatoria
+            // 'comentario' - Este campo es opcional
         ];
         
         foreach ($requiredFields as $field) {
@@ -400,6 +411,14 @@ class ItemsPurchaseSheetImport implements
     public function startRow(): int
     {
         return 2;
+    }
+
+    /**
+     * Limitar el número de filas a procesar (evita leer filas vacías infinitas)
+     */
+    public function limit(): int
+    {
+        return 1000; // Máximo 1000 filas para evitar timeouts
     }
 
     /**

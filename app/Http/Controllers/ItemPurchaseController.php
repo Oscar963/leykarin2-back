@@ -151,6 +151,9 @@ class ItemPurchaseController extends Controller
 
     public function import(Request $request, $projectId)
     {
+        // Aumentar tiempo límite para importaciones grandes
+        set_time_limit(300); // 5 minutos
+        
         try {
             $request->validate([
                 'file' => 'required|file|mimes:xlsx,xls|max:10240', // Máximo 10MB
