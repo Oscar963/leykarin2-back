@@ -7,6 +7,7 @@ use App\Http\Controllers\BudgetAllocationController;
 use App\Http\Controllers\DirectionController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FormF1Controller;
+use App\Http\Controllers\GoalController;
 use App\Http\Controllers\ItemPurchaseController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicationMonthController;
@@ -112,10 +113,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('item-purchases/template', [ItemPurchaseController::class, 'downloadTemplate'])->name('item-purchases.template');
         Route::apiResource('item-purchases', ItemPurchaseController::class);
         Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export'])->name('item-purchases.export');
-        Route::post('item-purchases/import/{projectId}', [ItemPurchaseController::class, 'import'])->name('item-purchases.import');    });
+        Route::post('item-purchases/import/{projectId}', [ItemPurchaseController::class, 'import'])->name('item-purchases.import');
+    });
 
     Route::middleware(['permission:item_purchases.update_status'])->group(function () {
         Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');
+    });
+
+    // Rutas para metas de proyectos estratégicos
+    Route::middleware(['permission:goals.list', 'validate.strategic.project'])->group(function () {
+        Route::apiResource('goals', GoalController::class);
+        Route::get('goals/project/{projectId}/statistics', [GoalController::class, 'getProjectStatistics'])->name('goals.project.statistics');
+        Route::get('goals/overdue', [GoalController::class, 'getOverdueGoals'])->name('goals.overdue');
+    });
+
+    Route::middleware(['permission:goals.update_progress', 'validate.strategic.project'])->group(function () {
+        Route::put('goals/{id}/progress', [GoalController::class, 'updateProgress'])->name('goals.update.progress');
     });
 
     // Rutas para configuraciones (solo administradores)

@@ -56,6 +56,72 @@ class Project extends Model
         return $this->morphMany(File::class, 'fileable');
     }
 
+    /**
+     * Relación con las metas (solo para proyectos estratégicos)
+     */
+    public function goals()
+    {
+        return $this->hasMany(Goal::class);
+    }
+
+    /**
+     * Verifica si el proyecto es estratégico
+     */
+    public function isStrategic()
+    {
+        return $this->typeProject && $this->typeProject->name === 'Estratégico';
+    }
+
+    /**
+     * Verifica si el proyecto es operativo
+     */
+    public function isOperative()
+    {
+        return $this->typeProject && $this->typeProject->name === 'Operativo';
+    }
+
+    /**
+     * Obtiene las metas del proyecto (solo si es estratégico)
+     */
+    public function getGoals()
+    {
+        if (!$this->isStrategic()) {
+            return collect();
+        }
+        
+        return $this->goals;
+    }
+
+    /**
+     * Obtiene el progreso promedio de las metas (solo proyectos estratégicos)
+     */
+    public function getAverageGoalProgress()
+    {
+        if (!$this->isStrategic() || $this->goals->isEmpty()) {
+            return 0;
+        }
+
+        $totalProgress = $this->goals->sum(function ($goal) {
+            return $goal->getProgressPercentage();
+        });
+
+        return round($totalProgress / $this->goals->count(), 2);
+    }
+
+    /**
+     * Obtiene el número de metas completadas
+     */
+    public function getCompletedGoalsCount()
+    {
+        if (!$this->isStrategic()) {
+            return 0;
+        }
+
+        return $this->goals->filter(function ($goal) {
+            return $goal->isCompleted();
+        })->count();
+    }
+
     public function getTotalAmount()
     {
         return $this->itemPurchases->sum(function ($item) {
