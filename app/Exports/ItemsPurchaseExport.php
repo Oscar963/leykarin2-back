@@ -50,7 +50,7 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
             'Producto o Servicio',
             'Cantidad',
             'Monto',
-            'Total ítem',
+            'Total Ítem',
             'Cantidad OC',
             'Meses envio OC',
             'Dist. Regional',
@@ -60,7 +60,6 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
             'Cód. tipo compra',
             'Mes de publicación',
             'Comentario',
-            'Estado',
         ];
     }
 
@@ -81,7 +80,6 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
             $row->typePurchase->cod_purchase_type,
             $row->publication_date_formatted,
             $row->comment ?? '',
-            $row->statusItemPurchase->name,
         ];
     }
 
@@ -91,7 +89,7 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
     public function styles(Worksheet $sheet)
     {
         // Encabezados: fondo azul y texto blanco, centrado
-        $sheet->getStyle('A1:O1')->applyFromArray([
+        $sheet->getStyle('A1:N1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -107,7 +105,7 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
         $highestRow = $sheet->getHighestRow();
         for ($row = 2; $row <= $highestRow; $row++) {
             if ($row % 2 == 0) {
-                $sheet->getStyle("A{$row}:M{$row}")->applyFromArray([
+                $sheet->getStyle("A{$row}:N{$row}")->applyFromArray([
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                         'startColor' => ['rgb' => 'F2F2F2']
@@ -117,7 +115,7 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
         }
 
         // Bordes para todas las celdas
-        $sheet->getStyle("A1:M$highestRow")->applyFromArray([
+        $sheet->getStyle("A1:N$highestRow")->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -198,7 +196,7 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
             'Producto o Servicio',
             'Cantidad',
             'Monto',
-            'Total ítem',
+            'Total Ítem',
             'Cantidad OC',
             'Meses envio OC',
             'Dist. Regional',
@@ -208,7 +206,6 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
             'Cód. tipo compra',
             'Mes de publicación',
             'Comentario',
-            'Estado',
         ];
     }
 
@@ -229,7 +226,6 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
             $row->typePurchase->cod_purchase_type,
             $row->publication_date_formatted,
             $row->comment ?? '',
-            $row->statusItemPurchase->name,
         ];
     }
 
@@ -239,7 +235,7 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
     public function styles(Worksheet $sheet)
     {
         // Encabezados: fondo azul y texto blanco, centrado
-        $sheet->getStyle('A1:O1')->applyFromArray([
+        $sheet->getStyle('A1:N1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -255,7 +251,7 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
         $highestRow = $sheet->getHighestRow();
         for ($row = 2; $row <= $highestRow; $row++) {
             if ($row % 2 == 0) {
-                $sheet->getStyle("A{$row}:O{$row}")->applyFromArray([
+                $sheet->getStyle("A{$row}:N{$row}")->applyFromArray([
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                         'startColor' => ['rgb' => 'F2F2F2']
@@ -265,7 +261,7 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
         }
 
         // Bordes para todas las celdas
-        $sheet->getStyle("A1:O$highestRow")->applyFromArray([
+        $sheet->getStyle("A1:N$highestRow")->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -276,6 +272,22 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
 
         // Congelar la fila de encabezados
         $sheet->freezePane('A2');
+
+        // Ajustar ancho de columnas específicas (igual que en la plantilla)
+        $sheet->getColumnDimension('A')->setWidth(8);  // Línea
+        $sheet->getColumnDimension('B')->setWidth(40); // Producto o Servicio
+        $sheet->getColumnDimension('C')->setWidth(10); // Cantidad
+        $sheet->getColumnDimension('D')->setWidth(12); // Monto
+        $sheet->getColumnDimension('E')->setWidth(15); // Total Ítem
+        $sheet->getColumnDimension('F')->setWidth(12); // Cantidad OC
+        $sheet->getColumnDimension('G')->setWidth(15); // Meses envio OC
+        $sheet->getColumnDimension('H')->setWidth(12); // Dist. Regional
+        $sheet->getColumnDimension('I')->setWidth(35); // Asignación Presupuestaria
+        $sheet->getColumnDimension('J')->setWidth(15); // Cod. Gasto Presupuestario
+        $sheet->getColumnDimension('K')->setWidth(15); // Tipo de Compra
+        $sheet->getColumnDimension('L')->setWidth(12); // Cód. tipo compra
+        $sheet->getColumnDimension('M')->setWidth(15); // Mes de publicación
+        $sheet->getColumnDimension('N')->setWidth(25); // Comentario
 
         return [];
     }

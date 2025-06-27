@@ -8,6 +8,8 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Models\BudgetAllocation;
 use App\Models\TypePurchase;
@@ -26,7 +28,7 @@ class ItemsPurchaseTemplateExport implements WithMultipleSheets
     }
 }
 
-class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles, ShouldAutoSize, WithTitle
+class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles, ShouldAutoSize, WithTitle, WithEvents
 {
     public function array(): array
     {
@@ -43,8 +45,8 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
                 '15-1',
                 '29.03.002 - ADQUISICION DE EQUIPOS INFORMATICOS',
                 '29.03.002',
-                '29.03.002',
                 'Bienes',
+                'B',
                 'Dic 2025',
                 'Equipos para oficina'
             ],
@@ -59,8 +61,8 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
                 '15-1',
                 '29.02.004 - SERVICIOS DE MANTENIMIENTO',
                 '29.02.004',
-                '29.02.004',
                 'Servicios',
+                'S',
                 'Ene 2026',
                 'Servicio anual'
             ]
@@ -81,15 +83,107 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
             'Asignación Presupuestaria',
             'Cod. Gasto Presupuestario',
             'Tipo de Compra',
+            'Cód. tipo compra',
             'Mes de publicación',
             'Comentario'
         ];
     }
 
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function(AfterSheet $event) {
+                $this->addDataValidation($event->sheet->getDelegate());
+            },
+        ];
+    }
+
+    private function addDataValidation(Worksheet $sheet)
+    {
+        // Definir el rango de la lista de asignaciones presupuestarias en la hoja de referencia
+        $asignacionesSheet = 'Asignaciones Presupuestarias';
+        $listaAsignaciones = "'{$asignacionesSheet}'!\$D\$2:\$D\$100"; // Columna D de la hoja de referencia (Formato para importar)
+
+        // Definir el rango de la lista de tipos de compra en la hoja de referencia
+        $tiposCompraSheet = 'Tipos de Compra';
+        $listaTiposCompra = "'{$tiposCompraSheet}'!\$A\$2:\$A\$100"; // Columna A de la hoja de referencia (nombre)
+
+        // Definir el rango de la lista de meses de publicación en la hoja de referencia
+        $mesesPublicacionSheet = 'Meses de Publicación';
+        $listaMesesPublicacion = "'{$mesesPublicacionSheet}'!\$A\$2:\$A\$100"; // Columna A de la hoja de referencia
+
+        // Obtener el primer valor de cada lista para establecer como valor por defecto
+        $firstAsignacion = "='{$asignacionesSheet}'!D2";
+        $firstTipoCompra = "='{$tiposCompraSheet}'!A2";
+
+        // Aplicar validación de datos a las columnas I, K y L desde la fila 2 hasta 100
+        for ($row = 2; $row <= 100; $row++) {
+            // Validación para columna I (Asignación Presupuestaria)
+            $validation = $sheet->getCell("I$row")->getDataValidation();
+            $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+            $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
+            $validation->setAllowBlank(false);
+            $validation->setShowInputMessage(true);
+            $validation->setShowErrorMessage(true);
+            $validation->setShowDropDown(true);
+            $validation->setFormula1($listaAsignaciones);
+            $validation->setErrorTitle('Error de validación');
+            $validation->setError('Por favor seleccione una asignación presupuestaria válida de la lista.');
+            $validation->setPromptTitle('Asignación Presupuestaria');
+            $validation->setPrompt('Seleccione una asignación presupuestaria de la lista desplegable.');
+            
+            // Establecer el primer valor como valor por defecto solo en las primeras 2 filas de datos
+            if ($row <= 3) {
+                $sheet->getCell("I$row")->setValue($firstAsignacion);
+            }
+            
+            // Fórmula para Cod. Gasto Presupuestario (columna J)
+            $formulaIngles = "=IF(ISNA(MATCH(I{$row},'{$asignacionesSheet}'!\$D\$2:\$D\$100,0)),\"\",INDEX('{$asignacionesSheet}'!\$A\$2:\$A\$100,MATCH(I{$row},'{$asignacionesSheet}'!\$D\$2:\$D\$100,0)))";
+            $sheet->getCell("J{$row}")->setValue($formulaIngles);
+
+            // Validación para columna K (Tipo de Compra)
+            $validationTipo = $sheet->getCell("K$row")->getDataValidation();
+            $validationTipo->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+            $validationTipo->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
+            $validationTipo->setAllowBlank(false);
+            $validationTipo->setShowInputMessage(true);
+            $validationTipo->setShowErrorMessage(true);
+            $validationTipo->setShowDropDown(true);
+            $validationTipo->setFormula1($listaTiposCompra);
+            $validationTipo->setErrorTitle('Error de validación');
+            $validationTipo->setError('Por favor seleccione un tipo de compra válido de la lista.');
+            $validationTipo->setPromptTitle('Tipo de Compra');
+            $validationTipo->setPrompt('Seleccione un tipo de compra de la lista desplegable.');
+            
+            // Establecer el primer valor como valor por defecto solo en las primeras 2 filas de datos
+            if ($row <= 3) {
+                $sheet->getCell("K$row")->setValue($firstTipoCompra);
+            }
+
+            // Fórmula para Cód. tipo compra (columna L)
+            $formulaTipoCompra = "=IF(ISNA(MATCH(K{$row},'{$tiposCompraSheet}'!\$A\$2:\$A\$100,0)),\"\",INDEX('{$tiposCompraSheet}'!\$B\$2:\$B\$100,MATCH(K{$row},'{$tiposCompraSheet}'!\$A\$2:\$A\$100,0)))";
+            $sheet->getCell("L{$row}")->setValue($formulaTipoCompra);
+
+            // Validación para columna M (Mes de publicación)
+            $validationMes = $sheet->getCell("M$row")->getDataValidation();
+            $validationMes->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+            $validationMes->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
+            $validationMes->setAllowBlank(false);
+            $validationMes->setShowInputMessage(true);
+            $validationMes->setShowErrorMessage(true);
+            $validationMes->setShowDropDown(true);
+            $validationMes->setFormula1($listaMesesPublicacion);
+            $validationMes->setErrorTitle('Error de validación');
+            $validationMes->setError('Por favor seleccione un mes de publicación válido de la lista.');
+            $validationMes->setPromptTitle('Mes de publicación');
+            $validationMes->setPrompt('Seleccione un mes de publicación de la lista desplegable.');
+        }
+    }
+
     public function styles(Worksheet $sheet)
     {
         // Encabezados: fondo azul y texto blanco
-        $sheet->getStyle('A1:M1')->applyFromArray([
+        $sheet->getStyle('A1:N1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -102,7 +196,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         ]);
 
         // Datos de ejemplo con fondo amarillo claro
-        $sheet->getStyle('A2:M3')->applyFromArray([
+        $sheet->getStyle('A2:N3')->applyFromArray([
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'startColor' => ['rgb' => 'FFF2CC']
@@ -110,7 +204,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         ]);
 
         // Bordes para las celdas con datos
-        $sheet->getStyle('A1:M3')->applyFromArray([
+        $sheet->getStyle('A1:N3')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -134,8 +228,9 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
         $sheet->getColumnDimension('I')->setWidth(35); // Asignación Presupuestaria
         $sheet->getColumnDimension('J')->setWidth(15); // Cod. Gasto Presupuestario
         $sheet->getColumnDimension('K')->setWidth(15); // Tipo de Compra
-        $sheet->getColumnDimension('L')->setWidth(15); // Mes de publicación
-        $sheet->getColumnDimension('M')->setWidth(25); // Comentario
+        $sheet->getColumnDimension('L')->setWidth(12); // Cód. tipo compra
+        $sheet->getColumnDimension('M')->setWidth(15); // Mes de publicación
+        $sheet->getColumnDimension('N')->setWidth(25); // Comentario
 
         return [];
     }
@@ -150,12 +245,13 @@ class BudgetAllocationsReferenceSheet implements FromArray, WithHeadings, WithSt
 {
     public function array(): array
     {
-        $allocations = BudgetAllocation::select('code', 'description')
+        $allocations = BudgetAllocation::select('cod_budget_allocation_type', 'code', 'description')
             ->orderBy('code')
             ->get();
         
         return $allocations->map(function($allocation) {
             return [
+                $allocation->cod_budget_allocation_type,
                 $allocation->code,
                 $allocation->description,
                 $allocation->code . ' - ' . $allocation->description
@@ -166,6 +262,7 @@ class BudgetAllocationsReferenceSheet implements FromArray, WithHeadings, WithSt
     public function headings(): array
     {
         return [
+            'Cod. Gasto Presupuestario',
             'Código',
             'Descripción',
             'Formato para importar'
@@ -177,7 +274,7 @@ class BudgetAllocationsReferenceSheet implements FromArray, WithHeadings, WithSt
         $highestRow = $sheet->getHighestRow();
         
         // Encabezados
-        $sheet->getStyle('A1:C1')->applyFromArray([
+        $sheet->getStyle('A1:D1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,

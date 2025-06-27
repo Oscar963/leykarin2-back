@@ -90,9 +90,15 @@ class ItemsPurchaseSheetImport implements
         // Cargar todas las asignaciones presupuestarias en caché
         $budgetAllocations = BudgetAllocation::all();
         foreach ($budgetAllocations as $allocation) {
+            // Cachear por código para obtener ID
             $this->budgetAllocationsCache[$allocation->code] = $allocation->id;
             // También cachear por descripción
             $this->budgetAllocationsCache[strtolower($allocation->description)] = $allocation->id;
+            // Cachear por formato "código - descripción" para obtener ID
+            $formatoCompleto = $allocation->code . ' - ' . $allocation->description;
+            $this->budgetAllocationsCache[$formatoCompleto] = $allocation->id;
+            // Cachear para obtener el cod_budget_allocation_type por ID
+            $this->budgetAllocationsCache['cod_' . $allocation->id] = $allocation->cod_budget_allocation_type;
         }
 
         // Cargar todos los tipos de compra en caché
@@ -217,11 +223,11 @@ class ItemsPurchaseSheetImport implements
             'cantidad_oc',
             'meses_envio_oc',
             'dist_regional',
-            'cod_gasto_presupuestario',
+            'asignacion_presupuestaria', // Ahora este es obligatorio para calcular cod_budget_allocation_type
             'tipo_de_compra',
             'mes_de_publicacion',
             // 'total_item' - Solo informativa, no es obligatoria
-            // 'asignacion_presupuestaria' - Solo informativa, no es obligatoria
+            // 'cod_gasto_presupuestario' - Ahora se calcula automáticamente
             // 'comentario' - Este campo es opcional
         ];
         
@@ -239,9 +245,16 @@ class ItemsPurchaseSheetImport implements
 
         try {
             // Mapear las relaciones usando caché
-            $budgetAllocationId = $this->getBudgetAllocationIdFromCache($row['cod_gasto_presupuestario'] ?? '');
+            // Usar la asignación presupuestaria (columna I) para obtener el ID
+            $budgetAllocationId = $this->getBudgetAllocationIdFromCache($row['asignacion_presupuestaria'] ?? '');
             $typePurchaseId = $this->getTypePurchaseIdFromCache($row['tipo_de_compra'] ?? '');
             $publicationMonthId = $this->getPublicationMonthIdFromCache($row['mes_de_publicacion'] ?? '');
+
+            // Calcular automáticamente cod_budget_allocation_type desde la base de datos
+            $codBudgetAllocationType = '';
+            if ($budgetAllocationId) {
+                $codBudgetAllocationType = $this->budgetAllocationsCache['cod_' . $budgetAllocationId] ?? '';
+            }
 
             // Crear el modelo
             $itemPurchase = new ItemPurchase([
@@ -252,7 +265,8 @@ class ItemsPurchaseSheetImport implements
                 'quantity_oc' => $this->parseInteger($row['cantidad_oc'] ?? 0),
                 'months_oc' => $row['meses_envio_oc'] ?? '',
                 'regional_distribution' => $row['dist_regional'] ?? '',
-                'cod_budget_allocation_type' => $row['cod_gasto_presupuestario'] ?? '',
+                'cod_budget_allocation_type' => $codBudgetAllocationType, // Calculado automáticamente
+                'comment' => $row['comentario'] ?? null, // Campo opcional
                 // Relaciones
                 'project_id' => $this->projectId,
                 'budget_allocation_id' => $budgetAllocationId,

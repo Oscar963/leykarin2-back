@@ -23,6 +23,7 @@ class CreateItemPurchasesTable extends Migration
             $table->string('months_oc'); // Meses de OC
             $table->string('regional_distribution'); // Distribución regional
             $table->string('cod_budget_allocation_type'); // Código de gasto presupuestario
+            $table->string('comment')->nullable(); // Comentario
 
             // Relaciones con otras tablas
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade'); // Proyecto

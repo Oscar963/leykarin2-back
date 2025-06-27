@@ -27,7 +27,6 @@ class ItemPurchaseResource extends JsonResource
             'total_item' => $this->getTotalAmount(),
             'budget_allocation' => new BudgetAllocationResource($this->budgetAllocation),
             'type_purchase' => new TypePurchaseResource($this->typePurchase),
-            'project' => new ProjectResource($this->project),
             'status' => new StatusItemPurchaseResource($this->statusItemPurchase),
             'publication_month' => new PublicationMonthResource($this->publicationMonth),
             'created_by' => new UserResource($this->createdBy),
