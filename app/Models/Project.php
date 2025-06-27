@@ -10,7 +10,15 @@ class Project extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name',
+        'token',
+        'project_number',
+        'description',
+        'created_by',
+        'updated_by',
+        'unit_purchasing_id',
+        'purchase_plan_id',
+        'type_project_id'
     ];
 
     public function purchasePlan()

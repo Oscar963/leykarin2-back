@@ -8,6 +8,7 @@ use App\Http\Requests\VerificationRequest;
 use App\Models\PurchasePlan;
 use App\Http\Resources\FileResource;
 use App\Services\ProjectService;
+use App\Exports\ProjectsWordExport;
 use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Exception;
@@ -264,5 +265,20 @@ class ProjectController extends Controller
     public function downloadVerificationProject(int $fileId): BinaryFileResponse
     {
         return $this->projectService->downloadFileVerificationProject($fileId);
+    }
+
+    /**
+     * Exportar proyectos a Word por plan de compra.
+     */
+    public function exportWord($purchasePlanId)
+    {
+        try {
+            $this->logActivity('download_projects_word_file', 'Usuario exportó el documento Word de proyectos para el plan de compra: ' . $purchasePlanId);
+            return (new ProjectsWordExport($purchasePlanId))->export();
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al exportar el documento Word: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -96,6 +96,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:projects.list'])->group(function () {
         Route::apiResource('projects', ProjectController::class);
         Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
+        Route::get('projects/export-word/{purchasePlanId}', [ProjectController::class, 'exportWord'])->name('projects.export.word');
         Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
     });
 
