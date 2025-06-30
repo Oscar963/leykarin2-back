@@ -20,7 +20,11 @@ class PurchasePlanService
      */
     public function getAllPurchasePlansByQuery(?string $query, int $perPage = 50)
     {
-        $queryBuilder = PurchasePlan::with('direction')->orderBy('created_at', 'DESC');
+        $queryBuilder = PurchasePlan::with([
+            'direction',
+            'currentStatus.status',
+            'currentStatus.createdBy'
+        ])->orderBy('created_at', 'DESC');
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
@@ -39,8 +43,13 @@ class PurchasePlanService
      */
     public function getAllPurchasePlansByYear(int $year, ?string $query = null, int $perPage = 50)
     {
-        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC')
-            ->where('year', $year);
+        $queryBuilder = PurchasePlan::with([
+            'direction',
+            'currentStatus.status',
+            'currentStatus.createdBy'
+        ])
+        ->orderBy('created_at', 'DESC')
+        ->where('year', $year);
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
@@ -59,9 +68,23 @@ class PurchasePlanService
      */
     public function getAllPurchasePlansByYearForUser(int $idDirection, int $year)
     {
-        $queryBuilder = PurchasePlan::orderBy('created_at', 'DESC')
-            ->where('direction_id', $idDirection)
-            ->where('year', $year);
+        $queryBuilder = PurchasePlan::with([
+            'direction',
+            'currentStatus.status',
+            'currentStatus.createdBy',
+            'statusHistory.status',
+            'statusHistory.createdBy',
+            'movementHistory.status',
+            'movementHistory.user',
+            'createdBy',
+            'updatedBy',
+            'projects',
+            'decreto',
+            'formF1'
+        ])
+        ->orderBy('created_at', 'DESC')
+        ->where('direction_id', $idDirection)
+        ->where('year', $year);
 
         return $queryBuilder->first();
     }
@@ -71,7 +94,20 @@ class PurchasePlanService
      */
     public function getPurchasePlanById($id)
     {
-        return PurchasePlan::findOrFail($id);
+        return PurchasePlan::with([
+            'direction',
+            'currentStatus.status',
+            'currentStatus.createdBy',
+            'statusHistory.status',
+            'statusHistory.createdBy',
+            'movementHistory.status',
+            'movementHistory.user',
+            'createdBy',
+            'updatedBy',
+            'projects',
+            'decreto',
+            'formF1'
+        ])->findOrFail($id);
     }
 
     /**
@@ -79,7 +115,20 @@ class PurchasePlanService
      */
     public function getPurchasePlanByToken($token)
     {
-        return PurchasePlan::where('token', $token)->first();
+        return PurchasePlan::with([
+            'direction',
+            'currentStatus.status',
+            'currentStatus.createdBy',
+            'statusHistory.status',
+            'statusHistory.createdBy',
+            'movementHistory.status',
+            'movementHistory.user',
+            'createdBy',
+            'updatedBy',
+            'projects',
+            'decreto',
+            'formF1'
+        ])->where('token', $token)->first();
     }
 
     /**
