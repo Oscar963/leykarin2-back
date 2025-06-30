@@ -9,8 +9,8 @@
 | **Visador** | Aprobación y visación | ❌ Solo ver/visar/rechazar | ✅ CRUD completo | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
 | **Encargado de Presupuestos** | Gestión de Formularios F1 | ✅ Ver/Listar/Exportar | ❌ Sin acceso | ✅ CRUD completo | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Reportes |
 | **Subrogante de Encargado** | Suplencia de presupuestos | ✅ Ver/Listar/Exportar | ❌ Sin acceso | ✅ CRUD completo | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Reportes |
-| **Director** | Gestión de su dirección | ✅ CRUD (sin eliminar) + Enviar | ✅ CRUD completo + Verificar | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
-| **Subrogante de Director** | Suplencia de director | ✅ CRUD (sin eliminar) + Enviar | ✅ CRUD (sin eliminar) + Verificar | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
+| **Director** | Gestión de su dirección | ✅ Listar/Ver/Enviar/Exportar | ✅ CRUD completo + Verificar | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
+| **Subrogante de Director** | Suplencia de director | ✅ Listar/Ver/Enviar/Exportar | ✅ CRUD (sin eliminar) + Verificar | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
 | **Jefatura** | Gestión de su área | ❌ Solo ver | ✅ CRUD (sin eliminar) + Verificar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
 | **Subrogante de Jefatura** | Suplencia de jefatura | ❌ Solo ver | ✅ CRUD (sin eliminar) + Verificar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
 
@@ -75,25 +75,25 @@
 
 ### 🟣 **Director**
 - **Nivel de Acceso**: Medio
-- **Planes de Compra**: Crear, editar, ver, enviar, exportar, subir decretos, subir F1
+- **Planes de Compra**: Listar, ver, enviar, exportar, subir decretos, subir F1
 - **Proyectos**: Crear, editar, eliminar, ver, verificar
 - **Formulario F1**: Ver, descargar
 - **Usuarios**: Sin acceso
 - **Direcciones**: Sin acceso
 - **Archivos**: Sin acceso
 - **Dashboard**: Ver, exportar
-- **Restricciones**: Solo su dirección, no puede eliminar planes
+- **Restricciones**: Solo su dirección, no puede crear/editar/eliminar planes
 
 ### 🟤 **Subrogante de Director**
 - **Nivel de Acceso**: Medio
-- **Planes de Compra**: Crear, editar, ver, enviar, exportar, subir decretos, subir F1
+- **Planes de Compra**: Listar, ver, enviar, exportar, subir decretos, subir F1
 - **Proyectos**: Crear, editar, ver, verificar
 - **Formulario F1**: Ver, descargar
 - **Usuarios**: Sin acceso
 - **Direcciones**: Sin acceso
 - **Archivos**: Sin acceso
 - **Dashboard**: Ver, exportar
-- **Restricciones**: Solo su dirección, no puede eliminar planes ni proyectos
+- **Restricciones**: Solo su dirección, no puede crear/editar/eliminar planes ni proyectos
 
 ### ⚪ **Jefatura**
 - **Nivel de Acceso**: Bajo-Medio

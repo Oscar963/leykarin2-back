@@ -313,30 +313,51 @@ class PermissionSeeder extends Seeder
             'reports.view', 'reports.purchase_plans',
         ]);
 
-        // 6. Director - Sin permisos sobre Usuarios y Archivos
+        // 6. Director - Con permisos para gestionar planes de compra de su dirección
         $director->givePermissionTo([
             // Autenticación
             'auth.login', 'auth.logout',
             'users.update_profile', 'users.profile', 'users.update_password',
 
-            // Planes de compra (solo enviar, exportar, subir archivos y ver por año)
-            'purchase_plans.send',
-            'purchase_plans.export',
-            'purchase_plans.upload_decreto',
-            'purchase_plans.upload_form_f1',
-            'purchase_plans.by_year',
+            // Planes de compra (listar, ver, enviar, exportar, subir archivos)
+            'purchase_plans.list', 'purchase_plans.view', 'purchase_plans.send', 'purchase_plans.export',
+            'purchase_plans.upload_decreto', 'purchase_plans.upload_form_f1', 'purchase_plans.by_year',
+            'purchase_plan_statuses.list', 'purchase_plan_statuses.view', 'purchase_plan_statuses.current',
 
-            // ...otros permisos de otros módulos si corresponde
+            // Proyectos (CRUD completo + verificar)
+            'projects.list', 'projects.create', 'projects.edit', 'projects.delete', 'projects.view', 'projects.by_purchase_plan', 'projects.by_token',
+            'projects.verification', 'projects.verification_files', 'projects.verification_download', 'projects.verification_delete',
+            
+            // Items de compra (gestión completa de su dirección)
+            'item_purchases.list', 'item_purchases.create', 'item_purchases.edit', 'item_purchases.view', 'item_purchases.update_status', 'item_purchases.export',
+            
+            // Formulario F1 (solo descarga)
+            'form_f1.list', 'form_f1.view', 'form_f1.download',
+            
+            // Configuraciones (solo lectura)
+            'budget_allocations.list', 'budget_allocations.view',
+            'type_purchases.list', 'type_purchases.view',
+            'type_projects.list', 'type_projects.view',
+            'unit_purchasings.list', 'unit_purchasings.view',
+            'status_item_purchases.list', 'status_item_purchases.view',
+            'status_purchase_plans.list', 'status_purchase_plans.view',
+            
+            // Historial y auditoría
+            'history_purchase_histories.list', 'history_purchase_histories.view', 'history_purchase_histories.statistics',
+            'audit.logs', 'audit.history',
+            
+            // Reportes
+            'reports.view', 'reports.export', 'reports.purchase_plans', 'reports.projects', 'reports.item_purchases',
         ]);
 
-        // 7. Subrogante de Director - Sin permisos sobre Usuarios y Archivos
+        // 7. Subrogante de Director - Con permisos para gestionar planes de compra de su dirección
         $subroganteDirector->givePermissionTo([
             // Autenticación
             'auth.login', 'auth.logout',
             'users.update_profile', 'users.profile', 'users.update_password',
             
-            // Planes de compra (solo ver, enviar y exportar)
-            'purchase_plans.view', 'purchase_plans.send', 'purchase_plans.export', 'purchase_plans.by_year',
+            // Planes de compra (listar, ver, enviar y exportar)
+            'purchase_plans.list', 'purchase_plans.view', 'purchase_plans.send', 'purchase_plans.export', 'purchase_plans.by_year',
             'purchase_plans.upload_decreto', 'purchase_plans.upload_form_f1',
             'purchase_plan_statuses.list', 'purchase_plan_statuses.view', 'purchase_plan_statuses.history', 'purchase_plan_statuses.current',
             

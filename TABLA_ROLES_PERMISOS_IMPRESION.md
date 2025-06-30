@@ -39,8 +39,8 @@
 | Visador | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ |
 | Encargado de Presupuestos | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Subrogante de Encargado | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Director | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Subrogante de Director | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Director | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Subrogante de Director | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Jefatura | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Subrogante de Jefatura | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 
@@ -147,15 +147,19 @@
 - **Reportes**: Ver reportes básicos de planes de compra
 
 ### 🟣 **Director**
-- **Planes de Compra**: CRUD (excepto eliminar) + Enviar
+- **Planes de Compra**: Listar, ver, enviar y exportar (solo su dirección)
 - **Proyectos**: CRUD completo + Verificar
-- **Formulario F1**: CRUD completo + Cargar/Descargar
-- **Archivos**: CRUD (excepto eliminar) + Cargar/Descargar
+- **Formulario F1**: Ver y descargar
+- **Items de Compra**: CRUD completo
 - **Dashboard**: Ver y exportar
 - **Restricción**: Solo su dirección
 
 ### 🟤 **Subrogante de Director**
-- **Mismos permisos** que Director
+- **Planes de Compra**: Listar, ver, enviar y exportar (solo su dirección)
+- **Proyectos**: CRUD (sin eliminar) + Verificar
+- **Formulario F1**: Ver y descargar
+- **Items de Compra**: CRUD completo
+- **Dashboard**: Ver y exportar
 - **Restricción**: Solo su dirección
 
 ### ⚪ **Jefatura**
