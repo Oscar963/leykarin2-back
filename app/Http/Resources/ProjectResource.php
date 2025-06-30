@@ -28,11 +28,9 @@ class ProjectResource extends JsonResource
             'goals' => $this->when($this->isStrategic(), function () {
                 return GoalResource::collection($this->goals);
             }),
-            'goal_statistics' => $this->when($this->isStrategic(), [
-                'total_goals' => $this->goals->count(),
-                'completed_goals' => $this->getCompletedGoalsCount(),
-                'average_progress' => $this->getAverageGoalProgress()
-            ]),
+            'goal_statistics' => $this->when($this->isStrategic(), function () {
+                return $this->getGoalStatistics();
+            }),
         ];
     }
 } 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\File;
+use App\Models\Goal;
 use App\Models\Project;
 use App\Models\PurchasePlan;
 use Illuminate\Http\JsonResponse;
@@ -91,6 +92,11 @@ class ProjectService
         $project->purchase_plan_id = $purchasePlan->id;
         $project->save();
 
+        // Guardar las metas si el proyecto es estratégico y se enviaron metas
+        if (isset($data['goals']) && is_array($data['goals']) && !empty($data['goals'])) {
+            $this->saveProjectGoals($project, $data['goals']);
+        }
+
         return $project;
     }
 
@@ -111,6 +117,11 @@ class ProjectService
         $project->updated_by = auth()->user()->id;
         $project->save();
 
+        // Actualizar las metas si se enviaron
+        if (isset($data['goals']) && is_array($data['goals'])) {
+            $this->updateProjectGoals($project, $data['goals']);
+        }
+
         return $project;
     }
 
@@ -130,6 +141,11 @@ class ProjectService
         $project->type_project_id = $data['type_project_id'];
         $project->updated_by = auth()->user()->id;
         $project->save();
+
+        // Actualizar las metas si se enviaron
+        if (isset($data['goals']) && is_array($data['goals'])) {
+            $this->updateProjectGoals($project, $data['goals']);
+        }
 
         return $project;
     }
@@ -199,5 +215,60 @@ class ProjectService
         $file = File::findOrFail($fileId);
         $filePath = str_replace(url('storage/'), '', $file->url);
         return response()->download(storage_path("app/public/{$filePath}"), $file->name);
+    }
+
+    /**
+     * Guarda las metas de un proyecto
+     *
+     * @param Project $project Proyecto al que se le asignarán las metas
+     * @param array $goals Array de metas a guardar
+     * @return void
+     * @throws \Exception
+     */
+    private function saveProjectGoals(Project $project, array $goals): void
+    {
+        // Verificar que el proyecto sea estratégico antes de guardar metas
+        if (!$project->isStrategic()) {
+            throw new \Exception('Solo se pueden crear metas en proyectos de tipo estratégico. Este proyecto es de tipo: ' . ($project->typeProject->name ?? 'no definido'));
+        }
+
+        foreach ($goals as $goalData) {
+            // Validar que los campos requeridos estén presentes
+            if (empty($goalData['name']) || empty($goalData['description'])) {
+                continue; // Saltar metas incompletas
+            }
+
+            $goal = new Goal();
+            $goal->name = $goalData['name'];
+            $goal->description = $goalData['description'];
+            $goal->target_value = !empty($goalData['target_value']) ? $goalData['target_value'] : null;
+            $goal->progress_value = !empty($goalData['progress_value']) ? $goalData['progress_value'] : 0;
+            $goal->unit_measure = !empty($goalData['unit_measure']) ? $goalData['unit_measure'] : null;
+            $goal->target_date = !empty($goalData['target_date']) ? $goalData['target_date'] : null;
+            $goal->notes = !empty($goalData['notes']) ? $goalData['notes'] : null;
+            $goal->current_value = 0; // Mantenemos por compatibilidad
+            $goal->status = Goal::STATUS_PENDING; // Estado inicial
+            $goal->project_id = $project->id;
+            $goal->created_by = auth()->user()->id;
+            $goal->save();
+        }
+    }
+
+    /**
+     * Actualiza las metas de un proyecto
+     *
+     * @param Project $project Proyecto cuyas metas se actualizarán
+     * @param array $goals Array de metas a actualizar
+     * @return void
+     */
+    private function updateProjectGoals(Project $project, array $goals): void
+    {
+        // Eliminar las metas existentes del proyecto
+        $project->goals()->delete();
+
+        // Crear las nuevas metas
+        if (!empty($goals)) {
+            $this->saveProjectGoals($project, $goals);
+        }
     }
 }

@@ -19,14 +19,19 @@ class GoalResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'target_value' => $this->target_value,
+            'progress_value' => $this->progress_value,
             'unit_measure' => $this->unit_measure,
-            'current_value' => $this->current_value,
+            'current_value' => $this->current_value, // Mantenemos por compatibilidad
             'target_date' => $this->target_date ? $this->target_date->format('Y-m-d') : null,
             'status' => $this->status,
             'status_label' => $this->getStatusLabel(),
+            'calculated_status' => $this->getCalculatedStatus(),
             'notes' => $this->notes,
             'progress_percentage' => $this->getProgressPercentage(),
+            'progress_description' => $this->getProgressDescription(),
+            'remaining_value' => $this->getRemainingValue(),
             'is_completed' => $this->isCompleted(),
+            'is_at_risk' => $this->isAtRisk(),
             'is_overdue' => $this->isOverdue(),
             'days_remaining' => $this->getDaysRemaining(),
             'project' => [
@@ -53,7 +58,7 @@ class GoalResource extends JsonResource
     /**
      * Obtiene la etiqueta legible del estado
      */
-    private function getStatusLabel()
+    public function getStatusLabel()
     {
         $labels = [
             'pendiente' => 'Pendiente',

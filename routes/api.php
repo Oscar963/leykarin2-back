@@ -99,6 +99,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
         Route::get('projects/export-word/{purchasePlanId}', [ProjectController::class, 'exportWord'])->name('projects.export.word');
         Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
+        Route::get('projects/dashboard', [ProjectController::class, 'getDashboard'])->name('projects.dashboard');
     });
 
     Route::middleware(['permission:projects.verification'])->group(function () {

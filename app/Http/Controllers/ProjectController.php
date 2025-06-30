@@ -281,4 +281,58 @@ class ProjectController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Obtiene un dashboard con estadísticas de metas de proyectos estratégicos
+     */
+    public function getDashboard(Request $request): JsonResponse
+    {
+        try {
+            $purchasePlanId = $request->query('purchase_plan_id');
+            
+            $query = $this->projectService->getAllProjectsByPurchasePlan($purchasePlanId, null, 1000);
+            $strategicProjects = $query->where('type_project_id', 2); // Asumiendo que ID 2 es estratégico
+            
+            $totalStrategicProjects = $strategicProjects->count();
+            $totalGoals = 0;
+            $completedGoals = 0;
+            $atRiskGoals = 0;
+            $totalProgress = 0;
+            $projectsWithGoals = 0;
+
+            foreach ($strategicProjects as $project) {
+                $stats = $project->getGoalStatistics();
+                if ($stats['total_goals'] > 0) {
+                    $totalGoals += $stats['total_goals'];
+                    $completedGoals += $stats['completed_goals'];
+                    $atRiskGoals += $stats['at_risk_goals'];
+                    $totalProgress += $stats['average_progress'];
+                    $projectsWithGoals++;
+                }
+            }
+
+            $averageProgress = $projectsWithGoals > 0 ? round($totalProgress / $projectsWithGoals, 2) : 0;
+            $completionRate = $totalGoals > 0 ? round(($completedGoals / $totalGoals) * 100, 2) : 0;
+
+            return response()->json([
+                'message' => 'Dashboard de metas obtenido exitosamente',
+                'data' => [
+                    'general_statistics' => [
+                        'total_strategic_projects' => $totalStrategicProjects,
+                        'projects_with_goals' => $projectsWithGoals,
+                        'total_goals' => $totalGoals,
+                        'completed_goals' => $completedGoals,
+                        'at_risk_goals' => $atRiskGoals,
+                        'average_progress' => $averageProgress,
+                        'completion_rate' => $completionRate
+                    ],
+                    'projects' => ProjectResource::collection($strategicProjects)
+                ]
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener el dashboard de metas: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

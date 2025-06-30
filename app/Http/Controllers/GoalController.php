@@ -60,6 +60,7 @@ class GoalController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_value' => 'nullable|numeric|min:0',
+            'progress_value' => 'nullable|numeric|min:0',
             'unit_measure' => 'nullable|string|max:100',
             'target_date' => 'nullable|date|after:today',
             'project_id' => 'required|exists:projects,id',
@@ -110,6 +111,7 @@ class GoalController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_value' => 'nullable|numeric|min:0',
+            'progress_value' => 'nullable|numeric|min:0',
             'unit_measure' => 'nullable|string|max:100',
             'target_date' => 'nullable|date',
             'status' => 'in:pendiente,en_progreso,completada,cancelada',
@@ -156,20 +158,29 @@ class GoalController extends Controller
     public function updateProgress(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'current_value' => 'required|numeric|min:0',
+            'progress_value' => 'required|numeric|min:0',
             'notes' => 'nullable|string'
         ]);
 
         try {
             $goal = $this->goalService->updateGoalProgress(
                 $id, 
-                $request->input('current_value'),
+                $request->input('progress_value'),
                 $request->input('notes')
             );
 
+            $progressPercentage = $goal->getProgressPercentage();
+
             return response()->json([
                 'message' => 'Progreso de meta actualizado exitosamente',
-                'data' => new GoalResource($goal)
+                'data' => new GoalResource($goal),
+                'progress_info' => [
+                    'percentage' => $progressPercentage,
+                    'description' => $goal->getProgressDescription(),
+                    'remaining_value' => $goal->getRemainingValue(),
+                    'is_completed' => $goal->isCompleted(),
+                    'calculated_status' => $goal->getCalculatedStatus()
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -15,6 +15,7 @@ class Goal extends Model
         'target_value',
         'unit_measure',
         'current_value',
+        'progress_value',
         'target_date',
         'status',
         'notes',
@@ -26,7 +27,8 @@ class Goal extends Model
     protected $casts = [
         'target_date' => 'date',
         'target_value' => 'decimal:2',
-        'current_value' => 'decimal:2'
+        'current_value' => 'decimal:2',
+        'progress_value' => 'decimal:2'
     ];
 
     /**
@@ -62,7 +64,7 @@ class Goal extends Model
     }
 
     /**
-     * Calcula el porcentaje de progreso de la meta
+     * Calcula el porcentaje de progreso de la meta basado en progress_value
      */
     public function getProgressPercentage()
     {
@@ -70,7 +72,7 @@ class Goal extends Model
             return 0;
         }
 
-        $percentage = ($this->current_value / $this->target_value) * 100;
+        $percentage = ($this->progress_value / $this->target_value) * 100;
         return min(100, max(0, round($percentage, 2)));
     }
 
@@ -80,7 +82,72 @@ class Goal extends Model
     public function isCompleted()
     {
         return $this->status === self::STATUS_COMPLETED || 
-               ($this->target_value && $this->current_value >= $this->target_value);
+               ($this->target_value && $this->progress_value >= $this->target_value);
+    }
+
+    /**
+     * Calcula automáticamente el estado de la meta basado en progreso y fecha
+     */
+    public function getCalculatedStatus()
+    {
+        if ($this->progress_value >= $this->target_value) {
+            return self::STATUS_COMPLETED;
+        } elseif ($this->target_date && now()->gt($this->target_date)) {
+            return 'vencida';
+        } elseif ($this->progress_value > 0) {
+            return self::STATUS_IN_PROGRESS;
+        } else {
+            return self::STATUS_PENDING;
+        }
+    }
+
+    /**
+     * Verifica si la meta está en riesgo (próxima a vencer o con bajo progreso)
+     */
+    public function isAtRisk()
+    {
+        if ($this->isCompleted()) {
+            return false;
+        }
+
+        // Meta vencida
+        if ($this->target_date && now()->gt($this->target_date)) {
+            return true;
+        }
+
+        // Meta próxima a vencer (menos de 30 días) con progreso menor al 70%
+        if ($this->target_date) {
+            $daysRemaining = now()->diffInDays($this->target_date, false);
+            if ($daysRemaining <= 30 && $this->getProgressPercentage() < 70) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Obtiene el valor faltante para completar la meta
+     */
+    public function getRemainingValue()
+    {
+        if (!$this->target_value) {
+            return 0;
+        }
+
+        $remaining = $this->target_value - $this->progress_value;
+        return max(0, $remaining);
+    }
+
+    /**
+     * Obtiene una descripción legible del progreso
+     */
+    public function getProgressDescription()
+    {
+        $progress = $this->getProgressPercentage();
+        $unit = $this->unit_measure ? " {$this->unit_measure}" : '';
+        
+        return "{$this->progress_value}/{$this->target_value}{$unit} ({$progress}%)";
     }
 
     /**
@@ -108,20 +175,16 @@ class Goal extends Model
     /**
      * Actualiza el progreso de la meta
      */
-    public function updateProgress($currentValue, $notes = null)
+    public function updateProgress($progressValue, $notes = null)
     {
-        $this->current_value = $currentValue;
+        $this->progress_value = $progressValue;
         
         if ($notes) {
             $this->notes = $notes;
         }
 
-        // Actualizar estado automáticamente
-        if ($this->isCompleted() && $this->status !== self::STATUS_COMPLETED) {
-            $this->status = self::STATUS_COMPLETED;
-        } elseif ($currentValue > 0 && $this->status === self::STATUS_PENDING) {
-            $this->status = self::STATUS_IN_PROGRESS;
-        }
+        // Actualizar estado automáticamente basado en el nuevo cálculo
+        $this->status = $this->getCalculatedStatus();
 
         $this->updated_by = auth()->id();
         $this->save();

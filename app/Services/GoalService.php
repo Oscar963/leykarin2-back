@@ -82,9 +82,12 @@ class GoalService
             $goal->name = $data['name'];
             $goal->description = $data['description'] ?? null;
             $goal->target_value = $data['target_value'] ?? null;
+            $goal->progress_value = $data['progress_value'] ?? 0;
             $goal->unit_measure = $data['unit_measure'] ?? null;
             $goal->target_date = $data['target_date'] ?? null;
             $goal->notes = $data['notes'] ?? null;
+            $goal->current_value = 0; // Mantenemos por compatibilidad
+            $goal->status = Goal::STATUS_PENDING; // Estado inicial
             $goal->project_id = $project->id;
             $goal->created_by = auth()->id();
             $goal->save();
@@ -111,6 +114,7 @@ class GoalService
             $goal->name = $data['name'];
             $goal->description = $data['description'] ?? $goal->description;
             $goal->target_value = $data['target_value'] ?? $goal->target_value;
+            $goal->progress_value = $data['progress_value'] ?? $goal->progress_value;
             $goal->unit_measure = $data['unit_measure'] ?? $goal->unit_measure;
             $goal->target_date = $data['target_date'] ?? $goal->target_date;
             $goal->status = $data['status'] ?? $goal->status;
@@ -148,14 +152,14 @@ class GoalService
     /**
      * Actualiza el progreso de una meta
      */
-    public function updateGoalProgress($id, $currentValue, $notes = null)
+    public function updateGoalProgress($id, $progressValue, $notes = null)
     {
         $goal = $this->getGoalById($id);
 
         DB::beginTransaction();
 
         try {
-            $goal->updateProgress($currentValue, $notes);
+            $goal->updateProgress($progressValue, $notes);
             DB::commit();
 
             return $goal->load(['project.typeProject', 'createdBy', 'updatedBy']);

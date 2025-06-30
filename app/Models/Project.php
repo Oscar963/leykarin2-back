@@ -122,6 +122,50 @@ class Project extends Model
         })->count();
     }
 
+    /**
+     * Obtiene el número de metas en riesgo
+     */
+    public function getAtRiskGoalsCount()
+    {
+        if (!$this->isStrategic()) {
+            return 0;
+        }
+
+        return $this->goals->filter(function ($goal) {
+            return $goal->isAtRisk();
+        })->count();
+    }
+
+    /**
+     * Obtiene estadísticas completas de las metas del proyecto
+     */
+    public function getGoalStatistics()
+    {
+        if (!$this->isStrategic()) {
+            return [
+                'total_goals' => 0,
+                'completed_goals' => 0,
+                'at_risk_goals' => 0,
+                'average_progress' => 0,
+                'completion_percentage' => 0
+            ];
+        }
+
+        $totalGoals = $this->goals->count();
+        $completedGoals = $this->getCompletedGoalsCount();
+        $atRiskGoals = $this->getAtRiskGoalsCount();
+        $averageProgress = $this->getAverageGoalProgress();
+        $completionPercentage = $totalGoals > 0 ? round(($completedGoals / $totalGoals) * 100, 2) : 0;
+
+        return [
+            'total_goals' => $totalGoals,
+            'completed_goals' => $completedGoals,
+            'at_risk_goals' => $atRiskGoals,
+            'average_progress' => $averageProgress,
+            'completion_percentage' => $completionPercentage
+        ];
+    }
+
     public function getTotalAmount()
     {
         return $this->itemPurchases->sum(function ($item) {

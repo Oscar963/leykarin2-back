@@ -38,7 +38,7 @@ class PurchasePlanRequest extends FormRequest
                 'integer',
                 new UniqueDirectionYearPlan($excludeId),
             ],
-            'direction' => [
+            'direction_id' => [
                 'required',
                 'exists:directions,id',
             ],
@@ -55,8 +55,8 @@ class PurchasePlanRequest extends FormRequest
             'year.required' => 'El año del plan de compra es obligatorio.',
             'year.integer' => 'El año del plan de compra debe ser un número entero.',
 
-            'direction.required' => 'La dirección es obligatoria.',
-            'direction.exists' => 'La dirección seleccionada no es válida.', 
+            'direction_id.required' => 'La dirección es obligatoria.',
+            'direction_id.exists' => 'La dirección seleccionada no es válida.', 
         ];
     }
 }

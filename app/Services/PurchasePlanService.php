@@ -95,7 +95,7 @@ class PurchasePlanService
      */
     public function createPurchasePlan(array $data)
     {
-        $direction = Direction::findOrFail($data['direction']);
+        $direction = Direction::findOrFail($data['direction_id']);
 
         // Validar que no exista ya un plan de compras para esta dirección y año
         if (PurchasePlan::existsForDirectionAndYear($direction->id, $data['year'])) {
@@ -175,7 +175,7 @@ class PurchasePlanService
      */
     public function updatePurchasePlan($id, array $data)
     {
-        $direction = Direction::findOrFail($data['direction']);
+        $direction = Direction::findOrFail($data['direction_id']);
 
         $purchasePlan = $this->getPurchasePlanById($id);
         $oldData = [
