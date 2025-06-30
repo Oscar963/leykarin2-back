@@ -136,7 +136,15 @@ class ItemPurchaseController extends Controller
                 'message' => 'Estado del ítem de compra actualizado exitosamente',
                 'data' => new ItemPurchaseResource($updated)
             ], 200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            // Verificar si es un error de validación de estado del plan
+            if (str_contains($e->getMessage(), 'No es posible cambiar el estado de los ítems')) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'error_type' => 'purchase_plan_status_validation'
+                ], 403); // Forbidden - operación no permitida
+            }
+            
             return response()->json([
                 'message' => 'Error al actualizar el estado del ítem de compra. ' . $e->getMessage()
             ], 500);

@@ -222,18 +222,60 @@ class ItemPurchaseService
 
     /**
      * Actualiza el estado de un item de compra
+     * Solo permite cambios de estado cuando el plan de compra está Decretado o Publicado
      *
      * @param int $id ID del item de compra
      * @param array $data Datos actualizados
      * @return ItemPurchase
+     * @throws \Exception Si el plan de compra no está en estado válido para cambiar estados de ítems
      */
-
     public function updateItemPurchaseStatus($id, $data)
     {
         $itemPurchase = $this->getItemPurchaseById($id);
+        
+        // Validar que el plan de compra esté en estado Decretado o Publicado
+        $this->validatePurchasePlanStatusForItemUpdate($itemPurchase);
+        
         $itemPurchase->status_item_purchase_id = $data['status_item_purchase_id'];
         $itemPurchase->updated_by = auth()->id();
         $itemPurchase->save();
         return $itemPurchase;
+    }
+
+    /**
+     * Valida que el plan de compra esté en estado Decretado (6) o Publicado (7)
+     * para permitir cambios de estado en los ítems
+     *
+     * @param ItemPurchase $itemPurchase
+     * @throws \Exception Si el plan no está en estado válido
+     */
+    private function validatePurchasePlanStatusForItemUpdate(ItemPurchase $itemPurchase)
+    {
+        // Cargar las relaciones necesarias
+        $itemPurchase->load('project.purchasePlan.currentStatus.status');
+        
+        $purchasePlan = $itemPurchase->project->purchasePlan;
+        
+        if (!$purchasePlan) {
+            throw new \Exception('No se encontró un plan de compra asociado a este ítem.');
+        }
+        
+        $currentStatus = $purchasePlan->getCurrentStatus();
+        
+        if (!$currentStatus) {
+            throw new \Exception('No se pudo determinar el estado actual del plan de compra.');
+        }
+        
+        $currentStatusId = $currentStatus->status_purchase_plan_id;
+        $currentStatusName = $currentStatus->status->name ?? 'Desconocido';
+        
+        // Validar que el estado sea Decretado (6) o Publicado (7)
+        if (!in_array($currentStatusId, [6, 7])) {
+            throw new \Exception(
+                "No es posible cambiar el estado de los ítems. " .
+                "El plan de compra debe estar en estado 'Decretado' o 'Publicado' para permitir cambios de estado en los ítems. " .
+                "Estado actual del plan: '{$currentStatusName}'"
+            );
+        }
     }
 }
