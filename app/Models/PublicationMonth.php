@@ -56,4 +56,4 @@ class PublicationMonth extends Model
     {
         return $this->short_name . ' ' . $this->year;
     }
-} 
+}

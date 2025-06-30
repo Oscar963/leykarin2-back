@@ -28,21 +28,20 @@ class GenerateItemsPurchaseExample extends Command
     public function handle()
     {
         $this->info('Generando plantilla optimizada de ítems de compra...');
-        
+
         try {
             $fileName = 'plantilla-items-compra-optimizada.xlsx';
             Excel::store(new ItemsPurchaseTemplateExport(), $fileName, 'public');
-            
+
             $this->info("✓ Plantilla generada exitosamente: storage/app/public/{$fileName}");
             $this->line("  - 13 columnas (2 informativas)");
             $this->line("  - Sin validaciones complejas");
             $this->line("  - Hojas de referencia incluidas");
-            
         } catch (\Exception $e) {
             $this->error("Error al generar la plantilla: " . $e->getMessage());
             return 1;
         }
-        
+
         return 0;
     }
-} 
+}

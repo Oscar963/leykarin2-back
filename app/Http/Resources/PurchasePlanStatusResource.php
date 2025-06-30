@@ -13,7 +13,7 @@ class PurchasePlanStatusResource extends JsonResource
             'status' => new StatusPurchasePlanResource($this->status),
             'sending_date' => $this->sending_date,
             'created_by' => new UserResource($this->createdBy),
-            'created_at' => $this->created_at, 
+            'created_at' => $this->created_at,
         ];
     }
 }

@@ -57,7 +57,6 @@ class InstallGoalsSystem extends Command
             $this->newLine();
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error('❌ Error durante la instalación: ' . $e->getMessage());
             return 1;
@@ -81,7 +80,7 @@ class InstallGoalsSystem extends Command
         $this->line('✅ Permisos por rol asignados');
         $this->line('✅ Integración con Project completada');
         $this->line('');
-        
+
         $this->comment('📚 Endpoints disponibles:');
         $this->line('  GET    /api/goals                          - Listar metas');
         $this->line('  POST   /api/goals                          - Crear meta');
@@ -92,8 +91,8 @@ class InstallGoalsSystem extends Command
         $this->line('  GET    /api/goals/project/{id}/statistics  - Estadísticas');
         $this->line('  GET    /api/goals/overdue                  - Metas vencidas');
         $this->line('');
-        
+
         $this->comment('📖 Documentación: README_METAS_PROYECTOS_ESTRATEGICOS.md');
         $this->newLine();
     }
-} 
+}

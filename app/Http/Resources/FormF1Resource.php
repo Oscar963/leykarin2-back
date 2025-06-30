@@ -21,4 +21,4 @@ class FormF1Resource extends JsonResource
             'created_at' => $this->created_at,
         ];
     }
-} 
+}

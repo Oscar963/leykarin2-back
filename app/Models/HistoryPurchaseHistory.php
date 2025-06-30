@@ -43,7 +43,7 @@ class HistoryPurchaseHistory extends Model
     {
         $user = auth()->user();
         $purchasePlan = PurchasePlan::find($purchasePlanId);
-        
+
         return self::create([
             'date' => now(),
             'description' => $description,

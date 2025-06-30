@@ -10,7 +10,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ComplaintRegistered extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $complaint;
     private $pdf;
@@ -45,4 +46,4 @@ class ComplaintRegistered extends Mailable
 
         return $mail;
     }
-} 
+}

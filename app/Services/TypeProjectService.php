@@ -91,4 +91,4 @@ class TypeProjectService
         $typeProject = $this->getTypeProjectById($id);
         $typeProject->delete();
     }
-} 
+}

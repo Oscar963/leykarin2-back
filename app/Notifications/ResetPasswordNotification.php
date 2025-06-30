@@ -47,7 +47,7 @@ class ResetPasswordNotification extends Notification
         $logoUrl = asset('assets/img/logos/logo-blanco.png'); // Asegúrate de que la imagen esté en public/images/logo.png
 
         // Usamos la vista de correo personalizada
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Restablece tu contraseña')
             ->markdown('emails.reset-password', ['resetUrl' => $resetUrl, 'logoUrl' => $logoUrl]);
     }

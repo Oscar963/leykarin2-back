@@ -54,7 +54,7 @@ class PurchasePlanService
         return $queryBuilder->paginate($perPage);
     }
 
-    /** 
+    /**
      * Obtiene todos los planes de compra filtrados por año y opcionalmente por nombre para un usuario específico
      */
     public function getAllPurchasePlansByYearForUser(int $idDirection, int $year)
@@ -199,7 +199,7 @@ class PurchasePlanService
 
         // Registrar en el historial
         HistoryPurchaseHistory::logAction(
-            $purchasePlan->id, 
+            $purchasePlan->id,
             'update',
             'Plan de compra actualizado',
             [

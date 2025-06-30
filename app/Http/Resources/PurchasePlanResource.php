@@ -17,8 +17,8 @@ class PurchasePlanResource extends JsonResource
             'formF1' => new FormF1Resource($this->formF1),
             'direction' => new DirectionResource($this->direction),
             'current_status' => new PurchasePlanStatusResource($this->currentStatus),
-            'status_history' => $this->whenLoaded('statusHistory', function() {
-                return $this->statusHistory->map(function($status) {
+            'status_history' => $this->whenLoaded('statusHistory', function () {
+                return $this->statusHistory->map(function ($status) {
                     return [
                         'id' => $status->id,
                         'status_id' => $status->status_purchase_plan_id,
@@ -34,8 +34,8 @@ class PurchasePlanResource extends JsonResource
                     ];
                 });
             }),
-            'movement_history' => $this->whenLoaded('movementHistory', function() {
-                return $this->movementHistory->map(function($movement) {
+            'movement_history' => $this->whenLoaded('movementHistory', function () {
+                return $this->movementHistory->map(function ($movement) {
                     return [
                         'id' => $movement->id,
                         'date' => $movement->date,

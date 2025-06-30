@@ -34,7 +34,7 @@ class ShowDirectorDirectionRelations extends Command
 
         foreach ($directions as $direction) {
             $this->info("📁 DIRECCIÓN: {$direction->name} ({$direction->alias})");
-            
+
             if ($direction->director) {
                 $this->line("   👤 Director: {$direction->director->name} {$direction->director->paternal_surname} ({$direction->director->email})");
             } else {
@@ -72,7 +72,7 @@ class ShowDirectorDirectionRelations extends Command
         // Mostrar directores con múltiples direcciones
         $this->newLine();
         $this->info('=== DIRECTORES CON MÚLTIPLES DIRECCIONES ===');
-        
+
         $directorsWithMultipleDirections = User::whereHas('directions', function ($query) {
             $query->havingRaw('COUNT(*) > 1');
         })->with('directions')->get();
@@ -86,4 +86,4 @@ class ShowDirectorDirectionRelations extends Command
 
         return Command::SUCCESS;
     }
-} 
+}

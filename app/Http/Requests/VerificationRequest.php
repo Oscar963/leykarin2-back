@@ -24,7 +24,7 @@ class VerificationRequest extends FormRequest
     public function rules()
     {
         return [
-            'project_id' => 'required|exists:projects,id',  
+            'project_id' => 'required|exists:projects,id',
             'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,bmp,webp',
         ];
     }

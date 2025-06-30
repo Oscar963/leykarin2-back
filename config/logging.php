@@ -50,7 +50,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['single', 'performance', 'slow-queries'],
             'ignore_exceptions' => false,
         ],
 
@@ -58,6 +58,38 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
+        // Canal para logs de performance
+        'performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/performance.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
+        // Canal para queries lentas
+        'slow-queries' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/slow-queries.log'),
+            'level' => 'warning',
+            'days' => 30,
+        ],
+
+        // Canal para problemas críticos de performance
+        'critical-performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/critical-performance.log'),
+            'level' => 'critical',
+            'days' => 60,
+        ],
+
+        // Canal para errores de seguridad
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'warning',
+            'days' => 90,
         ],
 
         'daily' => [

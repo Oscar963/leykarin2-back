@@ -199,8 +199,8 @@ class GoalService
                 return $goal->isOverdue();
             })->count(),
             'average_progress' => $project->getAverageGoalProgress(),
-            'completion_percentage' => $goals->count() > 0 
-                ? round(($goals->where('status', Goal::STATUS_COMPLETED)->count() / $goals->count()) * 100, 2) 
+            'completion_percentage' => $goals->count() > 0
+                ? round(($goals->where('status', Goal::STATUS_COMPLETED)->count() / $goals->count()) * 100, 2)
                 : 0
         ];
 
@@ -275,11 +275,11 @@ class GoalService
             'overdue' => $goals->filter(function ($goal) {
                 return $goal->isOverdue();
             })->count(),
-            'average_progress' => $goals->count() > 0 
+            'average_progress' => $goals->count() > 0
                 ? $goals->avg(function ($goal) {
                     return $goal->getProgressPercentage();
                 })
                 : 0
         ];
     }
-} 
+}

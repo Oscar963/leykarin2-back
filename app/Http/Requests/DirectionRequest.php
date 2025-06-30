@@ -61,4 +61,4 @@ class DirectionRequest extends FormRequest
             'director_id.exists' => 'El director seleccionado no existe.',
         ];
     }
-} 
+}

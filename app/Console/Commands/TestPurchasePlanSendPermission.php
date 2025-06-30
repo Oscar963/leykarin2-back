@@ -28,7 +28,7 @@ class TestPurchasePlanSendPermission extends Command
     public function handle()
     {
         $email = $this->argument('email');
-        
+
         if ($email) {
             $this->testSpecificUser($email);
         } else {
@@ -42,7 +42,7 @@ class TestPurchasePlanSendPermission extends Command
     private function testSpecificUser(string $email)
     {
         $user = User::where('email', $email)->first();
-        
+
         if (!$user) {
             $this->error("Usuario con email '{$email}' no encontrado.");
             return;
@@ -60,19 +60,19 @@ class TestPurchasePlanSendPermission extends Command
         $this->newLine();
 
         $roles = Role::all();
-        
+
         foreach ($roles as $role) {
             $this->info("🎭 Probando rol: {$role->name}");
-            
+
             // Buscar un usuario con este rol
             $user = User::role($role->name)->first();
-            
+
             if ($user) {
                 $this->testUserPermissions($user);
             } else {
                 $this->warn("   No se encontró usuario con el rol '{$role->name}'");
             }
-            
+
             $this->newLine();
         }
     }
@@ -85,19 +85,19 @@ class TestPurchasePlanSendPermission extends Command
         $this->info("👤 Usuario: {$user->name} {$user->paternal_surname} {$user->maternal_surname}");
         $this->info("📧 Email: {$user->email}");
         $this->info("🎭 Roles: " . $user->getRoleNames()->implode(', '));
-        
+
         // Verificar permisos específicos
         $hasSendPermission = $user->can('purchase_plans.send');
         $hasApprovePermission = $user->can('purchase_plans.approve');
-        
+
         $this->info("🔐 Permisos:");
         $this->line("   • purchase_plans.send: " . ($hasSendPermission ? '✅ Sí' : '❌ No'));
         $this->line("   • purchase_plans.approve: " . ($hasApprovePermission ? '✅ Sí' : '❌ No'));
-        
+
         // Verificar si puede enviar según el middleware
         $canSend = $this->canSendPurchasePlan($user);
         $this->info("📤 ¿Puede enviar planes?: " . ($canSend ? '✅ Sí' : '❌ No'));
-        
+
         if (!$canSend) {
             $this->warn("   ⚠️  Este usuario NO puede enviar planes de compra para aprobación");
         }
@@ -116,4 +116,4 @@ class TestPurchasePlanSendPermission extends Command
 
         return $user->hasAnyRole($allowedRoles);
     }
-} 
+}

@@ -8,24 +8,126 @@ use App\Rules\RutValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+
+/**
+ * @OA\Info(
+ *      version="1.0.0",
+ *      title="API Sistema de Planes de Compra Municipal",
+ *      description="API RESTful para gestión de planes de compra municipal con roles, permisos y metas medibles",
+ *      @OA\Contact(
+ *          email="admin@plancompras.cl"
+ *      )
+ * )
+ *
+ * @OA\Server(
+ *      url=L5_SWAGGER_CONST_HOST,
+ *      description="Servidor API"
+ * )
+ *
+ * @OA\SecurityScheme(
+ *      securityScheme="sanctum",
+ *      type="apiKey",
+ *      in="header",
+ *      name="Authorization",
+ *      description="Ingrese su token en el formato: Bearer {token}"
+ * )
+ *
+ * @OA\Tag(
+ *     name="Autenticación",
+ *     description="Endpoints para autenticación y gestión de sesiones"
+ * )
+ */
 
 class AuthController extends Controller
 {
     /**
-     * Autentica a un usuario en el sistema
-     *
-     * @param Request $request
-     * @return JsonResponse
-     * @throws ValidationException
+     * @OA\Post(
+     *      path="/login",
+     *      operationId="login",
+     *      tags={"Autenticación"},
+     *      summary="Iniciar sesión en el sistema",
+     *      description="Autentica a un usuario usando RUT y contraseña",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="rut", type="string", example="12345678-9", description="RUT del usuario"),
+     *                  @OA\Property(property="password", type="string", example="password123", description="Contraseña del usuario"),
+     *                  @OA\Property(property="remember", type="boolean", example=false, description="Recordar sesión")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Login exitoso",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Bienvenido(a) al sistema Juan Pérez"),
+     *              @OA\Property(property="user", type="object",
+     *                  @OA\Property(property="name", type="string", example="Juan"),
+     *                  @OA\Property(property="email", type="string", example="juan@example.com")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Credenciales incorrectas",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="integer", example=401),
+     *              @OA\Property(property="error", type="object",
+     *                  @OA\Property(property="message", type="string", example="Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Cuenta suspendida",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="integer", example=403),
+     *              @OA\Property(property="error", type="object",
+     *                  @OA\Property(property="message", type="string", example="Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Datos de validación incorrectos",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *              @OA\Property(property="errors", type="object")
+     *          )
+     *      )
+     * )
      */
     public function login(Request $request): JsonResponse
     {
-        $this->validateLogin($request);
+        // Ensure we get the data correctly from JSON or form
+        $data = $request->json()->all() ?: $request->all();
+        
+        if (empty($data)) {
+            return response()->json([
+                'status' => 422,
+                'error' => [
+                    'message' => 'No se recibieron datos. Verifique que está enviando JSON válido.'
+                ]
+            ], 422);
+        }
 
-        $credentials = $request->only('rut', 'password');
-        $remember = $request->boolean('remember', false);
+        // Create a new request with the parsed data for validation
+        $processedRequest = new Request($data);
+        $processedRequest->setJson($request->json());
+
+        $this->validateLogin($processedRequest);
+
+        $credentials = [
+            'rut' => $data['rut'] ?? null,
+            'password' => $data['password'] ?? null
+        ];
+        
+        $remember = $data['remember'] ?? false;
 
         if (!Auth::attempt($credentials, $remember)) {
             return $this->sendFailedLoginResponse();
@@ -85,7 +187,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => 403,
             'error' => [
-                'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.' 
+                'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.'
             ]
         ], 403);
     }

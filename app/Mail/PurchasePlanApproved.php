@@ -9,7 +9,8 @@ use Illuminate\Queue\SerializesModels;
 
 class PurchasePlanApproved extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $purchasePlan;
     public $comment;
@@ -36,4 +37,4 @@ class PurchasePlanApproved extends Mailable
                         'user' => auth()->user(),
                     ]);
     }
-} 
+}

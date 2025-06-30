@@ -93,7 +93,7 @@ class PurchasePlan extends Model
 
     /**
      * Calcula el presupuesto disponible restando la suma de los montos de todos los proyectos del amount del FormF1
-     * 
+     *
      * @return float
      */
     public function getAvailableBudget()
@@ -111,18 +111,18 @@ class PurchasePlan extends Model
 
     public function getTotalAmount()
     {
-        return $this->projects->sum(function($project) {
+        return $this->projects->sum(function ($project) {
             return $project->getTotalAmount();
         });
     }
 
     public function getTotalProjectsExecutedAmount()
     {
-        return $this->projects->sum(function($project) {
+        return $this->projects->sum(function ($project) {
             return $project->getTotalItemsExecutedAmount();
         });
     }
-    
+
     public function getTotalProjectsExecutedPercentage()
     {
         $projects = $this->projects;
@@ -130,7 +130,7 @@ class PurchasePlan extends Model
             return 0;
         }
 
-        $sumPercentages = $projects->sum(function($project) {
+        $sumPercentages = $projects->sum(function ($project) {
             return $project->getExecutionItemsPercentage();
         });
 
@@ -166,7 +166,7 @@ class PurchasePlan extends Model
 
     /**
      * Verifica si existe un plan de compras para una dirección y año específicos
-     * 
+     *
      * @param int $directionId
      * @param int $year
      * @param int|null $excludeId - ID del plan a excluir (útil para validaciones en actualizaciones)
@@ -186,7 +186,7 @@ class PurchasePlan extends Model
 
     /**
      * Obtiene el plan de compras para una dirección y año específicos
-     * 
+     *
      * @param int $directionId
      * @param int $year
      * @return PurchasePlan|null

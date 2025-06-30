@@ -16,7 +16,7 @@ class CanSendPurchasePlan
     public function handle(Request $request, Closure $next): Response
     {
         $user = auth()->user();
-        
+
         // Verificar si el usuario tiene uno de los roles permitidos
         $allowedRoles = [
             'Administrador del Sistema',
@@ -36,4 +36,4 @@ class CanSendPurchasePlan
 
         return $next($request);
     }
-} 
+}

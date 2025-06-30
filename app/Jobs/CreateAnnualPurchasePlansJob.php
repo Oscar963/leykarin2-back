@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Log;
 
 class CreateAnnualPurchasePlansJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     private $year;
     private $force;
@@ -55,10 +58,9 @@ class CreateAnnualPurchasePlansJob implements ShouldQueue
                     Log::error($error);
                 }
             }
-
         } catch (\Exception $e) {
             Log::error("Error al crear planes de compra automáticamente: " . $e->getMessage());
             throw $e;
         }
     }
-} 
+}

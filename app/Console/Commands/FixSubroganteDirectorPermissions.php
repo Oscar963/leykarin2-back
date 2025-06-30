@@ -17,7 +17,7 @@ class FixSubroganteDirectorPermissions extends Command
 
         $directorRole = Role::where('name', 'Director')->first();
         $subroganteRole = Role::where('name', 'Subrogante de Director')->first();
-        
+
         if (!$directorRole) {
             $this->error('❌ El rol "Director" no existe');
             return 1;
@@ -87,9 +87,11 @@ class FixSubroganteDirectorPermissions extends Command
         $this->info('🔍 Comparando permisos con el Director:');
         $directorPermissions = $directorRole->permissions->pluck('name')->toArray();
         $subrogantePermissions = $subroganteRole->permissions->pluck('name')->toArray();
-        
-        if (count(array_diff($directorPermissions, $subrogantePermissions)) === 0 && 
-            count(array_diff($subrogantePermissions, $directorPermissions)) === 0) {
+
+        if (
+            count(array_diff($directorPermissions, $subrogantePermissions)) === 0 &&
+            count(array_diff($subrogantePermissions, $directorPermissions)) === 0
+        ) {
             $this->info('✅ Los permisos son idénticos entre Director y Subrogante de Director');
         } else {
             $this->warn('⚠️ Los permisos no son idénticos');
@@ -98,4 +100,4 @@ class FixSubroganteDirectorPermissions extends Command
         $this->info('✅ Permisos del Subrogante de Director replicados exitosamente');
         return 0;
     }
-} 
+}

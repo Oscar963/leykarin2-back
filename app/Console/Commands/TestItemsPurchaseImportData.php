@@ -47,13 +47,13 @@ class TestItemsPurchaseImportData extends Command
         // Probar la clase de importación optimizada
         $this->info('1. Inicializando clase de importación optimizada...');
         $startTime = microtime(true);
-        
+
         $import = new \App\Imports\ItemsPurchaseImport($projectId);
         $sheetImport = $import->sheetImport;
-        
+
         $endTime = microtime(true);
         $initTime = round(($endTime - $startTime) * 1000, 2);
-        
+
         $this->line("   - Tiempo de inicialización: {$initTime}ms");
         $this->line("   - Caché de asignaciones presupuestarias: " . count($sheetImport->budgetAllocationsCache) . " elementos");
         $this->line("   - Caché de tipos de compra: " . count($sheetImport->typePurchasesCache) . " elementos");
@@ -62,21 +62,21 @@ class TestItemsPurchaseImportData extends Command
 
         // Probar búsquedas en caché
         $this->info('2. Probando búsquedas en caché...');
-        
+
         $budgetAllocation = BudgetAllocation::first();
         $typePurchase = TypePurchase::first();
         $publicationMonth = PublicationMonth::first();
-        
+
         if ($budgetAllocation && $typePurchase && $publicationMonth) {
             $startTime = microtime(true);
-            
+
             $budgetId = $sheetImport->getBudgetAllocationIdFromCache($budgetAllocation->code);
             $typeId = $sheetImport->getTypePurchaseIdFromCache($typePurchase->name);
             $monthId = $sheetImport->getPublicationMonthIdFromCache($publicationMonth->short_name . ' ' . $publicationMonth->year);
-            
+
             $endTime = microtime(true);
             $searchTime = round(($endTime - $startTime) * 1000, 2);
-            
+
             $this->line("   - Tiempo de búsqueda en caché: {$searchTime}ms");
             $this->line("   - Asignación presupuestaria encontrada: " . ($budgetId ? 'Sí' : 'No'));
             $this->line("   - Tipo de compra encontrado: " . ($typeId ? 'Sí' : 'No'));
@@ -85,9 +85,9 @@ class TestItemsPurchaseImportData extends Command
 
         // Probar creación de item
         $this->info('3. Probando creación de item...');
-        
+
         $startTime = microtime(true);
-        
+
         try {
             $itemPurchase = new ItemPurchase([
                 'item_number' => 999,
@@ -108,17 +108,16 @@ class TestItemsPurchaseImportData extends Command
             ]);
 
             $itemPurchase->save();
-            
+
             $endTime = microtime(true);
             $createTime = round(($endTime - $startTime) * 1000, 2);
-            
+
             $this->line("   - Tiempo de creación: {$createTime}ms");
             $this->line("   - Item creado con ID: {$itemPurchase->id}");
-            
+
             // Eliminar el item de prueba
             $itemPurchase->delete();
             $this->line("   - Item de prueba eliminado");
-            
         } catch (\Exception $e) {
             $this->error("   - Error al crear item: " . $e->getMessage());
         }
@@ -155,17 +154,17 @@ class TestItemsPurchaseImportData extends Command
         }
 
         $monthYear = trim($monthYear);
-        
+
         // Buscar por nombre corto y año (formato "Dic 2025")
         $parts = explode(' ', $monthYear);
         if (count($parts) >= 2) {
             $shortName = $parts[0];
             $year = $parts[1];
-            
+
             $publicationMonth = PublicationMonth::where('short_name', $shortName)
                 ->where('year', $year)
                 ->first();
-                
+
             if ($publicationMonth) {
                 return $publicationMonth->id;
             }
@@ -175,11 +174,11 @@ class TestItemsPurchaseImportData extends Command
         if (count($parts) >= 2) {
             $name = $parts[0];
             $year = $parts[1];
-            
+
             $publicationMonth = PublicationMonth::where('name', $name)
                 ->where('year', $year)
                 ->first();
-                
+
             if ($publicationMonth) {
                 return $publicationMonth->id;
             }
@@ -190,11 +189,11 @@ class TestItemsPurchaseImportData extends Command
         $publicationMonth = PublicationMonth::where('short_name', $monthYear)
             ->where('year', $currentYear)
             ->first();
-            
+
         if ($publicationMonth) {
             return $publicationMonth->id;
         }
 
         return null;
     }
-} 
+}

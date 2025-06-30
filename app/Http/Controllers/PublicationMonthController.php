@@ -261,4 +261,4 @@ class PublicationMonthController extends Controller
             ], 500);
         }
     }
-} 
+}

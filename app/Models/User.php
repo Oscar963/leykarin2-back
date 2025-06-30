@@ -13,7 +13,11 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles;
+    use HasApiTokens;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use HasRoles;
 
     /**
      * Roles que deben pertenecer únicamente a una dirección
@@ -113,7 +117,7 @@ class User extends Authenticatable
         if ($this->hasAnyRole(self::MULTI_DIRECTION_ROLES)) {
             return true;
         }
-        
+
         // Los usuarios con roles jerárquicos solo pueden tener una dirección
         return !$this->hasHierarchicalRole();
     }

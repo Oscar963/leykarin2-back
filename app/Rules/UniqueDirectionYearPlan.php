@@ -48,7 +48,7 @@ class UniqueDirectionYearPlan implements Rule
     {
         $directionId = request()->input('direction');
         $year = request()->input('year');
-        
+
         // Obtener el nombre de la dirección para el mensaje
         $directionName = 'la dirección especificada';
         if ($directionId) {
@@ -60,4 +60,4 @@ class UniqueDirectionYearPlan implements Rule
 
         return "Ya existe un plan de compras para {$directionName} en el año {$year}. No se puede crear otro plan para la misma dirección y año.";
     }
-} 
+}

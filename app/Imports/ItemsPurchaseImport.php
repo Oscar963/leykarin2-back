@@ -52,11 +52,11 @@ class ItemsPurchaseImport implements WithMultipleSheets
     }
 }
 
-class ItemsPurchaseSheetImport implements 
-    ToModel, 
-    WithHeadingRow, 
-    WithBatchInserts, 
-    WithChunkReading, 
+class ItemsPurchaseSheetImport implements
+    ToModel,
+    WithHeadingRow,
+    WithBatchInserts,
+    WithChunkReading,
     WithCalculatedFormulas,
     SkipsOnError,
     SkipsEmptyRows,
@@ -64,12 +64,12 @@ class ItemsPurchaseSheetImport implements
     WithLimit
 {
     use SkipsErrors;
-    
+
     protected $projectId;
     protected $errors = [];
     protected $importedCount = 0;
     protected $skippedCount = 0;
-    
+
     // Caché para optimizar consultas
     public $budgetAllocationsCache = [];
     public $typePurchasesCache = [];
@@ -178,12 +178,12 @@ class ItemsPurchaseSheetImport implements
     {
         // Mapear las claves del array para normalizar los nombres
         $row = $this->mapRowKeys($row);
-        
+
         // Verificar si estamos leyendo la hoja correcta
         if (isset($row['codigo']) || isset($row['descripcion']) || isset($row['formato_para_importar'])) {
             return null; // Ignorar esta fila
         }
-        
+
         // Verificar si la fila tiene al menos un dato (no está completamente vacía)
         $hasData = false;
         $allFields = [
@@ -201,19 +201,19 @@ class ItemsPurchaseSheetImport implements
             'mes_de_publicacion',
             'comentario',
         ];
-        
+
         foreach ($allFields as $field) {
             if (isset($row[$field]) && trim($row[$field]) !== '') {
                 $hasData = true;
                 break;
             }
         }
-        
+
         // Si la fila está completamente vacía, ignorarla silenciosamente
         if (!$hasData) {
             return null;
         }
-        
+
         // Si la fila tiene al menos un dato, validar que todos los campos obligatorios estén presentes
         $requiredFields = [
             'linea',
@@ -230,7 +230,7 @@ class ItemsPurchaseSheetImport implements
             // 'cod_gasto_presupuestario' - Ahora se calcula automáticamente
             // 'comentario' - Este campo es opcional
         ];
-        
+
         foreach ($requiredFields as $field) {
             if (!isset($row[$field]) || trim($row[$field]) === '') {
                 $this->errors[] = [
@@ -280,7 +280,6 @@ class ItemsPurchaseSheetImport implements
 
             $this->importedCount++;
             return $itemPurchase;
-
         } catch (Exception $e) {
             $this->errors[] = [
                 'row' => $this->importedCount + $this->skippedCount + 1,
@@ -302,7 +301,7 @@ class ItemsPurchaseSheetImport implements
         }
 
         $code = trim($code);
-        
+
         // Buscar en caché por código exacto
         if (isset($this->budgetAllocationsCache[$code])) {
             return $this->budgetAllocationsCache[$code];
@@ -337,7 +336,7 @@ class ItemsPurchaseSheetImport implements
         }
 
         $nameLower = strtolower(trim($name));
-        
+
         // Buscar en caché
         if (isset($this->typePurchasesCache[$nameLower])) {
             return $this->typePurchasesCache[$nameLower];
@@ -357,7 +356,7 @@ class ItemsPurchaseSheetImport implements
         }
 
         $monthYearLower = strtolower(trim($monthYear));
-        
+
         // Buscar en caché
         if (isset($this->publicationMonthsCache[$monthYearLower])) {
             return $this->publicationMonthsCache[$monthYearLower];
@@ -375,7 +374,7 @@ class ItemsPurchaseSheetImport implements
         if (is_numeric($value)) {
             return (int) $value;
         }
-        
+
         // Remover caracteres no numéricos
         $cleanValue = preg_replace('/[^0-9]/', '', $value);
         return $cleanValue ? (int) $cleanValue : 0;
@@ -389,7 +388,7 @@ class ItemsPurchaseSheetImport implements
         if (is_numeric($value)) {
             return (int) $value;
         }
-        
+
         // Remover símbolos de moneda, puntos y comas
         $cleanValue = preg_replace('/[^0-9]/', '', $value);
         return $cleanValue ? (int) $cleanValue : 0;
@@ -468,4 +467,4 @@ class ItemsPurchaseSheetImport implements
         ];
         $this->skippedCount++;
     }
-} 
+}

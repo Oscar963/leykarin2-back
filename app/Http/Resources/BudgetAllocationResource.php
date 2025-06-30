@@ -15,4 +15,4 @@ class BudgetAllocationResource extends JsonResource
             'cod_budget_allocation_type' => $this->cod_budget_allocation_type,
         ];
     }
-} 
+}

@@ -88,7 +88,7 @@ class Project extends Model
         if (!$this->isStrategic()) {
             return collect();
         }
-        
+
         return $this->goals;
     }
 

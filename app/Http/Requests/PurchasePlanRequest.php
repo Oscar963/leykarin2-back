@@ -56,7 +56,7 @@ class PurchasePlanRequest extends FormRequest
             'year.integer' => 'El año del plan de compra debe ser un número entero.',
 
             'direction_id.required' => 'La dirección es obligatoria.',
-            'direction_id.exists' => 'La dirección seleccionada no es válida.', 
+            'direction_id.exists' => 'La dirección seleccionada no es válida.',
         ];
     }
 }

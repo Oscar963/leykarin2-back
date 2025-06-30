@@ -155,20 +155,20 @@ class ItemPurchaseController extends Controller
     {
         // Aumentar tiempo límite para importaciones grandes
         set_time_limit(300); // 5 minutos
-        
+
         try {
             $request->validate([
                 'file' => 'required|file|mimes:xlsx,xls|max:10240', // Máximo 10MB
             ]);
 
             $import = new ItemsPurchaseImport($projectId);
-            
+
             // Importar sin validación automática para mejor rendimiento
             Excel::import($import, $request->file('file'), null, \Maatwebsite\Excel\Excel::XLSX);
-            
+
             $stats = $import->getImportStats();
             $errors = $import->getErrors();
-            
+
             $this->logActivity('import_file', "Usuario importó {$stats['imported']} ítems de compra para el proyecto {$projectId}");
 
             return response()->json([
@@ -177,11 +177,10 @@ class ItemPurchaseController extends Controller
                 'errors' => $errors,
                 'success' => true
             ], 200);
-
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $errors = [];
-            
+
             foreach ($failures as $failure) {
                 $errors[] = [
                     'row' => $failure->row(),
@@ -196,7 +195,6 @@ class ItemPurchaseController extends Controller
                 'errors' => $errors,
                 'success' => false
             ], 422);
-
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al importar el archivo: ' . $e->getMessage(),

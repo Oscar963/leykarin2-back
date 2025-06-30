@@ -27,4 +27,4 @@ class PermissionServiceProvider extends ServiceProvider
         $this->app['router']->aliasMiddleware('permission', PermissionMiddleware::class);
         $this->app['router']->aliasMiddleware('role_or_permission', RoleOrPermissionMiddleware::class);
     }
-} 
+}

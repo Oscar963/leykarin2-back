@@ -50,7 +50,7 @@ class TestPublicationMonthRelation extends Command
         // Mostrar algunos ítems de compra con sus meses de publicación
         $this->info('3. Ítems de compra con meses de publicación:');
         $items = ItemPurchase::with('publicationMonth')->take(5)->get();
-        
+
         if ($items->isEmpty()) {
             $this->warn('   No hay ítems de compra en la base de datos.');
         } else {
@@ -67,7 +67,7 @@ class TestPublicationMonthRelation extends Command
             $this->line("   - Ítem de prueba: {$testItem->id}");
             $this->line("   - publication_month_id: {$testItem->publication_month_id}");
             $this->line("   - publication_date_formatted: {$testItem->publication_date_formatted}");
-            
+
             if ($testItem->publicationMonth) {
                 $this->line("   - Relación cargada: {$testItem->publicationMonth->formatted_date}");
             }
@@ -75,4 +75,4 @@ class TestPublicationMonthRelation extends Command
 
         $this->info('=== Prueba completada ===');
     }
-} 
+}

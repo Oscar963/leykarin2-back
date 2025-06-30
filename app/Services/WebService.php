@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-
 use App\Models\Complainant;
 use App\Models\Complaint;
 use App\Models\Denounced;
@@ -15,5 +14,4 @@ use Illuminate\Support\Str;
 
 class WebService
 {
-
 }

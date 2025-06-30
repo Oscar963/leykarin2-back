@@ -21,7 +21,7 @@ class AnnualPurchasePlanService
     public function createAnnualPurchasePlans($year = null, $force = false): array
     {
         $year = $year ?? date('Y');
-        
+
         Log::info("Iniciando creación de planes de compra para el año {$year}");
 
         // Obtener todas las direcciones
@@ -45,17 +45,16 @@ class AnnualPurchasePlanService
         foreach ($directions as $direction) {
             try {
                 $result = $this->createPurchasePlanForDirection($direction, $year, $force);
-                
+
                 if ($result['created']) {
                     $created++;
                 } elseif ($result['skipped']) {
                     $skipped++;
                 }
-                
+
                 if (isset($result['error'])) {
                     $errors[] = $result['error'];
                 }
-                
             } catch (\Exception $e) {
                 $error = "Error al crear plan para {$direction->name}: " . $e->getMessage();
                 Log::error($error);
@@ -112,10 +111,10 @@ class AnnualPurchasePlanService
         if ($existingPlan && $force) {
             // Actualizar plan existente
             $existingPlan->update($planData);
-            
+
             // Crear estado inicial si no existe
             $this->createInitialStatus($existingPlan);
-            
+
             // Registrar en el historial
             HistoryPurchaseHistory::logAction(
                 $existingPlan->id,
@@ -127,7 +126,7 @@ class AnnualPurchasePlanService
                     'direction' => $direction->name
                 ]
             );
-            
+
             Log::info("Plan de compra actualizado para: {$direction->name}");
             return [
                 'created' => false,
@@ -138,10 +137,10 @@ class AnnualPurchasePlanService
         } else {
             // Crear nuevo plan
             $newPlan = PurchasePlan::create($planData);
-            
+
             // Crear estado inicial
             $this->createInitialStatus($newPlan);
-            
+
             // Registrar en el historial
             HistoryPurchaseHistory::logAction(
                 $newPlan->id,
@@ -153,7 +152,7 @@ class AnnualPurchasePlanService
                     'direction' => $direction->name
                 ]
             );
-            
+
             Log::info("Plan de compra creado para: {$direction->name}");
             return [
                 'created' => true,
@@ -215,4 +214,4 @@ class AnnualPurchasePlanService
     {
         return date('n') == 6; // Junio es el mes 6
     }
-} 
+}

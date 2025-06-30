@@ -91,4 +91,4 @@ class TestPublicationMonthService extends Command
 
         $this->info('=== Prueba completada ===');
     }
-} 
+}

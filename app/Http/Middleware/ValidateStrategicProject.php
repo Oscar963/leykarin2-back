@@ -75,4 +75,4 @@ class ValidateStrategicProject
 
         return $next($request);
     }
-} 
+}

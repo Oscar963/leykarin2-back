@@ -22,6 +22,7 @@ class CreateGoalsTable extends Migration
             $table->decimal('current_value', 15, 2)->default(0); // Valor actual alcanzado
             $table->date('target_date')->nullable(); // Fecha meta
             $table->enum('status', ['pendiente', 'en_progreso', 'completada', 'cancelada'])->default('pendiente');
+            $table->decimal('progress_value', 10, 2)->default(0)->comment('Valor actual del progreso de la meta');
             $table->text('notes')->nullable(); // Observaciones
             $table->unsignedBigInteger('project_id');
             $table->unsignedBigInteger('created_by');

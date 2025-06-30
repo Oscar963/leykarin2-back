@@ -16,7 +16,7 @@ class FixDirectorPermissions extends Command
         $this->info('🔧 Corrigiendo permisos del Director...');
 
         $directorRole = Role::where('name', 'Director')->first();
-        
+
         if (!$directorRole) {
             $this->error('❌ El rol "Director" no existe');
             return 1;
@@ -80,4 +80,4 @@ class FixDirectorPermissions extends Command
         $this->info('✅ Permisos del Director corregidos exitosamente');
         return 0;
     }
-} 
+}

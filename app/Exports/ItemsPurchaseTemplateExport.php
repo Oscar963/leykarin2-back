@@ -92,7 +92,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $this->addDataValidation($event->sheet->getDelegate());
             },
         ];
@@ -131,12 +131,12 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
             $validation->setError('Por favor seleccione una asignación presupuestaria válida de la lista.');
             $validation->setPromptTitle('Asignación Presupuestaria');
             $validation->setPrompt('Seleccione una asignación presupuestaria de la lista desplegable.');
-            
+
             // Establecer el primer valor como valor por defecto solo en las primeras 2 filas de datos
             if ($row <= 3) {
                 $sheet->getCell("I$row")->setValue($firstAsignacion);
             }
-            
+
             // Fórmula para Cod. Gasto Presupuestario (columna J)
             $formulaIngles = "=IF(ISNA(MATCH(I{$row},'{$asignacionesSheet}'!\$D\$2:\$D\$100,0)),\"\",INDEX('{$asignacionesSheet}'!\$A\$2:\$A\$100,MATCH(I{$row},'{$asignacionesSheet}'!\$D\$2:\$D\$100,0)))";
             $sheet->getCell("J{$row}")->setValue($formulaIngles);
@@ -154,7 +154,7 @@ class ItemsPurchaseTemplateSheet implements FromArray, WithHeadings, WithStyles,
             $validationTipo->setError('Por favor seleccione un tipo de compra válido de la lista.');
             $validationTipo->setPromptTitle('Tipo de Compra');
             $validationTipo->setPrompt('Seleccione un tipo de compra de la lista desplegable.');
-            
+
             // Establecer el primer valor como valor por defecto solo en las primeras 2 filas de datos
             if ($row <= 3) {
                 $sheet->getCell("K$row")->setValue($firstTipoCompra);
@@ -248,8 +248,8 @@ class BudgetAllocationsReferenceSheet implements FromArray, WithHeadings, WithSt
         $allocations = BudgetAllocation::select('cod_budget_allocation_type', 'code', 'description')
             ->orderBy('code')
             ->get();
-        
-        return $allocations->map(function($allocation) {
+
+        return $allocations->map(function ($allocation) {
             return [
                 $allocation->cod_budget_allocation_type,
                 $allocation->code,
@@ -272,7 +272,7 @@ class BudgetAllocationsReferenceSheet implements FromArray, WithHeadings, WithSt
     public function styles(Worksheet $sheet)
     {
         $highestRow = $sheet->getHighestRow();
-        
+
         // Encabezados
         $sheet->getStyle('A1:D1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -298,8 +298,8 @@ class TypePurchasesReferenceSheet implements FromArray, WithHeadings, WithStyles
         $types = TypePurchase::select('name', 'cod_purchase_type')
             ->orderBy('name')
             ->get();
-        
-        return $types->map(function($type) {
+
+        return $types->map(function ($type) {
             return [
                 $type->name,
                 $type->cod_purchase_type
@@ -342,8 +342,8 @@ class PublicationMonthsReferenceSheet implements FromArray, WithHeadings, WithSt
         $months = PublicationMonth::orderBy('year', 'desc')
             ->orderBy('month_number', 'asc')
             ->get();
-        
-        return $months->map(function($month) {
+
+        return $months->map(function ($month) {
             return [
                 $month->formatted_date
             ];
@@ -375,4 +375,4 @@ class PublicationMonthsReferenceSheet implements FromArray, WithHeadings, WithSt
     {
         return 'Meses de Publicación';
     }
-} 
+}

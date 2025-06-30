@@ -14,4 +14,4 @@ class TypeProjectResource extends JsonResource
             'description' => $this->description,
         ];
     }
-} 
+}

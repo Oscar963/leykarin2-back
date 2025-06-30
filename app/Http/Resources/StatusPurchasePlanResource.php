@@ -14,4 +14,4 @@ class StatusPurchasePlanResource extends JsonResource
             'name' => $this->name
         ];
     }
-} 
+}

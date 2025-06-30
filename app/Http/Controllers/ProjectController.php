@@ -260,7 +260,7 @@ class ProjectController extends Controller
     }
 
     /**
-     * Descargar un archivo por ID. 
+     * Descargar un archivo por ID.
      */
     public function downloadVerificationProject(int $fileId): BinaryFileResponse
     {
@@ -289,10 +289,10 @@ class ProjectController extends Controller
     {
         try {
             $purchasePlanId = $request->query('purchase_plan_id');
-            
+
             $query = $this->projectService->getAllProjectsByPurchasePlan($purchasePlanId, null, 1000);
             $strategicProjects = $query->where('type_project_id', 2); // Asumiendo que ID 2 es estratégico
-            
+
             $totalStrategicProjects = $strategicProjects->count();
             $totalGoals = 0;
             $completedGoals = 0;

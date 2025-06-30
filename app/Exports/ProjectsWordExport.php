@@ -21,10 +21,10 @@ class ProjectsWordExport
     {
         // Crear documento Word
         $phpWord = new PhpWord();
-        
+
         // Configurar idioma
         $phpWord->getSettings()->setThemeFontLang(new Language(Language::ES_ES));
-        
+
         // Propiedades del documento
         $properties = $phpWord->getDocInfo();
         $properties->setCreator('Ilustre Municipalidad de Arica');
@@ -57,7 +57,7 @@ class ProjectsWordExport
         // Encabezado con logo y texto del decreto
         $headerTable = $section->addTable();
         $headerTable->addRow();
-        
+
         // Celda izquierda para logo (simulado con texto)
         $logoCell = $headerTable->addCell(2500);
         $logoCell->addText('ARICA', ['size' => 16, 'bold' => true, 'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
@@ -93,7 +93,7 @@ class ProjectsWordExport
 
         // VISTOS
         $section->addText('VISTOS:', [
-            'size' => 11, 
+            'size' => 11,
             'bold' => true
         ], [
             'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH
@@ -109,7 +109,7 @@ class ProjectsWordExport
 
         // CONSIDERANDO
         $section->addText('CONSIDERANDO:', [
-            'size' => 11, 
+            'size' => 11,
             'bold' => true
         ], [
             'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH
@@ -269,19 +269,19 @@ class ProjectsWordExport
         $section->addText('MCZLZFIsd.-', [
             'size' => 9
         ]);
-        
+
         $section->addText('Dirección de Administración y Finanzas, Dirección de Control, Asesoría Jurídica, Of. Propuesta, SECPLAN y Archivo.-', [
             'size' => 9
         ]);
 
         // Generar archivo
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        
+
         $filename = 'proyectos_plan_compra_' . $this->purchasePlanId . '_' . date('Y-m-d_H-i-s') . '.docx';
         $temp_file = tempnam(sys_get_temp_dir(), $filename);
-        
+
         $objWriter->save($temp_file);
-        
+
         return response()->download($temp_file, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         ])->deleteFileAfterSend(true);
@@ -294,12 +294,12 @@ class ProjectsWordExport
             5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto',
             9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'
         ];
-        
+
         $timestamp = strtotime($date);
         $day = date('j', $timestamp);
         $month = $months[date('n', $timestamp)];
         $year = date('Y', $timestamp);
-        
+
         return "$month $day de $year";
     }
 
@@ -310,7 +310,7 @@ class ProjectsWordExport
             5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto',
             9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'
         ];
-        
+
         return $months[$monthNumber] ?? 'enero';
     }
-} 
+}

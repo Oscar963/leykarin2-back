@@ -13,4 +13,4 @@ class StatusItemPurchaseResource extends JsonResource
             'name' => $this->name,
         ];
     }
-} 
+}

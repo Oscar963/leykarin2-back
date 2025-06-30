@@ -57,4 +57,4 @@ class ValidatePurchasePlanStatusChange
 
         return $next($request);
     }
-} 
+}

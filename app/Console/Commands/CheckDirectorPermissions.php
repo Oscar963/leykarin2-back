@@ -27,17 +27,17 @@ class CheckDirectorPermissions extends Command
     public function handle()
     {
         $this->info('🔍 Verificando permisos del Director en Planes de Compra...');
-        
+
         $director = Role::where('name', 'Director')->first();
-        
+
         if (!$director) {
             $this->error('❌ Rol Director no encontrado');
             return;
         }
-        
+
         $this->info("\n📋 Rol: Director");
         $this->line('Permisos de Planes de Compra:');
-        
+
         // Permisos específicos de planes de compra
         $purchasePlanPermissions = [
             'purchase_plans.list' => 'Listar planes de compra',
@@ -54,13 +54,13 @@ class CheckDirectorPermissions extends Command
             'purchase_plans.upload_form_f1' => 'Subir formulario F1',
             'purchase_plans.by_year' => 'Ver por año'
         ];
-        
+
         foreach ($purchasePlanPermissions as $permission => $description) {
             $hasPermission = $director->hasPermissionTo($permission);
             $status = $hasPermission ? '✅ SÍ' : '❌ NO';
             $this->line("  {$status} {$description} ({$permission})");
         }
-        
+
         // Permisos relacionados con estados de planes de compra
         $this->info("\n📋 Permisos de Estados de Planes de Compra:");
         $statusPermissions = [
@@ -72,19 +72,19 @@ class CheckDirectorPermissions extends Command
             'purchase_plan_statuses.history' => 'Ver historial de estados',
             'purchase_plan_statuses.current' => 'Ver estado actual'
         ];
-        
+
         foreach ($statusPermissions as $permission => $description) {
             $hasPermission = $director->hasPermissionTo($permission);
             $status = $hasPermission ? '✅ SÍ' : '❌ NO';
             $this->line("  {$status} {$description} ({$permission})");
         }
-        
+
         // Resumen
         $this->info("\n📊 RESUMEN:");
         $this->line("  • El Director NO puede: Listar, Crear, Editar, Eliminar planes de compra");
         $this->line("  • El Director SÍ puede: Ver, Enviar, Exportar, Subir archivos");
         $this->line("  • El Director NO puede: Visar, Aprobar, Rechazar (solo enviar para aprobación)");
-        
+
         $this->info("\n✅ Verificación completada");
     }
-} 
+}

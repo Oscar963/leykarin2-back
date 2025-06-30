@@ -18,7 +18,7 @@ class PurchasePlanStatus extends Model
     ];
 
     protected $casts = [
-        'sending_date' => 'datetime',       
+        'sending_date' => 'datetime',
     ];
 
     /**
@@ -65,4 +65,4 @@ class PurchasePlanStatus extends Model
             ->orderBy('created_at', 'asc')
             ->get();
     }
-} 
+}

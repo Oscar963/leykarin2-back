@@ -110,7 +110,7 @@ class DirectionController extends Controller
     public function getDirector(Direction $direction)
     {
         $director = $direction->director;
-        
+
         if (!$director) {
             return response()->json([
                 'message' => 'Esta dirección no tiene director asignado'
@@ -128,7 +128,7 @@ class DirectionController extends Controller
     public function getUsers(Direction $direction)
     {
         $users = $direction->users()->with('roles')->get();
-        
+
         return response()->json([
             'direction' => new DirectionResource($direction),
             'users' => UserResource::collection($users)
@@ -145,7 +145,7 @@ class DirectionController extends Controller
         ]);
 
         $users = $direction->getUsersByRole($request->role);
-        
+
         return response()->json([
             'direction' => new DirectionResource($direction),
             'role' => $request->role,
@@ -163,7 +163,7 @@ class DirectionController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
-        
+
         // Verificar que el usuario tenga el rol de Director
         if (!$user->hasRole('Director')) {
             return response()->json([
@@ -195,7 +195,7 @@ class DirectionController extends Controller
         ]);
 
         $users = User::whereIn('id', $request->user_ids)->get();
-        
+
         // Asignar usuarios a la dirección
         $direction->users()->syncWithoutDetaching($request->user_ids);
 
@@ -241,7 +241,7 @@ class DirectionController extends Controller
     public function getUserStats()
     {
         $directions = Direction::with(['director', 'users.roles'])->get();
-        
+
         $stats = $directions->map(function ($direction) {
             $usersByRole = $direction->users->groupBy(function ($user) {
                 return $user->roles->first() ? $user->roles->first()->name : 'Sin rol';

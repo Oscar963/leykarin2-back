@@ -16,7 +16,7 @@ class CheckDirectionPermission
     public function handle(Request $request, Closure $next, string $permission): Response
     {
         $user = auth()->user();
-        
+
         // Si el usuario es administrador del sistema, permitir todo
         if ($user->hasRole('Administrador del Sistema')) {
             return $next($request);
@@ -37,7 +37,7 @@ class CheckDirectionPermission
         // Si la acción está relacionada con una dirección específica
         if ($request->has('direction_id') || $request->route('direction')) {
             $directionId = $request->input('direction_id') ?? $request->route('direction');
-            
+
             // Verificar si el usuario pertenece a esa dirección
             if (!$user->directions()->where('direction_id', $directionId)->exists()) {
                 return response()->json([
@@ -48,4 +48,4 @@ class CheckDirectionPermission
 
         return $next($request);
     }
-} 
+}

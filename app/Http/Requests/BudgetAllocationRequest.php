@@ -63,4 +63,4 @@ class BudgetAllocationRequest extends FormRequest
             'cod_budget_allocation_type.max' => 'El tipo de asignación presupuestaria no debe exceder los 20 caracteres.',
         ];
     }
-} 
+}

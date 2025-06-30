@@ -12,9 +12,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectService
 {
-
     /**
-     * Obtiene todos los proyectos con paginación y filtrado por nombre y descripción   
+     * Obtiene todos los proyectos con paginación y filtrado por nombre y descripción
      */
     public function getAllProjectsByQuery(?string $query, int $perPage = 50)
     {
@@ -32,7 +31,7 @@ class ProjectService
 
 
     /**
-     * Obtiene todos los proyectos de un plan de compra paginados y filtrados por nombre y descripción  
+     * Obtiene todos los proyectos de un plan de compra paginados y filtrados por nombre y descripción
      */
     public function getAllProjectsByPurchasePlan(int $purchasePlanId, ?string $query = null, int $perPage = 50)
     {

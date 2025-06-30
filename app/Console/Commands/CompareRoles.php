@@ -27,41 +27,40 @@ class CompareRoles extends Command
     public function handle()
     {
         $this->info('Comparando permisos entre roles...');
-        
+
         $rolesToCompare = [
             'Administrador del Sistema',
-            'Administrador Municipal', 
+            'Administrador Municipal',
             'Visador o de Administrador Municipal'
         ];
-        
+
         foreach ($rolesToCompare as $roleName) {
             $role = Role::where('name', $roleName)->first();
-            
+
             if ($role) {
                 $this->info("\n📋 Rol: {$roleName}");
                 $this->line('Permisos de planes de compra:');
-                
-                $permissions = $role->permissions->pluck('name')->filter(function($p) {
+
+                $permissions = $role->permissions->pluck('name')->filter(function ($p) {
                     return str_contains($p, 'purchase_plans');
                 });
-                
+
                 foreach ($permissions as $permission) {
                     $this->line("  ✅ {$permission}");
                 }
-                
+
                 if ($permissions->isEmpty()) {
                     $this->line("  ❌ No tiene permisos de planes de compra");
                 }
-                
+
                 // Verificar específicamente el permiso de visar
                 $hasVisar = $role->hasPermissionTo('purchase_plans.visar');
                 $this->line("  🔍 Tiene permiso 'purchase_plans.visar': " . ($hasVisar ? '✅ SÍ' : '❌ NO'));
-                
             } else {
                 $this->error("❌ Rol '{$roleName}' no encontrado");
             }
         }
-        
+
         $this->info("\n✅ Comparación completada");
     }
-} 
+}

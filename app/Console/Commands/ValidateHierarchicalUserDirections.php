@@ -114,7 +114,7 @@ class ValidateHierarchicalUserDirections extends Command
             foreach ($violations as $violation) {
                 $user = $violation['user'];
                 $roles = $user->getRoleNames()->implode(', ');
-                
+
                 $this->error("   👤 Usuario: {$user->name} {$user->paternal_surname} ({$user->email})");
                 $this->error("      Roles: {$roles}");
                 $this->error("      Direcciones ({$violation['direction_count']}): {$violation['directions']}");
@@ -173,7 +173,7 @@ class ValidateHierarchicalUserDirections extends Command
                 $user->directions()->attach($firstDirection->id);
 
                 $this->line("      ✅ Mantenida: {$firstDirection->name}");
-                
+
                 foreach ($otherDirections as $direction) {
                     $this->line("      ❌ Removida: {$direction->name}");
                 }
@@ -186,4 +186,4 @@ class ValidateHierarchicalUserDirections extends Command
 
         $this->info("✅ Se corrigieron {$fixedCount} violaciones exitosamente");
     }
-} 
+}

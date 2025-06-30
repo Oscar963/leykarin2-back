@@ -96,7 +96,7 @@ class DirectionService
     public function deleteDirection($id)
     {
         $direction = $this->getDirectionById($id);
-        
+
         // Verificar si la dirección tiene usuarios asociados
         if ($direction->users()->count() > 0) {
             throw new \Exception('No se puede eliminar la dirección porque tiene usuarios asociados.');
@@ -109,4 +109,4 @@ class DirectionService
 
         $direction->delete();
     }
-} 
+}

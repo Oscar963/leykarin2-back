@@ -45,7 +45,7 @@ class ItemsPurchaseSampleExport implements FromArray, WithHeadings, WithStyles, 
     public function styles(Worksheet $sheet)
     {
         $highestRow = $sheet->getHighestRow();
-        
+
         // Encabezados: fondo azul y texto blanco
         $sheet->getStyle('A1:M1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -274,4 +274,4 @@ class ItemsPurchaseSampleExport implements FromArray, WithHeadings, WithStyles, 
         // Retornar solo el número de filas solicitado
         return array_slice($sampleData, 0, $this->rows);
     }
-} 
+}

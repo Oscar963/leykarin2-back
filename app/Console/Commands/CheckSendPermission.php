@@ -27,32 +27,31 @@ class CheckSendPermission extends Command
     public function handle()
     {
         $this->info('Verificando permiso de envío de planes de compra...');
-        
+
         $rolesToCheck = [
             'Administrador del Sistema',
-            'Administrador Municipal', 
+            'Administrador Municipal',
             'Visador o de Administrador Municipal'
         ];
-        
+
         foreach ($rolesToCheck as $roleName) {
             $role = Role::where('name', $roleName)->first();
-            
+
             if ($role) {
                 $this->info("\n📋 Rol: {$roleName}");
-                
+
                 $hasSend = $role->hasPermissionTo('purchase_plans.send');
                 $hasVisar = $role->hasPermissionTo('purchase_plans.visar');
                 $hasApprove = $role->hasPermissionTo('purchase_plans.approve');
-                
+
                 $this->line("  🔍 Tiene permiso 'purchase_plans.send': " . ($hasSend ? '✅ SÍ' : '❌ NO'));
                 $this->line("  🔍 Tiene permiso 'purchase_plans.visar': " . ($hasVisar ? '✅ SÍ' : '❌ NO'));
                 $this->line("  🔍 Tiene permiso 'purchase_plans.approve': " . ($hasApprove ? '✅ SÍ' : '❌ NO'));
-                
             } else {
                 $this->error("❌ Rol '{$roleName}' no encontrado");
             }
         }
-        
+
         $this->info("\n✅ Verificación completada");
     }
-} 
+}

@@ -36,32 +36,32 @@ class CheckUserPermissions extends Command
 
         $this->info("=== PERMISOS DEL USUARIO ===");
         $this->newLine();
-        
+
         $this->info("👤 Usuario: {$user->name} {$user->paternal_surname} {$user->maternal_surname}");
         $this->info("📧 Email: {$user->email}");
         $this->info("🆔 RUT: {$user->rut}");
         $this->info("📊 Estado: " . ($user->status ? 'Activo' : 'Inactivo'));
-        
+
         $this->newLine();
-        
+
         // Mostrar roles
         $roles = $user->getRoleNames();
         $this->info("🎭 Roles ({$roles->count()}):");
         foreach ($roles as $role) {
             $this->line("   • {$role}");
         }
-        
+
         $this->newLine();
-        
+
         // Mostrar permisos
         $permissions = $user->getAllPermissions();
         $this->info("🔐 Permisos ({$permissions->count()}):");
         foreach ($permissions as $permission) {
             $this->line("   • {$permission->name}");
         }
-        
+
         $this->newLine();
-        
+
         // Mostrar direcciones
         $directions = $user->directions;
         $this->info("📁 Direcciones ({$directions->count()}):");
@@ -69,9 +69,9 @@ class CheckUserPermissions extends Command
             $isDirector = $direction->director_id === $user->id ? ' (DIRECTOR)' : '';
             $this->line("   • {$direction->name} ({$direction->alias}){$isDirector}");
         }
-        
+
         $this->newLine();
-        
+
         // Verificar permisos específicos
         $this->info("🔍 Verificación de Permisos Específicos:");
         $specificPermissions = [
@@ -82,22 +82,22 @@ class CheckUserPermissions extends Command
             'verify projects',
             'manage directions'
         ];
-        
+
         foreach ($specificPermissions as $permission) {
             $hasPermission = $user->can($permission) ? '✅' : '❌';
             $this->line("   {$hasPermission} {$permission}");
         }
-        
+
         $this->newLine();
-        
+
         // Verificar si es administrador
         $isAdmin = $user->hasAnyRole(['Administrador del Sistema', 'Administrador Municipal']);
         $adminStatus = $isAdmin ? '✅' : '❌';
         $this->info("👑 Es Administrador: {$adminStatus}");
-        
+
         // Verifica los permisos de proyectos de un usuario
         $this->checkProjectPermissions($user);
-        
+
         return Command::SUCCESS;
     }
 
@@ -107,21 +107,21 @@ class CheckUserPermissions extends Command
     private function checkProjectPermissions(User $user)
     {
         $this->info("🏗️  PERMISOS DE PROYECTOS:");
-        
+
         $projectPermissions = [
             'projects.create' => 'Crear',
-            'projects.edit' => 'Editar', 
+            'projects.edit' => 'Editar',
             'projects.delete' => 'Eliminar',
             'projects.view' => 'Ver',
             'projects.verification' => 'Verificar'
         ];
-        
+
         foreach ($projectPermissions as $permission => $label) {
             $hasPermission = $user->can($permission);
             $status = $hasPermission ? '✅' : '❌';
             $this->line("   {$status} {$label}: " . ($hasPermission ? 'Sí' : 'No'));
         }
-        
+
         $this->newLine();
     }
-} 
+}

@@ -7,8 +7,8 @@
 | **Administrador del Sistema** | Control total del sistema | ✅ CRUD completo + Todos los estados | ✅ CRUD completo + Verificar | ✅ CRUD completo | ✅ CRUD completo | ✅ CRUD completo | ✅ CRUD completo | ✅ Completo |
 | **Administrador Municipal** | Gestión municipal completa | ✅ CRUD + Visar/Aprobar/Rechazar | ✅ CRUD completo | ✅ Ver/Descargar | ✅ CRUD completo | ✅ CRUD completo | ❌ Sin acceso | ✅ Ver/Exportar |
 | **Visador** | Aprobación y visación | ❌ Solo ver/visar/rechazar | ✅ CRUD completo | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
-| **Encargado de Presupuestos** | Gestión de Formularios F1 | ❌ Sin acceso | ❌ Sin acceso | ✅ CRUD completo | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso |
-| **Subrogante de Encargado** | Suplencia de presupuestos | ❌ Sin acceso | ❌ Sin acceso | ✅ CRUD completo | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso |
+| **Encargado de Presupuestos** | Gestión de Formularios F1 | ✅ Ver/Listar/Exportar | ❌ Sin acceso | ✅ CRUD completo | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Reportes |
+| **Subrogante de Encargado** | Suplencia de presupuestos | ✅ Ver/Listar/Exportar | ❌ Sin acceso | ✅ CRUD completo | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Reportes |
 | **Director** | Gestión de su dirección | ✅ CRUD (sin eliminar) + Enviar | ✅ CRUD completo + Verificar | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
 | **Subrogante de Director** | Suplencia de director | ✅ CRUD (sin eliminar) + Enviar | ✅ CRUD (sin eliminar) + Verificar | ✅ Ver/Descargar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
 | **Jefatura** | Gestión de su área | ❌ Solo ver | ✅ CRUD (sin eliminar) + Verificar | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ❌ Sin acceso | ✅ Ver/Exportar |
@@ -53,25 +53,25 @@
 
 ### 🟢 **Encargado de Presupuestos**
 - **Nivel de Acceso**: Especializado
-- **Planes de Compra**: Sin acceso
+- **Planes de Compra**: Ver, listar, exportar, consultar por año
 - **Proyectos**: Sin acceso
 - **Formulario F1**: Crear, editar, eliminar, ver, subir, descargar, remover
 - **Usuarios**: Sin acceso
 - **Direcciones**: Sin acceso
 - **Archivos**: Sin acceso
-- **Dashboard**: Sin acceso
-- **Restricciones**: Solo acceso a Formulario F1
+- **Dashboard**: Ver reportes básicos
+- **Restricciones**: Solo lectura en planes de compra, gestión completa de F1
 
 ### 🔵 **Subrogante de Encargado de Presupuestos**
 - **Nivel de Acceso**: Especializado
-- **Planes de Compra**: Sin acceso
+- **Planes de Compra**: Ver, listar, exportar, consultar por año
 - **Proyectos**: Sin acceso
 - **Formulario F1**: Crear, editar, eliminar, ver, subir, descargar, remover
 - **Usuarios**: Sin acceso
 - **Direcciones**: Sin acceso
 - **Archivos**: Sin acceso
-- **Dashboard**: Sin acceso
-- **Restricciones**: Solo acceso a Formulario F1
+- **Dashboard**: Ver reportes básicos
+- **Restricciones**: Solo lectura en planes de compra, gestión completa de F1
 
 ### 🟣 **Director**
 - **Nivel de Acceso**: Medio

@@ -58,7 +58,7 @@ class PurchasePlanController extends Controller
     }
 
     /**
-     * Lista todos los planes de compra con paginación y filtrado del año 
+     * Lista todos los planes de compra con paginación y filtrado del año
      */
     public function indexByYear(int $year, Request $request): JsonResponse
     {
@@ -117,10 +117,10 @@ class PurchasePlanController extends Controller
     /**
      * Muestra un plan de compra por año
      * Si no existe un plan para el año especificado, lo crea automáticamente
-     * 
+     *
      * Para usuarios jerárquicos (Director, Subrogante de Director, Jefatura, Subrogante de Jefatura):
      * - Carga automáticamente los datos de su dirección asignada
-     * 
+     *
      * Para administradores (Administrador Municipal, Administrador del Sistema):
      * - Requiere un parámetro direction_id para especificar qué dirección cargar
      */
@@ -134,7 +134,7 @@ class PurchasePlanController extends Controller
             if ($user->hasAnyRole(['Administrador del Sistema', 'Administrador Municipal'])) {
                 // Los administradores deben especificar la dirección
                 $directionId = $request->input('direction_id');
-                
+
                 if (!$directionId) {
                     return response()->json([
                         'message' => 'Los administradores deben especificar el parámetro direction_id para cargar los datos de una dirección específica.',
@@ -151,11 +151,10 @@ class PurchasePlanController extends Controller
                         'direction_id' => $directionId
                     ], 404);
                 }
-
             } else {
                 // Para usuarios jerárquicos, obtener su dirección asignada
                 $userDirection = $user->getMainDirection();
-                
+
                 if (!$userDirection) {
                     return response()->json([
                         'message' => 'No tienes una dirección asignada. Contacta al administrador del sistema.',
@@ -198,7 +197,6 @@ class PurchasePlanController extends Controller
                     'is_admin' => $user->hasAnyRole(['Administrador del Sistema', 'Administrador Municipal'])
                 ]
             ], 200);
-
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener el plan de compra. ' . $e->getMessage()
@@ -567,7 +565,6 @@ class PurchasePlanController extends Controller
                     'is_admin' => true
                 ]
             ], 200);
-
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las direcciones disponibles. ' . $e->getMessage()

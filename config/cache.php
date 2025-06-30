@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_DRIVER', 'file'),
+    'default' => env('CACHE_DRIVER', 'redis'),
 
     /*
     |--------------------------------------------------------------------------
@@ -27,7 +27,7 @@ return [
     | same cache driver to group types of items stored in your caches.
     |
     | Supported drivers: "apc", "array", "database", "file",
-    |         "memcached", "redis", "dynamodb", "octane", "null"
+    |                    "memcached", "redis", "dynamodb", "octane", "null"
     |
     */
 
@@ -76,7 +76,6 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => 'cache',
-            'lock_connection' => 'default',
         ],
 
         'dynamodb' => [
@@ -90,6 +89,29 @@ return [
 
         'octane' => [
             'driver' => 'octane',
+        ],
+
+        // Cache específico para permisos y roles (larga duración)
+        'permissions' => [
+            'driver' => 'redis',
+            'connection' => 'cache',
+            'prefix' => 'permissions',
+            'serializer' => 'igbinary',
+        ],
+
+        // Cache para datos de sesión y autenticación
+        'sessions' => [
+            'driver' => 'redis',
+            'connection' => 'cache',
+            'prefix' => 'sessions',
+        ],
+
+        // Cache para consultas de base de datos frecuentes
+        'queries' => [
+            'driver' => 'redis',
+            'connection' => 'cache',
+            'prefix' => 'queries',
+            'default_ttl' => 3600, // 1 hora
         ],
 
     ],

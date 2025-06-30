@@ -25,4 +25,4 @@ class UnitPurchasingRequest extends FormRequest
             'name.max' => 'El nombre no puede tener más de 255 caracteres',
         ];
     }
-} 
+}

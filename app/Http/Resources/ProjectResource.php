@@ -16,7 +16,7 @@ class ProjectResource extends JsonResource
             'amount_executed' => $this->getTotalItemsExecutedAmount(),
             'project_number' => $this->project_number,
             'token' => $this->token,
-            'purchase_plan' => new PurchasePlanResource($this->purchasePlan),   
+            'purchase_plan' => new PurchasePlanResource($this->purchasePlan),
             'unit_purchasing' => new UnitPurchasingResource($this->unitPurchasing),
             'type_project' => new TypeProjectResource($this->typeProject)   ,
             'created_by' => new UserResource($this->createdBy),
@@ -33,4 +33,4 @@ class ProjectResource extends JsonResource
             }),
         ];
     }
-} 
+}

@@ -69,4 +69,4 @@ class GoalResource extends JsonResource
 
         return $labels[$this->status] ?? $this->status;
     }
-} 
+}

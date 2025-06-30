@@ -15,7 +15,7 @@ class HistoryPurchaseHistoryResource extends JsonResource
             'user' => $this->user,
             'action_type' => $this->action_type,
             'details' => $this->details,
-            'status' => $this->whenLoaded('status', function() {
+            'status' => $this->whenLoaded('status', function () {
                 return [
                     'id' => $this->status->id,
                     'name' => $this->status->name
@@ -25,4 +25,4 @@ class HistoryPurchaseHistoryResource extends JsonResource
             'updated_at' => $this->updated_at,
         ];
     }
-} 
+}

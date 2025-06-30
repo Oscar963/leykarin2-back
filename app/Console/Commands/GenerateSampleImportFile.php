@@ -30,7 +30,7 @@ class GenerateSampleImportFile extends Command
     public function handle()
     {
         $rows = (int) $this->option('rows');
-        
+
         if ($rows < 1 || $rows > 100) {
             $this->error('El número de filas debe estar entre 1 y 100.');
             return 1;
@@ -41,9 +41,9 @@ class GenerateSampleImportFile extends Command
         try {
             $fileName = 'ejemplo-importacion-items-compra-' . date('Y-m-d-H-i-s') . '.xlsx';
             $filePath = storage_path('app/' . $fileName);
-            
+
             Excel::store(new ItemsPurchaseSampleExport($rows), $fileName);
-            
+
             $this->info("✅ Archivo generado exitosamente:");
             $this->line("📁 Ubicación: {$filePath}");
             $this->line("📊 Filas generadas: {$rows}");
@@ -63,4 +63,4 @@ class GenerateSampleImportFile extends Command
             return 1;
         }
     }
-} 
+}

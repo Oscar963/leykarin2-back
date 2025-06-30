@@ -45,4 +45,4 @@ class TypePurchaseRequest extends FormRequest
             'name.unique' => 'Este nombre de tipo de compra ya está registrado.',
         ];
     }
-} 
+}

@@ -66,4 +66,4 @@ class ShowDirectionRules extends Command
 
         return Command::SUCCESS;
     }
-} 
+}

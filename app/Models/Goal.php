@@ -81,7 +81,7 @@ class Goal extends Model
      */
     public function isCompleted()
     {
-        return $this->status === self::STATUS_COMPLETED || 
+        return $this->status === self::STATUS_COMPLETED ||
                ($this->target_value && $this->progress_value >= $this->target_value);
     }
 
@@ -146,7 +146,7 @@ class Goal extends Model
     {
         $progress = $this->getProgressPercentage();
         $unit = $this->unit_measure ? " {$this->unit_measure}" : '';
-        
+
         return "{$this->progress_value}/{$this->target_value}{$unit} ({$progress}%)";
     }
 
@@ -155,8 +155,8 @@ class Goal extends Model
      */
     public function isOverdue()
     {
-        return $this->target_date && 
-               $this->target_date->isPast() && 
+        return $this->target_date &&
+               $this->target_date->isPast() &&
                !$this->isCompleted();
     }
 
@@ -178,7 +178,7 @@ class Goal extends Model
     public function updateProgress($progressValue, $notes = null)
     {
         $this->progress_value = $progressValue;
-        
+
         if ($notes) {
             $this->notes = $notes;
         }
@@ -218,4 +218,4 @@ class Goal extends Model
         return $query->whereDate('target_date', '<', now())
                     ->whereNotIn('status', [self::STATUS_COMPLETED, self::STATUS_CANCELLED]);
     }
-} 
+}

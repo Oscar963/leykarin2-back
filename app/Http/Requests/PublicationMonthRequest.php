@@ -73,4 +73,4 @@ class PublicationMonthRequest extends FormRequest
             ]);
         }
     }
-} 
+}

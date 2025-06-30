@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Password;
 
 class SendPasswordResetLink implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     protected $email;
 
@@ -30,4 +33,4 @@ class SendPasswordResetLink implements ShouldQueue
     {
         Password::sendResetLink(['email' => $this->email]);
     }
-} 
+}

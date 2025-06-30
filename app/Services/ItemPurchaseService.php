@@ -90,7 +90,7 @@ class ItemPurchaseService
     public function createItemPurchase(array $data)
     {
         $project = $this->getProjectById($data['project_id']);
-        
+
         // Validar que no se exceda el presupuesto del FormF1
         $this->validateBudgetLimit($project, $data);
 
@@ -126,7 +126,7 @@ class ItemPurchaseService
     private function validateBudgetLimit(Project $project, array $data)
     {
         $purchasePlan = $project->purchasePlan;
-        
+
         if (!$purchasePlan || !$purchasePlan->formF1) {
             throw new \Exception('No se encontró el FormF1 asociado al plan de compra.');
         }

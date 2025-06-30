@@ -27,7 +27,7 @@ class AuthService
             }
 
             $user = Auth::user();
-            
+
             if (!$user->status) {
                 Auth::logout();
                 return [
@@ -42,7 +42,6 @@ class AuthService
                 'user' => $user,
                 'status' => 200
             ];
-
         } catch (\Exception $e) {
             Log::error('Error en autenticación: ' . $e->getMessage());
             throw $e;
@@ -68,4 +67,4 @@ class AuthService
     {
         return User::with('direction')->findOrFail(Auth::id());
     }
-} 
+}

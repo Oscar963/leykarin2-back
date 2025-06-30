@@ -27,20 +27,20 @@ class CheckRoles extends Command
     public function handle()
     {
         $this->info('Verificando roles existentes en el sistema...');
-        
+
         $roles = Role::all();
-        
+
         if ($roles->isEmpty()) {
             $this->error('❌ No se encontraron roles en el sistema');
             return;
         }
-        
+
         $this->info("\n📋 Roles encontrados:");
-        
+
         foreach ($roles as $role) {
             $this->line("  • {$role->name}");
         }
-        
+
         $this->info("\n✅ Total de roles: " . $roles->count());
     }
-} 
+}

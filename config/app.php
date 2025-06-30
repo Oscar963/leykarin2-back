@@ -188,6 +188,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\PermissionServiceProvider::class,
+        // App\Providers\ObservabilityServiceProvider::class, // Deshabilitado temporalmente para debugging
         Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 

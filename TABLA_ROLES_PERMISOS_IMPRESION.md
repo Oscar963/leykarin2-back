@@ -24,8 +24,8 @@
 | Administrador del Sistema | ✅ | ✅ | ✅ |
 | Administrador Municipal | ✅ | ✅ | ❌ |
 | Visador | ✅ | ✅ | ❌ |
-| Encargado de Presupuestos | ❌ | ❌ | ❌ |
-| Subrogante de Encargado | ❌ | ❌ | ❌ |
+| Encargado de Presupuestos | ✅ | ✅ | ❌ |
+| Subrogante de Encargado | ✅ | ✅ | ❌ |
 | Director | ✅ | ✅ | ❌ |
 | Subrogante de Director | ✅ | ✅ | ❌ |
 | Jefatura | ✅ | ✅ | ❌ |
@@ -37,8 +37,8 @@
 | Administrador del Sistema | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Administrador Municipal | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Visador | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ |
-| Encargado de Presupuestos | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Subrogante de Encargado | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Encargado de Presupuestos | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Subrogante de Encargado | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Director | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Subrogante de Director | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Jefatura | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
@@ -135,13 +135,16 @@
 - **No puede crear, editar, eliminar o aprobar planes**
 
 ### 🟢 **Encargado de Presupuestos**
+- **Planes de Compra**: Solo ver, listar y exportar (lectura)
 - **Formulario F1**: CRUD completo + Cargar/Descargar
-- **Acceso exclusivo** al módulo de presupuestos
-- **Sin acceso** a otros módulos
+- **Reportes**: Ver reportes básicos de planes de compra
+- **Dashboard**: Acceso a reportes básicos
 
 ### 🔵 **Subrogante de Encargado de Presupuestos**
 - **Mismos permisos** que Encargado de Presupuestos
+- **Planes de Compra**: Solo ver, listar y exportar (lectura)
 - **Formulario F1**: CRUD completo + Cargar/Descargar
+- **Reportes**: Ver reportes básicos de planes de compra
 
 ### 🟣 **Director**
 - **Planes de Compra**: CRUD (excepto eliminar) + Enviar

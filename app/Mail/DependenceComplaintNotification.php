@@ -9,7 +9,8 @@ use Illuminate\Queue\SerializesModels;
 
 class DependenceComplaintNotification extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $complaint;
     public $logoUrl;
@@ -27,4 +28,4 @@ class DependenceComplaintNotification extends Mailable
         return $this->subject('Nueva Denuncia Registrada - ' . $this->complaint->folio)
                     ->view('emails.dependence-complaint-notification');
     }
-} 
+}

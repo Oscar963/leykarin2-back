@@ -164,7 +164,7 @@ class GoalController extends Controller
 
         try {
             $goal = $this->goalService->updateGoalProgress(
-                $id, 
+                $id,
                 $request->input('progress_value'),
                 $request->input('notes')
             );
@@ -238,4 +238,4 @@ class GoalController extends Controller
             ], 500);
         }
     }
-} 
+}

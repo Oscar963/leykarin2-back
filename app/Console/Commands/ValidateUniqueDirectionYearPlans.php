@@ -31,17 +31,17 @@ class ValidateUniqueDirectionYearPlans extends Command
     public function handle()
     {
         $this->info('🔍 Validando planes de compras únicos por dirección y año...');
-        
+
         // Buscar planes duplicados
         $duplicates = $this->findDuplicatePlans();
-        
+
         if ($duplicates->isEmpty()) {
             $this->info('✅ No se encontraron planes de compras duplicados por dirección y año.');
             return 0;
         }
 
         $this->warn("⚠️  Se encontraron {$duplicates->count()} grupos de planes duplicados:");
-        
+
         foreach ($duplicates as $duplicate) {
             $this->displayDuplicateGroup($duplicate);
         }
@@ -75,9 +75,9 @@ class ValidateUniqueDirectionYearPlans extends Command
     {
         $direction = \App\Models\Direction::find($duplicate->direction_id);
         $directionName = $direction ? $direction->name : "ID: {$duplicate->direction_id}";
-        
+
         $this->line("\n📋 Dirección: {$directionName} | Año: {$duplicate->year} | Cantidad: {$duplicate->count}");
-        
+
         $plans = PurchasePlan::where('direction_id', $duplicate->direction_id)
             ->where('year', $duplicate->year)
             ->orderBy('created_at', 'asc')
@@ -86,7 +86,7 @@ class ValidateUniqueDirectionYearPlans extends Command
         foreach ($plans as $plan) {
             $status = $plan->getCurrentStatusName() ?? 'Sin estado';
             $createdBy = $plan->createdBy ? $plan->createdBy->name : 'N/A';
-            
+
             $this->line("   • ID: {$plan->id} | Nombre: {$plan->name} | Estado: {$status} | Creado por: {$createdBy} | Fecha: {$plan->created_at}");
         }
     }
@@ -97,9 +97,9 @@ class ValidateUniqueDirectionYearPlans extends Command
     private function fixDuplicatePlans($duplicates)
     {
         $this->warn("\n🔧 Corrigiendo planes duplicados...");
-        
+
         $deletedCount = 0;
-        
+
         foreach ($duplicates as $duplicate) {
             $plans = PurchasePlan::where('direction_id', $duplicate->direction_id)
                 ->where('year', $duplicate->year)
@@ -108,13 +108,13 @@ class ValidateUniqueDirectionYearPlans extends Command
 
             // Mantener el plan más antiguo, eliminar los demás
             $plansToDelete = $plans->skip(1);
-            
+
             foreach ($plansToDelete as $plan) {
                 $direction = \App\Models\Direction::find($duplicate->direction_id);
                 $directionName = $direction ? $direction->name : "ID: {$duplicate->direction_id}";
-                
+
                 $this->line("   🗑️  Eliminando plan ID: {$plan->id} ({$plan->name}) - {$directionName} {$duplicate->year}");
-                
+
                 // Registrar antes de eliminar
                 \App\Models\HistoryPurchaseHistory::logAction(
                     $plan->id,
@@ -127,7 +127,7 @@ class ValidateUniqueDirectionYearPlans extends Command
                         'reason' => 'Plan duplicado - mantenido el más antiguo'
                     ]
                 );
-                
+
                 $plan->delete();
                 $deletedCount++;
             }
@@ -136,4 +136,4 @@ class ValidateUniqueDirectionYearPlans extends Command
         $this->info("✅ Se eliminaron {$deletedCount} planes duplicados.");
         $this->info("✅ Validación completada. Todos los planes ahora son únicos por dirección y año.");
     }
-} 
+}

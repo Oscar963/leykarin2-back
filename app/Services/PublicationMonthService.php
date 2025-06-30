@@ -53,7 +53,7 @@ class PublicationMonthService
     public function getPublicationMonthById(int $id): PublicationMonth
     {
         $publicationMonth = PublicationMonth::find($id);
-        
+
         if (!$publicationMonth) {
             throw new Exception('Mes de publicación no encontrado.');
         }
@@ -259,4 +259,4 @@ class PublicationMonthService
                               ->limit($limit)
                               ->get();
     }
-} 
+}

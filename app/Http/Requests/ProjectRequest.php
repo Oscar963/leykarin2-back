@@ -35,7 +35,7 @@ class ProjectRequest extends FormRequest
             'unit_purchasing_id' => 'required|exists:unit_purchasings,id',
             'purchase_plan_id' => 'required|exists:purchase_plans,id',
             'type_project_id' => 'required|exists:type_projects,id',
-            
+
             // Validaciones para las metas (solo para proyectos estratégicos)
             'goals' => 'sometimes|array',
             'goals.*.name' => 'required|string|max:255',
@@ -60,7 +60,7 @@ class ProjectRequest extends FormRequest
             'purchase_plan_id.exists' => 'El plan de compra seleccionado no existe',
             'type_project_id.required' => 'El tipo de proyecto es requerido',
             'type_project_id.exists' => 'El tipo de proyecto seleccionado no existe',
-            
+
             // Mensajes para las metas
             'goals.array' => 'Las metas deben ser un arreglo válido',
             'goals.*.name.required' => 'El nombre de la meta es requerido',

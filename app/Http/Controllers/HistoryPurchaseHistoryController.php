@@ -19,7 +19,7 @@ class HistoryPurchaseHistoryController extends Controller
     {
         try {
             $purchasePlan = PurchasePlan::findOrFail($purchasePlanId);
-            
+
             $query = HistoryPurchaseHistory::where('purchase_plan_id', $purchasePlanId)
                 ->with(['status', 'user'])
                 ->orderBy('date', 'desc');
@@ -126,7 +126,7 @@ class HistoryPurchaseHistoryController extends Controller
     {
         try {
             $purchasePlan = PurchasePlan::findOrFail($purchasePlanId);
-            
+
             $query = HistoryPurchaseHistory::where('purchase_plan_id', $purchasePlanId)
                 ->with(['status', 'user'])
                 ->orderBy('date', 'desc');
@@ -148,15 +148,15 @@ class HistoryPurchaseHistoryController extends Controller
 
             // Generar CSV
             $filename = "historial_plan_compra_{$purchasePlanId}_" . date('Y-m-d_H-i-s') . ".csv";
-            
+
             $headers = [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             ];
 
-            $callback = function() use ($history) {
+            $callback = function () use ($history) {
                 $file = fopen('php://output', 'w');
-                
+
                 // Headers del CSV
                 fputcsv($file, [
                     'ID',

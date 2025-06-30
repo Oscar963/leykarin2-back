@@ -279,24 +279,38 @@ class PermissionSeeder extends Seeder
             'reports.view', 'reports.export', 'reports.purchase_plans', 'reports.projects', 'reports.item_purchases', 'reports.budget_analysis',
         ]);
 
-        // 4. Encargado de Presupuestos - Sin permisos sobre Usuarios y Archivos
+        // 4. Encargado de Presupuestos - Con permisos de lectura de planes de compra
         $encargadoPresupuestos->givePermissionTo([
             // Autenticación básica
             'auth.login', 'auth.logout',
             'users.update_profile', 'users.profile', 'users.update_password',
             
-            // SOLO Formulario F1 (gestión completa)
+            // Planes de compra (solo lectura y consulta)
+            'purchase_plans.list', 'purchase_plans.view', 'purchase_plans.by_year', 'purchase_plans.export',
+            'purchase_plan_statuses.list', 'purchase_plan_statuses.view', 'purchase_plan_statuses.current',
+            
+            // Formulario F1 (gestión completa)
             'form_f1.list', 'form_f1.create', 'form_f1.edit', 'form_f1.delete', 'form_f1.view', 'form_f1.download', 'form_f1.upload', 'form_f1.remove',
+            
+            // Reportes básicos
+            'reports.view', 'reports.purchase_plans',
         ]);
 
-        // 5. Subrogante de Encargado de Presupuestos - Sin permisos sobre Usuarios y Archivos
+        // 5. Subrogante de Encargado de Presupuestos - Con permisos de lectura de planes de compra
         $subroganteEncargadoPresupuestos->givePermissionTo([
             // Autenticación básica
             'auth.login', 'auth.logout',
             'users.update_profile', 'users.profile', 'users.update_password',
             
-            // SOLO Formulario F1 (gestión completa)
+            // Planes de compra (solo lectura y consulta)
+            'purchase_plans.list', 'purchase_plans.view', 'purchase_plans.by_year', 'purchase_plans.export',
+            'purchase_plan_statuses.list', 'purchase_plan_statuses.view', 'purchase_plan_statuses.current',
+            
+            // Formulario F1 (gestión completa)
             'form_f1.list', 'form_f1.create', 'form_f1.edit', 'form_f1.delete', 'form_f1.view', 'form_f1.download', 'form_f1.upload', 'form_f1.remove',
+            
+            // Reportes básicos
+            'reports.view', 'reports.purchase_plans',
         ]);
 
         // 6. Director - Sin permisos sobre Usuarios y Archivos

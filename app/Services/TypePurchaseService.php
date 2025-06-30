@@ -103,4 +103,4 @@ class TypePurchaseService
     {
         return Str::slug($name, '_');
     }
-} 
+}
