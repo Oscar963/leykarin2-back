@@ -108,6 +108,16 @@
             color: #0057e6;
             font-weight: bold;
         }
+
+        .status-badge {
+            background-color: #0043b0;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
     </style>
 </head>
 
@@ -121,16 +131,20 @@
             <h2>Comprobante de Envío de Plan de Compra</h2>
 
             <p>Estimado/a usuario,</p>
-            <p>El plan de compra <span class="highlight">{{ $purchasePlan->name }}</span> ha sido enviado exitosamente y
-                registrado en el sistema.</p>
+            <p>El plan de compra <span class="highlight">{{ $purchasePlan->name }}</span> ha sido <strong>enviado</strong> exitosamente y registrado en el sistema.</p>
+
+            <div class="status-badge">Estado: Enviado</div>
 
             <div class="details">
                 <h3>Detalles del Plan de Compra</h3>
                 <p><strong>Año:</strong> {{ $purchasePlan->year }}</p>
-                <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->amount_F1, 0, ',', '.') }}</p>
-                <p><strong>Fecha de creación:</strong> {{ $purchasePlan->created_at }}</p>
-                <p><strong>Estado actual:</strong> Para aprobación</p>
+                <p><strong>Dirección:</strong> {{ $purchasePlan->direction->name ?? 'N/A' }}</p>
+                <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->formF1->amount ?? 0, 0, ',', '.') }}</p>
+                <p><strong>Fecha de envío:</strong> {{ now()->format('d/m/Y H:i') }}</p>
+                <p><strong>Próximo paso:</strong> Revisión y aprobación</p>
             </div>
+
+            <p>Su plan de compra ha sido recibido correctamente y se encuentra en proceso de revisión por parte de las autoridades correspondientes.</p>
 
             <p>Gracias por utilizar nuestro sistema de Planificación de Compras.</p>
             <p>Atentamente,<br>

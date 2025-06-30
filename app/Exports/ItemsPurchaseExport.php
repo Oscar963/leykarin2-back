@@ -39,7 +39,7 @@ class ItemsPurchaseExport implements FromCollection, WithHeadings, WithStyles, S
     {
         return ItemPurchase::where('project_id', $this->projectId)
             ->with('project', 'statusItemPurchase', 'typePurchase', 'budgetAllocation', 'publicationMonth')
-            ->orderBy('item_number', 'desc')
+            ->orderBy('item_number', 'asc')
             ->get();
     }
 
@@ -185,7 +185,7 @@ class ItemsPurchaseSheet implements FromCollection, WithHeadings, WithStyles, Sh
     {
         return ItemPurchase::where('project_id', $this->projectId)
             ->with('project', 'statusItemPurchase', 'typePurchase', 'budgetAllocation', 'publicationMonth')
-            ->orderBy('item_number', 'desc')
+            ->orderBy('item_number', 'asc')
             ->get();
     }
 

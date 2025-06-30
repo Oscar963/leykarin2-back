@@ -80,6 +80,14 @@
             padding-bottom: 10px;
         }
 
+        h3 {
+            color: #0043b0;
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e6e9f0;
+        }
+
         .details p {
             margin: 10px 0;
             padding: 8px 0;
@@ -113,6 +121,16 @@
             color: #0057e6;
             font-weight: bold;
         }
+
+        .status-badge {
+            background-color: #0043b0;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
     </style>
 </head>
 
@@ -127,9 +145,12 @@
 
             <p>Estimado/a,</p>
 
-            <p>Se ha registrado una nueva denuncia en el sistema que requiere su atención:</p>
+            <p>Se ha registrado una <strong>nueva denuncia</strong> en el sistema que requiere su atención:</p>
+
+            <div class="status-badge">Estado: Nueva Denuncia</div>
 
             <div class="details">
+                <h3>Detalles de la Denuncia</h3>
                 <p><strong>Folio:</strong> <span class="highlight">{{ $complaint->folio }}</span></p>
                 <p><strong>Fecha de Registro:</strong> {{ $complaint->created_at->format('d/m/Y H:i') }}</p>
                 <p><strong>Tipo de Denuncia:</strong> {{ $complaint->typeComplaint->name }}</p>

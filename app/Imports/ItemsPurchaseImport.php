@@ -7,6 +7,8 @@ use App\Models\BudgetAllocation;
 use App\Models\TypePurchase;
 use App\Models\PublicationMonth;
 use App\Models\StatusItemPurchase;
+use App\Models\Project;
+use App\Services\ItemPurchaseService;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -69,16 +71,23 @@ class ItemsPurchaseSheetImport implements
     protected $errors = [];
     protected $importedCount = 0;
     protected $skippedCount = 0;
+    protected $accumulatedAmount = 0; // Acumulador de montos importados en esta sesión
 
     // Caché para optimizar consultas
     public $budgetAllocationsCache = [];
     public $typePurchasesCache = [];
     public $publicationMonthsCache = [];
     public $defaultStatusId = null;
+    
+    // Servicios
+    protected $itemPurchaseService;
+    protected $project;
 
     public function __construct($projectId)
     {
         $this->projectId = $projectId;
+        $this->itemPurchaseService = app(ItemPurchaseService::class);
+        $this->project = Project::findOrFail($projectId);
         $this->initializeCache();
     }
 
@@ -256,12 +265,35 @@ class ItemsPurchaseSheetImport implements
                 $codBudgetAllocationType = $this->budgetAllocationsCache['cod_' . $budgetAllocationId] ?? '';
             }
 
+            // Preparar datos para validación presupuestaria
+            $itemData = [
+                'amount_item' => $this->parseAmount($row['monto'] ?? 0),
+                'quantity_item' => $this->parseInteger($row['cantidad'] ?? 0),
+                'project_id' => $this->projectId
+            ];
+
+            // ✅ VALIDAR PRESUPUESTO ANTES DE CREAR EL ÍTEM
+            try {
+                $this->itemPurchaseService->validateBudgetLimit($this->project, $itemData, $this->accumulatedAmount);
+                
+                // Actualizar acumulador con el monto de este ítem (solo si la validación pasa)
+                $this->accumulatedAmount += $itemData['amount_item'] * $itemData['quantity_item'];
+            } catch (\Exception $e) {
+                $this->errors[] = [
+                    'row' => $this->importedCount + $this->skippedCount + 1,
+                    'error' => 'VALIDACIÓN PRESUPUESTARIA: ' . $e->getMessage(),
+                    'data' => $row
+                ];
+                $this->skippedCount++;
+                return null;
+            }
+
             // Crear el modelo
             $itemPurchase = new ItemPurchase([
                 'item_number' => $this->parseInteger($row['linea'] ?? 0),
                 'product_service' => $row['producto_o_servicio'] ?? '',
-                'quantity_item' => $this->parseInteger($row['cantidad'] ?? 0),
-                'amount_item' => $this->parseAmount($row['monto'] ?? 0),
+                'quantity_item' => $itemData['quantity_item'],
+                'amount_item' => $itemData['amount_item'],
                 'quantity_oc' => $this->parseInteger($row['cantidad_oc'] ?? 0),
                 'months_oc' => $row['meses_envio_oc'] ?? '',
                 'regional_distribution' => $row['dist_regional'] ?? '',

@@ -21,7 +21,7 @@ class ItemPurchaseService
     public function getAllItemPurchases()
     {
         return ItemPurchase::with(['budgetAllocation', 'typePurchase'])
-            ->orderBy('created_at', 'DESC')
+            ->orderBy('item_number', 'ASC')
             ->get();
     }
 
@@ -40,7 +40,7 @@ class ItemPurchaseService
 
         $queryBuilder = ItemPurchase::with(['budgetAllocation', 'typePurchase'])
             ->where('project_id', $projectId)
-            ->orderBy('created_at', 'DESC');
+            ->orderBy('item_number', 'ASC');
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
@@ -121,9 +121,10 @@ class ItemPurchaseService
      *
      * @param Project $project Proyecto al que se agregará el ítem
      * @param array $data Datos del nuevo ítem
+     * @param int $additionalAmount Monto adicional a considerar en la validación (para importaciones masivas)
      * @throws \Exception Si se excede el presupuesto
      */
-    private function validateBudgetLimit(Project $project, array $data)
+    public function validateBudgetLimit(Project $project, array $data, int $additionalAmount = 0)
     {
         $purchasePlan = $project->purchasePlan;
 
@@ -134,12 +135,16 @@ class ItemPurchaseService
         $formF1Amount = $purchasePlan->formF1->amount;
         $currentTotalAmount = $purchasePlan->getTotalAmount();
         $newItemAmount = $data['amount_item'] * $data['quantity_item'];
-        $projectedTotal = $currentTotalAmount + $newItemAmount;
+        $projectedTotal = $currentTotalAmount + $newItemAmount + $additionalAmount;
 
         if ($projectedTotal > $formF1Amount) {
+            $availableAmount = $formF1Amount - $currentTotalAmount - $additionalAmount;
             throw new \Exception(
                 "El monto total excede el presupuesto disponible del Formulario F1. " .
-                "Presupuesto disponible: $" . number_format($formF1Amount - $currentTotalAmount, 0, ',', '.') . ". " .
+                "Presupuesto total: $" . number_format($formF1Amount, 0, ',', '.') . ". " .
+                "Presupuesto usado: $" . number_format($currentTotalAmount + $additionalAmount, 0, ',', '.') . ". " .
+                "Presupuesto disponible: $" . number_format($availableAmount, 0, ',', '.') . ". " .
+                "Monto del ítem: $" . number_format($newItemAmount, 0, ',', '.') . ". " .
                 "Ajuste el monto o reduzca otros ítems."
             );
         }
@@ -201,7 +206,7 @@ class ItemPurchaseService
      * @param int $projectId ID del proyecto
      * @return void
      */
-    private function reorderItemNumbers(int $projectId): void
+    public function reorderItemNumbers(int $projectId): void
     {
         $items = ItemPurchase::where('project_id', $projectId)
             ->orderBy('item_number', 'ASC')

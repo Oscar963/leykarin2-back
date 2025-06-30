@@ -92,6 +92,15 @@
             color: #e53935;
             font-weight: bold;
         }
+        .status-badge {
+            background-color: #c62828;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -103,14 +112,17 @@
             <h2>Plan de Compra Rechazado</h2>
 
             <p>Estimado/a usuario,</p>
-            <p>El plan de compra <span class="highlight">{{ $purchasePlan->name }}</span> ha sido rechazado.</p>
+            <p>El plan de compra <span class="highlight">{{ $purchasePlan->name }}</span> ha sido <strong>rechazado</strong> y requiere revisión y correcciones.</p>
+
+            <div class="status-badge">Estado: Rechazado</div>
 
             <div class="details">
                 <h3>Detalles del Plan de Compra</h3>
                 <p><strong>Año:</strong> {{ $purchasePlan->year }}</p>
-                <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->amount_F1, 0, ',', '.') }}</p>
-                <p><strong>Fecha de creación:</strong> {{ $purchasePlan->created_at }}</p>
-                <p><strong>Estado actual:</strong> Rechazado</p>
+                <p><strong>Dirección:</strong> {{ $purchasePlan->direction->name ?? 'N/A' }}</p>
+                <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->formF1->amount ?? 0, 0, ',', '.') }}</p>
+                <p><strong>Fecha de rechazo:</strong> {{ now()->format('d/m/Y H:i') }}</p>
+                <p><strong>Próximo paso:</strong> Realizar correcciones y reenviar</p>
                 @if($comment)
                 <p><strong>Motivo del rechazo:</strong> {{ $comment }}</p>
                 @endif
@@ -118,6 +130,7 @@
 
             <p>Por favor, revise los detalles mencionados y realice las correcciones necesarias. Una vez realizadas las modificaciones, puede volver a enviar su plan de compra para su revisión.</p>
 
+            <p>Gracias por utilizar nuestro sistema de Planificación de Compras.</p>
             <p>Atentamente,<br>
                 <strong>Sistema de Planificación de Compras | Ilustre Municipalidad de Arica</strong><br>
             </p>

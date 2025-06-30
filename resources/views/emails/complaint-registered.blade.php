@@ -121,6 +121,16 @@
             color: #0057e6;
             font-weight: bold;
         }
+
+        .status-badge {
+            background-color: #0043b0;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
     </style>
 </head>
 
@@ -136,8 +146,10 @@
 
             <p>Estimado/a {{ $complaint->complainant->name }},</p>
 
-            <p>Hemos recibido su denuncia y queremos confirmar que ha sido registrada exitosamente en nuestro sistema.
+            <p>Hemos recibido su denuncia y queremos confirmar que ha sido <strong>registrada exitosamente</strong> en nuestro sistema.
             </p>
+
+            <div class="status-badge">Estado: Registrada</div>
 
             <div class="details">
                 <h3>Detalles de la Denuncia</h3>

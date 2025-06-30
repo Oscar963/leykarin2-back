@@ -92,6 +92,15 @@
             color: #43a047;
             font-weight: bold;
         }
+        .status-badge {
+            background-color: #2e7d32;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -103,21 +112,25 @@
             <h2>Plan de Compra Aprobado</h2>
 
             <p>Estimado/a usuario,</p>
-            <p>El plan de compra <span class="highlight">{{ $purchasePlan->name }}</span> ha sido aprobado exitosamente.</p>
+            <p>El plan de compra <span class="highlight">{{ $purchasePlan->name }}</span> ha sido <strong>aprobado</strong> exitosamente y está listo para continuar con el proceso.</p>
+
+            <div class="status-badge">Estado: Aprobado</div>
 
             <div class="details">
                 <h3>Detalles del Plan de Compra</h3>
                 <p><strong>Año:</strong> {{ $purchasePlan->year }}</p>
-                <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->amount_F1, 0, ',', '.') }}</p>
-                <p><strong>Fecha de creación:</strong> {{ $purchasePlan->created_at }}</p> 
-                <p><strong>Estado actual:</strong> Aprobado</p>
+                <p><strong>Dirección:</strong> {{ $purchasePlan->direction->name ?? 'N/A' }}</p>
+                <p><strong>Monto F1:</strong> ${{ number_format($purchasePlan->formF1->amount ?? 0, 0, ',', '.') }}</p>
+                <p><strong>Fecha de aprobación:</strong> {{ now()->format('d/m/Y H:i') }}</p>
+                <p><strong>Próximo paso:</strong> Proceso de decretación</p>
                 @if($comment)
                 <p><strong>Comentario:</strong> {{ $comment }}</p>
                 @endif
             </div>
 
-            <p>Su plan de compra ha sido revisado y aprobado por las autoridades correspondientes. Puede proceder con los siguientes pasos del proceso.</p>
+            <p>El plan de compra ha sido revisado y aprobado por las autoridades correspondientes. Se procederá con los siguientes pasos del proceso de planificación.</p>
 
+            <p>Gracias por utilizar nuestro sistema de Planificación de Compras.</p>
             <p>Atentamente,<br>
                 <strong>Sistema de Planificación de Compras | Ilustre Municipalidad de Arica</strong><br>
             </p>

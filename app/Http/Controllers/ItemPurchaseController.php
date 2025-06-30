@@ -169,14 +169,24 @@ class ItemPurchaseController extends Controller
             $stats = $import->getImportStats();
             $errors = $import->getErrors();
 
-            $this->logActivity('import_file', "Usuario importó {$stats['imported']} ítems de compra para el proyecto {$projectId}");
+            // Reordenar números de ítems después de la importación exitosa
+            if ($stats['imported'] > 0) {
+                $this->itemPurchaseService->reorderItemNumbers($projectId);
+            }
+
+            // Determinar mensaje y estado basado en resultados
+            $message = $this->generateImportMessage($stats, $errors);
+            $success = $stats['imported'] > 0; // Solo exitoso si se importó al menos 1 ítem
+            $statusCode = $stats['imported'] > 0 ? 200 : 422; // 422 si no se importó nada
+
+            $this->logActivity('import_file', "Usuario procesó {$stats['total_processed']} ítems: {$stats['imported']} importados, {$stats['skipped']} omitidos para el proyecto {$projectId}");
 
             return response()->json([
-                'message' => 'Importación completada exitosamente',
+                'message' => $message,
                 'stats' => $stats,
                 'errors' => $errors,
-                'success' => true
-            ], 200);
+                'success' => $success
+            ], $statusCode);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $errors = [];
@@ -207,5 +217,54 @@ class ItemPurchaseController extends Controller
     {
         $this->logActivity('download_template', 'Usuario descargó la plantilla de ítems de compra');
         return Excel::download(new ItemsPurchaseTemplateExport(), 'plantilla-items-compra.xlsx');
+    }
+
+    /**
+     * Genera un mensaje inteligente basado en los resultados de la importación
+     */
+    private function generateImportMessage($stats, $errors)
+    {
+        $imported = $stats['imported'];
+        $skipped = $stats['skipped'];
+        $total = $stats['total_processed'];
+
+        // Caso 1: Todo se importó correctamente
+        if ($imported === $total && $skipped === 0) {
+            return "Importación completada exitosamente. Se importaron {$imported} ítems.";
+        }
+
+        // Caso 2: No se importó nada
+        if ($imported === 0) {
+            $budgetErrors = 0;
+            $validationErrors = 0;
+            $otherErrors = 0;
+
+            foreach ($errors as $error) {
+                if (str_contains($error['error'], 'VALIDACIÓN PRESUPUESTARIA')) {
+                    $budgetErrors++;
+                } elseif (str_contains($error['error'], 'obligatorio')) {
+                    $validationErrors++;
+                } else {
+                    $otherErrors++;
+                }
+            }
+
+            $message = "No se pudo importar ningún ítem. Total procesado: {$total}.";
+            
+            if ($budgetErrors > 0) {
+                $message .= " {$budgetErrors} ítems exceden el presupuesto disponible.";
+            }
+            if ($validationErrors > 0) {
+                $message .= " {$validationErrors} ítems tienen campos obligatorios faltantes.";
+            }
+            if ($otherErrors > 0) {
+                $message .= " {$otherErrors} ítems tienen otros errores.";
+            }
+
+            return $message;
+        }
+
+        // Caso 3: Importación parcial
+        return "Importación parcialmente exitosa. Se importaron {$imported} de {$total} ítems. {$skipped} ítems fueron omitidos por errores.";
     }
 }
