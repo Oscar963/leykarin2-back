@@ -74,7 +74,7 @@ class PurchasePlan extends Model
 
     public function decreto()
     {
-        return $this->belongsTo(File::class, 'decreto_id');
+        return $this->belongsTo(Decreto::class, 'decreto_id');
     }
 
     public function formF1()

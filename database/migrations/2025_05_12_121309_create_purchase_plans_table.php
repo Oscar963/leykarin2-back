@@ -20,8 +20,8 @@ class CreatePurchasePlansTable extends Migration
             $table->year('year');
 
             // Relaciones con otras tablas
-            $table->foreignId('decreto_id')->nullable()->constrained('files')->onDelete('cascade'); // Decreto aprobado
             $table->foreignId('form_f1_id')->nullable()->unique()->constrained('form_f1')->onDelete('cascade'); // Formulario F1 (relación 1:1)
+            $table->foreignId('decreto_id')->nullable()->unique()->constrained('decretos')->onDelete('cascade'); // Decreto aprobado
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null'); // Usuario que crea el plan de compra
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null'); // Usuario que actualiza el plan de compra           
             $table->foreignId('direction_id')->constrained('directions')->onDelete('cascade'); // Dirección del plan de compra

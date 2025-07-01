@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PurchasePlanRequest;
 use App\Http\Requests\UploadFileDecretoRequest;
+use App\Http\Requests\UploadDecretoRequest;
 use App\Http\Requests\UploadFormF1Request;
 use App\Http\Resources\PurchasePlanResource;
 use App\Services\PurchasePlanService;
@@ -288,11 +289,11 @@ class PurchasePlanController extends Controller
     /**
      * Sube un archivo de decreto
      */
-    public function uploadDecreto(UploadFileDecretoRequest $request): JsonResponse
+    public function uploadDecreto(UploadDecretoRequest $request): JsonResponse
     {
         try {
             $upload = $this->purchasePlanService->uploadFileDecreto($request->validated());
-            $this->logActivity('upload_file_decreto', 'Usuario subió un decreto con ID: ' . $upload->id);
+            $this->logActivity('upload_decreto', 'Usuario subió un decreto con ID: ' . $upload->id);
 
             return response()->json([
                 'message' => 'Decreto subido exitosamente',

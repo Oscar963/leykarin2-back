@@ -7,6 +7,7 @@ use App\Http\Controllers\BudgetAllocationController;
 use App\Http\Controllers\DirectionController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FormF1Controller;
+use App\Http\Controllers\DecretoController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\ItemPurchaseController;
 use App\Http\Controllers\ProjectController;
@@ -60,7 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('purchase-plans/available-directions', [PurchasePlanController::class, 'getAvailableDirections'])->name('purchase-plans.available-directions');
     });
 
-    Route::middleware(['permission:purchase_plans.create'])->group(function () {
+    // Rutas para upload de decretos - SOLO para roles específicos
+    Route::middleware(['role:Administrador del Sistema|Administrador Municipal|Director|Subrogante de Director'])->group(function () {
         Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
     });
 
@@ -174,6 +176,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ruta específica para descarga de formularios F1
     Route::middleware(['permission:form_f1.download'])->group(function () {
         Route::get('/form-f1/{id}/download', [FormF1Controller::class, 'download'])->name('form-f1.download');
+    });
+
+    // Rutas para decretos 
+    Route::middleware(['role:Administrador del Sistema|Administrador Municipal|Director|Subrogante de Director'])->group(function () {
+        Route::apiResource('decretos', DecretoController::class);
+    });
+
+    // Ruta específica para descarga de decretos
+    Route::middleware(['permission:decretos.download'])->group(function () {
+        Route::get('/decretos/{id}/download', [DecretoController::class, 'download'])->name('decretos.download');
     });
 
     // Rutas de perfil de usuario

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Direction;
 use App\Models\File;
 use App\Models\FormF1;
+use App\Models\Decreto;
 use App\Models\HistoryPurchaseHistory;
 use App\Models\PurchasePlan;
 use App\Models\PurchasePlanStatus;
@@ -357,22 +358,22 @@ class PurchasePlanService
      */
     public function uploadFileDecreto(array $data)
     {
-        $file = $this->createFile($data);
+        $decreto = $this->createDecreto($data);
 
         $purchasePlan = $this->getPurchasePlanByToken($data['token_purchase_plan']);
-        $purchasePlan->decreto_id = $file->id;
+        $purchasePlan->decreto_id = $decreto->id;
         $purchasePlan->save();
 
         // Registrar en el historial
         HistoryPurchaseHistory::logAction(
             $purchasePlan->id,
             'file_upload',
-            'Archivo de decreto subido',
+            'Decreto subido',
             [
-                'file_name' => $file->name,
-                'file_size' => $file->size,
-                'file_type' => $file->type,
-                'file_url' => $file->url
+                'file_name' => $decreto->name,
+                'file_size' => $decreto->size,
+                'file_type' => $decreto->type,
+                'file_url' => $decreto->url
             ]
         );
 
@@ -488,5 +489,42 @@ class PurchasePlanService
 
         $file->save();
         return $file;
+    }
+
+    /**
+     * Crea un nuevo registro de Decreto en la base de datos
+     */
+    private function createDecreto(array $data): Decreto
+    {
+        // Obtener el plan de compra y la dirección desde el token
+        $purchasePlan = $this->getPurchasePlanByToken($data['token_purchase_plan']);
+        $direction = $purchasePlan->direction;
+        $directionName = $direction ? $direction->name : 'Sistema';
+
+        $currentDate = now()->format('Y-m-d H:i');
+        $nameFile = "{$currentDate} - {$directionName} - Decreto";
+
+        $decreto = new Decreto();
+        $decreto->name = $nameFile;
+        $decreto->description = "Decreto para el plan de compra de la dirección {$directionName}";
+        $decreto->numero_decreto = null;
+        $decreto->fecha_decreto = null;
+        $decreto->created_by = auth()->id();
+
+        if (isset($data['file']) && $data['file'] instanceof \Illuminate\Http\UploadedFile) {
+            $decreto->size = $data['file']->getSize();
+            $decreto->type = $data['file']->getClientMimeType();
+            $decreto->extension = $data['file']->getClientOriginalExtension();
+
+            // Generar nombre único para el archivo
+            $fileName = Str::slug($nameFile) . '-' . uniqid() . '.' . $decreto->extension;
+            // Almacenar archivo en el disco público
+            $filePath = $data['file']->storeAs('uploads/decretos', $fileName, 'public');
+            // Generar URL pública del archivo
+            $decreto->url = url('storage/' . $filePath);
+        }
+
+        $decreto->save();
+        return $decreto;
     }
 }
