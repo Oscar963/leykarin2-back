@@ -293,10 +293,14 @@ class PurchasePlanController extends Controller
     {
         try {
             $upload = $this->purchasePlanService->uploadFileDecreto($request->validated());
+            
+            // ✅ ENVIAR EMAIL DE NOTIFICACIÓN DE DECRETADO
+            $this->sendPurchasePlanDecretadoEmail($upload, 'Estado cambiado automáticamente a Decretado al subir el decreto');
+            
             $this->logActivity('upload_decreto', 'Usuario subió un decreto con ID: ' . $upload->id);
 
             return response()->json([
-                'message' => 'Decreto subido exitosamente',
+                'message' => 'Decreto subido exitosamente y plan de compra marcado como Decretado',
                 'data' => new PurchasePlanResource($upload)
             ], 200);
         } catch (Exception $e) {

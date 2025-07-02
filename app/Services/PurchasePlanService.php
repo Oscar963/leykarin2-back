@@ -364,6 +364,12 @@ class PurchasePlanService
         $purchasePlan->decreto_id = $decreto->id;
         $purchasePlan->save();
 
+        // ✅ CAMBIO AUTOMÁTICO DE ESTADO A "DECRETADO"
+        $this->updatePurchasePlanStatus($purchasePlan->id, [
+            'status_purchase_plan_id' => 6, // ID del estado "Decretado"
+            'sending_comment' => 'Estado cambiado automáticamente a Decretado al subir el decreto'
+        ]);
+
         // Registrar en el historial
         HistoryPurchaseHistory::logAction(
             $purchasePlan->id,
