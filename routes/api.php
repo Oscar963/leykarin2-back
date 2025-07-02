@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HistoryPurchaseHistoryController;
+use App\Http\Controllers\ModificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -186,6 +187,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ruta específica para descarga de decretos
     Route::middleware(['permission:decretos.download'])->group(function () {
         Route::get('/decretos/{id}/download', [DecretoController::class, 'download'])->name('decretos.download');
+    });
+
+    // Rutas para modificaciones
+    Route::middleware(['permission:modifications.list'])->group(function () {
+        Route::apiResource('modifications', ModificationController::class);
+        Route::get('modifications/statuses', [ModificationController::class, 'getAvailableStatuses'])->name('modifications.statuses');
+        Route::get('purchase-plans/{purchasePlanId}/modifications', [ModificationController::class, 'getByPurchasePlan'])->name('modifications.by-purchase-plan');
+    });
+
+    Route::middleware(['permission:modifications.update_status'])->group(function () {
+        Route::put('modifications/{id}/status', [ModificationController::class, 'changeStatus'])->name('modifications.change-status');
     });
 
     // Rutas de perfil de usuario

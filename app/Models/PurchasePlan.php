@@ -82,6 +82,15 @@ class PurchasePlan extends Model
         return $this->belongsTo(FormF1::class, 'form_f1_id');
     }
 
+    /**
+     * Relación uno a muchos con Modification
+     * Un plan de compra puede tener muchas modificaciones
+     */
+    public function modifications()
+    {
+        return $this->hasMany(Modification::class)->orderBy('modification_number', 'asc');
+    }
+
     public function getNextProjectNumber()
     {
         $lastProject = $this->projects()
