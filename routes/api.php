@@ -24,6 +24,7 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HistoryPurchaseHistoryController;
 use App\Http\Controllers\ModificationController;
+use App\Http\Controllers\ModificationTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -193,11 +194,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:modifications.list'])->group(function () {
         Route::apiResource('modifications', ModificationController::class);
         Route::get('modifications/statuses', [ModificationController::class, 'getAvailableStatuses'])->name('modifications.statuses');
+        Route::get('modifications/types', [ModificationController::class, 'getAvailableTypes'])->name('modifications.types');
+        Route::get('modifications/pending-approval', [ModificationController::class, 'getPendingApproval'])->name('modifications.pending-approval');
+        Route::get('modifications/statistics', [ModificationController::class, 'getStatistics'])->name('modifications.statistics');
+        Route::get('modifications/by-creator', [ModificationController::class, 'getByCreator'])->name('modifications.by-creator');
+        Route::get('modifications/search', [ModificationController::class, 'search'])->name('modifications.search');
         Route::get('purchase-plans/{purchasePlanId}/modifications', [ModificationController::class, 'getByPurchasePlan'])->name('modifications.by-purchase-plan');
     });
 
     Route::middleware(['permission:modifications.update_status'])->group(function () {
         Route::put('modifications/{id}/status', [ModificationController::class, 'changeStatus'])->name('modifications.change-status');
+    });
+
+    // Rutas para tipos de modificación
+    Route::middleware(['permission:modifications.list'])->group(function () {
+        Route::apiResource('modification-types', ModificationTypeController::class);
+        Route::get('modification-types/select', [ModificationTypeController::class, 'getForSelect'])->name('modification-types.select');
+    });
+
+    Route::middleware(['permission:modifications.show'])->group(function () {
+        Route::get('modification-types/{id}/statistics', [ModificationTypeController::class, 'getStatistics'])->name('modification-types.statistics');
     });
 
     // Rutas de perfil de usuario

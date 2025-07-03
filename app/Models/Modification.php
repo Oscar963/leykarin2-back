@@ -18,13 +18,14 @@ class Modification extends Model
      * Campos que pueden ser asignados masivamente
      */
     protected $fillable = [
-        'modification_number',
+        'name',
+        'description',
+        'version',
         'date',
-        'reason',
         'status',
+        'modification_type_id',
         'purchase_plan_id',
-        'created_by',
-        'updated_by'
+        'created_by'
     ];
 
     /**
@@ -46,6 +47,15 @@ class Modification extends Model
     const STATUS_REJECTED = 'rejected';
 
     /**
+     * Relación muchos a uno con ModificationType
+     * Una modificación pertenece a un tipo de modificación
+     */
+    public function modificationType()
+    {
+        return $this->belongsTo(ModificationType::class);
+    }
+
+    /**
      * Relación muchos a uno con PurchasePlan
      * Una modificación pertenece a un plan de compra
      */
@@ -55,43 +65,11 @@ class Modification extends Model
     }
 
     /**
-     * Relación uno a muchos con ModificationHistory
-     * Una modificación tiene muchos registros en el historial
-     */
-    public function history()
-    {
-        return $this->hasMany(ModificationHistory::class)->orderBy('date', 'desc');
-    }
-
-    /**
      * Usuario que creó la modificación
      */
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    /**
-     * Usuario que actualizó la modificación
-     */
-    public function updatedBy()
-    {
-        return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    /**
-     * Obtiene el siguiente número de modificación para un plan de compra
-     *
-     * @param int $purchasePlanId
-     * @return int
-     */
-    public static function getNextModificationNumber(int $purchasePlanId): int
-    {
-        $lastModification = self::where('purchase_plan_id', $purchasePlanId)
-            ->orderBy('modification_number', 'desc')
-            ->first();
-
-        return $lastModification ? $lastModification->modification_number + 1 : 1;
     }
 
     /**
@@ -135,6 +113,16 @@ class Modification extends Model
     }
 
     /**
+     * Verifica si la modificación está inactiva
+     *
+     * @return bool
+     */
+    public function isInactive(): bool
+    {
+        return $this->status === self::STATUS_INACTIVE;
+    }
+
+    /**
      * Obtiene todos los estados disponibles
      *
      * @return array
@@ -142,11 +130,11 @@ class Modification extends Model
     public static function getAvailableStatuses(): array
     {
         return [
-            self::STATUS_ACTIVE => 'Activa',
-            self::STATUS_INACTIVE => 'Inactiva',
+            self::STATUS_ACTIVE => 'Activo',
+            self::STATUS_INACTIVE => 'Inactivo',
             self::STATUS_PENDING => 'Pendiente',
-            self::STATUS_APPROVED => 'Aprobada',
-            self::STATUS_REJECTED => 'Rechazada'
+            self::STATUS_APPROVED => 'Aprobado',
+            self::STATUS_REJECTED => 'Rechazado'
         ];
     }
 
@@ -160,6 +148,114 @@ class Modification extends Model
     public function scopeByStatus($query, string $status)
     {
         return $query->where('status', $status);
+    }
+
+    /**
+     * Scope para filtrar por tipo de modificación
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $modificationTypeId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByModificationType($query, int $modificationTypeId)
+    {
+        return $query->where('modification_type_id', $modificationTypeId);
+    }
+
+    /**
+     * Scope para filtrar por nombre del tipo de modificación
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $typeName
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByModificationTypeName($query, string $typeName)
+    {
+        return $query->whereHas('modificationType', function ($q) use ($typeName) {
+            $q->where('name', 'like', "%{$typeName}%");
+        });
+    }
+
+    /**
+     * Scope para filtrar por rango de fechas
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $startDate
+     * @param string $endDate
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByDateRange($query, string $startDate, string $endDate)
+    {
+        return $query->whereBetween('date', [$startDate, $endDate]);
+    }
+
+    /**
+     * Scope para obtener modificaciones pendientes de aprobación
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePendingApproval($query)
+    {
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    /**
+     * Scope para obtener modificaciones aprobadas
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', self::STATUS_APPROVED);
+    }
+
+    /**
+     * Scope para obtener modificaciones activas
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    /**
+     * Scope para obtener modificaciones por usuario creador
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $userId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByCreator($query, int $userId)
+    {
+        return $query->where('created_by', $userId);
+    }
+
+    /**
+     * Scope para buscar por nombre
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $name
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByName($query, string $name)
+    {
+        return $query->where('name', 'like', "%{$name}%");
+    }
+
+    /**
+     * Scope para buscar por descripción
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $description
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByDescription($query, string $description)
+    {
+        return $query->where('description', 'like', "%{$description}%");
     }
 
     /**

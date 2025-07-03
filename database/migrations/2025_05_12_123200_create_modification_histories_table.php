@@ -28,6 +28,22 @@ class CreateModificationHistoriesTable extends Migration
             $table->index(['modification_id', 'date']);
             $table->index('action');
         });
+
+        // Crear tabla para archivos de modificaciones
+        Schema::create('modification_files', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('modification_id')->constrained('modifications')->onDelete('cascade');
+            $table->foreignId('file_id')->constrained('files')->onDelete('cascade');
+            $table->string('file_type')->nullable()->comment('Tipo de documento: justificacion, cotizacion, etc.');
+            $table->text('description')->nullable()->comment('Descripción del archivo');
+            $table->foreignId('uploaded_by')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
+            
+            // Índices
+            $table->unique(['modification_id', 'file_id']);
+            $table->index(['modification_id', 'file_type']);
+            $table->index('file_type');
+        });
     }
 
     /**
@@ -37,6 +53,7 @@ class CreateModificationHistoriesTable extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('modification_files');
         Schema::dropIfExists('modification_histories');
     }
 } 

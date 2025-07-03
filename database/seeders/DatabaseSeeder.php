@@ -28,6 +28,10 @@ class DatabaseSeeder extends Seeder
         $this->call(StatusItemPurchasesSeeder::class);
         $this->call(PublicationMonthSeeder::class);
         
+        // Sistema de modificaciones
+        $this->call(ModificationTypeSeeder::class);
+        $this->call(ModificationPermissionSeeder::class);
+        
         // Corregir usuarios jerárquicos para que cumplan la regla de dirección única
         $this->call(FixHierarchicalUserDirectionsSeeder::class);
     }

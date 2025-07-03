@@ -27,8 +27,19 @@ class ModificationController extends Controller
     {
         $query = $request->get('query');
         $perPage = $request->get('per_page', 15);
+        $status = $request->get('status');
+        $modificationTypeId = $request->get('modification_type_id');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
 
-        $modifications = $this->modificationService->getAllModificationsByQuery($query, $perPage);
+        $modifications = $this->modificationService->getAllModificationsByQuery(
+            $query, 
+            $perPage, 
+            $status, 
+            $modificationTypeId, 
+            $startDate, 
+            $endDate
+        );
 
         return response()->json([
             'success' => true,
@@ -39,24 +50,6 @@ class ModificationController extends Controller
                 'per_page' => $modifications->perPage(),
                 'total' => $modifications->total(),
             ]
-        ]);
-    }
-
-    /**
-     * Obtiene modificaciones por plan de compra
-     *
-     * @param int $purchasePlanId
-     * @return JsonResponse
-     */
-    public function getByPurchasePlan(int $purchasePlanId): JsonResponse
-    {
-        $modifications = $this->modificationService->getModificationsByPurchasePlan($purchasePlanId);
-        $stats = $this->modificationService->getModificationStats($purchasePlanId);
-
-        return response()->json([
-            'success' => true,
-            'data' => ModificationResource::collection($modifications),
-            'stats' => $stats
         ]);
     }
 
@@ -121,20 +114,64 @@ class ModificationController extends Controller
     public function changeStatus(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|string|in:active,inactive,pending,approved,rejected',
-            'comment' => 'nullable|string|max:500'
+            'status' => 'required|string|in:active,inactive,pending,approved,rejected'
         ]);
 
-        $modification = $this->modificationService->changeModificationStatus(
-            $id,
-            $request->status,
-            $request->comment
-        );
+        $modification = $this->modificationService->changeModificationStatus($id, $request->status);
 
         return response()->json([
             'success' => true,
             'message' => 'Estado de la modificación actualizado exitosamente',
             'data' => new ModificationResource($modification)
+        ]);
+    }
+
+    /**
+     * Obtiene modificaciones por plan de compra
+     *
+     * @param int $purchasePlanId
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getByPurchasePlan(int $purchasePlanId, Request $request): JsonResponse
+    {
+        $query = $request->get('query');
+        $perPage = $request->get('per_page', 15);
+        
+        $modifications = $this->modificationService->getModificationsByPurchasePlan($purchasePlanId, $query, $perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => ModificationResource::collection($modifications),
+            'pagination' => [
+                'current_page' => $modifications->currentPage(),
+                'last_page' => $modifications->lastPage(),
+                'per_page' => $modifications->perPage(),
+                'total' => $modifications->total(),
+            ]
+        ]);
+    }
+
+    /**
+     * Obtiene modificaciones pendientes de aprobación
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getPendingApproval(Request $request): JsonResponse
+    {
+        $perPage = $request->get('per_page', 15);
+        $modifications = $this->modificationService->getPendingApprovalModifications($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => ModificationResource::collection($modifications),
+            'pagination' => [
+                'current_page' => $modifications->currentPage(),
+                'last_page' => $modifications->lastPage(),
+                'per_page' => $modifications->perPage(),
+                'total' => $modifications->total(),
+            ]
         ]);
     }
 
@@ -155,15 +192,108 @@ class ModificationController extends Controller
     }
 
     /**
-     * Obtiene los estados disponibles para las modificaciones
+     * Obtiene los estados disponibles
      *
      * @return JsonResponse
      */
     public function getAvailableStatuses(): JsonResponse
     {
+        $statuses = $this->modificationService->getAvailableStatuses();
+
         return response()->json([
             'success' => true,
-            'data' => \App\Models\Modification::getAvailableStatuses()
+            'data' => $statuses
+        ]);
+    }
+
+    /**
+     * Obtiene los tipos de modificación disponibles
+     *
+     * @return JsonResponse
+     */
+    public function getAvailableTypes(): JsonResponse
+    {
+        $types = $this->modificationService->getAvailableTypes();
+
+        return response()->json([
+            'success' => true,
+            'data' => $types
+        ]);
+    }
+
+    /**
+     * Obtiene estadísticas básicas de modificaciones
+     *
+     * @return JsonResponse
+     */
+    public function getStatistics(): JsonResponse
+    {
+        $basicStats = $this->modificationService->getBasicStatistics();
+        $statsByType = $this->modificationService->getStatisticsByType();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'basic' => $basicStats,
+                'by_type' => $statsByType
+            ]
+        ]);
+    }
+
+    /**
+     * Obtiene modificaciones por usuario creador
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getByCreator(Request $request): JsonResponse
+    {
+        $userId = $request->get('user_id', auth()->id());
+        $perPage = $request->get('per_page', 15);
+        
+        $modifications = $this->modificationService->getModificationsByCreator($userId, $perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => ModificationResource::collection($modifications),
+            'pagination' => [
+                'current_page' => $modifications->currentPage(),
+                'last_page' => $modifications->lastPage(),
+                'per_page' => $modifications->perPage(),
+                'total' => $modifications->total(),
+            ]
+        ]);
+    }
+
+    /**
+     * Busca modificaciones por texto
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $search = $request->get('search');
+        $perPage = $request->get('per_page', 15);
+
+        if (!$search) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El término de búsqueda es requerido'
+            ], 400);
+        }
+
+        $modifications = $this->modificationService->searchModifications($search, $perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => ModificationResource::collection($modifications),
+            'pagination' => [
+                'current_page' => $modifications->currentPage(),
+                'last_page' => $modifications->lastPage(),
+                'per_page' => $modifications->perPage(),
+                'total' => $modifications->total(),
+            ]
         ]);
     }
 } 

@@ -3,32 +3,145 @@
 namespace App\Services;
 
 use App\Models\Modification;
-use App\Models\ModificationHistory;
-use Illuminate\Support\Facades\DB;
+use App\Models\ModificationType;
 
 class ModificationService
 {
     /**
      * Obtiene todas las modificaciones con paginación y filtrado
-     *
-     * @param string|null $query Término de búsqueda
-     * @param int $perPage Número de elementos por página
-     * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getAllModificationsByQuery(?string $query, int $perPage = 15)
+    public function getAllModificationsByQuery(?string $query, int $perPage = 15, ?string $status = null, ?int $modificationTypeId = null, ?string $startDate = null, ?string $endDate = null)
     {
         $queryBuilder = Modification::with([
+            'modificationType',
             'purchasePlan.direction',
-            'createdBy',
-            'updatedBy'
+            'createdBy'
         ])->orderBy('created_at', 'DESC');
 
         if ($query) {
             $queryBuilder->where(function ($q) use ($query) {
-                $q->where('reason', 'LIKE', "%{$query}%")
-                    ->orWhere('modification_number', 'LIKE', "%{$query}%")
-                    ->orWhereHas('purchasePlan', function ($purchasePlanQuery) use ($query) {
-                        $purchasePlanQuery->where('name', 'LIKE', "%{$query}%");
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhere('version', 'LIKE', "%{$query}%")
+                    ->orWhereHas('modificationType', function ($typeQuery) use ($query) {
+                        $typeQuery->where('name', 'LIKE', "%{$query}%");
+                    });
+            });
+        }
+
+        if ($status) {
+            $queryBuilder->where('status', $status);
+        }
+
+        if ($modificationTypeId) {
+            $queryBuilder->where('modification_type_id', $modificationTypeId);
+        }
+
+        if ($startDate && $endDate) {
+            $queryBuilder->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        return $queryBuilder->paginate($perPage);
+    }
+
+    /**
+     * Obtiene una modificación por su ID
+     */
+    public function getModificationById(int $id)
+    {
+        return Modification::with([
+            'modificationType',
+            'purchasePlan.direction',
+            'createdBy'
+        ])->findOrFail($id);
+    }
+
+    /**
+     * Crea una nueva modificación
+     */
+    public function createModification(array $data)
+    {
+        $data['created_by'] = auth()->id();
+        
+        return Modification::create($data);
+    }
+
+    /**
+     * Actualiza una modificación existente
+     */
+    public function updateModification(int $id, array $data)
+    {
+        $modification = $this->getModificationById($id);
+        
+        $modification->update($data);
+        
+        return $modification;
+    }
+
+    /**
+     * Cambia el estado de una modificación
+     */
+    public function changeModificationStatus(int $id, string $status)
+    {
+        $modification = $this->getModificationById($id);
+        
+        $modification->status = $status;
+        $modification->save();
+        
+        return $modification;
+    }
+
+    /**
+     * Elimina una modificación
+     */
+    public function deleteModification(int $id)
+    {
+        $modification = $this->getModificationById($id);
+        $modification->delete();
+    }
+
+    /**
+     * Obtiene modificaciones pendientes de aprobación
+     */
+    public function getPendingApprovalModifications(int $perPage = 15)
+    {
+        return Modification::with([
+            'modificationType',
+            'purchasePlan.direction',
+            'createdBy'
+        ])
+        ->where('status', Modification::STATUS_PENDING)
+        ->orderBy('created_at', 'DESC')
+        ->paginate($perPage);
+    }
+
+    /**
+     * Obtiene los estados disponibles
+     */
+    public function getAvailableStatuses(): array
+    {
+        return Modification::getAvailableStatuses();
+    }
+
+    /**
+     * Obtiene modificaciones por plan de compra
+     */
+    public function getModificationsByPurchasePlan(int $purchasePlanId, ?string $query = null, int $perPage = 15)
+    {
+        $queryBuilder = Modification::with([
+            'modificationType',
+            'createdBy'
+        ])
+        ->where('purchase_plan_id', $purchasePlanId)
+        ->orderBy('created_at', 'DESC');
+
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhere('version', 'LIKE', "%{$query}%")
+                    ->orWhereHas('modificationType', function ($typeQuery) use ($query) {
+                        $typeQuery->where('name', 'LIKE', "%{$query}%");
                     });
             });
         }
@@ -37,230 +150,80 @@ class ModificationService
     }
 
     /**
-     * Obtiene modificaciones por plan de compra
-     *
-     * @param int $purchasePlanId
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Obtiene los tipos de modificación disponibles
      */
-    public function getModificationsByPurchasePlan(int $purchasePlanId)
+    public function getAvailableTypes()
     {
-        return Modification::with([
-            'createdBy',
-            'updatedBy',
-            'history.user'
-        ])
-        ->where('purchase_plan_id', $purchasePlanId)
-        ->orderBy('modification_number', 'asc')
-        ->get();
+        return ModificationType::select('id', 'name', 'description')
+            ->orderBy('name', 'asc')
+            ->get();
     }
 
     /**
-     * Obtiene una modificación por su ID
-     *
-     * @param int $id
-     * @return Modification
+     * Obtiene estadísticas básicas de modificaciones
      */
-    public function getModificationById(int $id)
+    public function getBasicStatistics(): array
     {
-        return Modification::with([
-            'purchasePlan.direction',
-            'createdBy',
-            'updatedBy',
-            'history.user'
-        ])->findOrFail($id);
-    }
+        $total = Modification::count();
+        $pending = Modification::where('status', Modification::STATUS_PENDING)->count();
+        $approved = Modification::where('status', Modification::STATUS_APPROVED)->count();
+        $rejected = Modification::where('status', Modification::STATUS_REJECTED)->count();
+        $active = Modification::where('status', Modification::STATUS_ACTIVE)->count();
 
-    /**
-     * Crea una nueva modificación
-     *
-     * @param array $data
-     * @return Modification
-     */
-    public function createModification(array $data)
-    {
-        DB::beginTransaction();
-        
-        try {
-            // Obtener el siguiente número de modificación
-            $data['modification_number'] = Modification::getNextModificationNumber($data['purchase_plan_id']);
-            $data['created_by'] = auth()->id();
-            
-            $modification = Modification::create($data);
-            
-            // Registrar en el historial
-            $this->logModificationAction(
-                $modification->id,
-                ModificationHistory::ACTION_CREATE,
-                'Modificación creada',
-                [
-                    'modification_number' => $modification->modification_number,
-                    'reason' => $modification->reason,
-                    'status' => $modification->status
-                ]
-            );
-            
-            DB::commit();
-            return $modification;
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * Actualiza una modificación existente
-     *
-     * @param int $id
-     * @param array $data
-     * @return Modification
-     */
-    public function updateModification(int $id, array $data)
-    {
-        DB::beginTransaction();
-        
-        try {
-            $modification = $this->getModificationById($id);
-            $oldData = $modification->toArray();
-            
-            $data['updated_by'] = auth()->id();
-            $modification->update($data);
-            
-            // Registrar en el historial
-            $this->logModificationAction(
-                $modification->id,
-                ModificationHistory::ACTION_UPDATE,
-                'Modificación actualizada',
-                [
-                    'old_data' => $oldData,
-                    'new_data' => $modification->toArray()
-                ]
-            );
-            
-            DB::commit();
-            return $modification;
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * Cambia el estado de una modificación
-     *
-     * @param int $id
-     * @param string $newStatus
-     * @param string|null $comment
-     * @return Modification
-     */
-    public function changeModificationStatus(int $id, string $newStatus, ?string $comment = null)
-    {
-        DB::beginTransaction();
-        
-        try {
-            $modification = $this->getModificationById($id);
-            $oldStatus = $modification->status;
-            
-            $modification->update([
-                'status' => $newStatus,
-                'updated_by' => auth()->id()
-            ]);
-            
-            // Registrar en el historial
-            $this->logModificationAction(
-                $modification->id,
-                ModificationHistory::ACTION_STATUS_CHANGE,
-                "Estado cambiado de '{$oldStatus}' a '{$newStatus}'" . ($comment ? " - {$comment}" : ''),
-                [
-                    'old_status' => $oldStatus,
-                    'new_status' => $newStatus,
-                    'comment' => $comment
-                ]
-            );
-            
-            DB::commit();
-            return $modification;
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * Elimina una modificación
-     *
-     * @param int $id
-     * @return void
-     */
-    public function deleteModification(int $id)
-    {
-        DB::beginTransaction();
-        
-        try {
-            $modification = $this->getModificationById($id);
-            
-            // Registrar en el historial antes de eliminar
-            $this->logModificationAction(
-                $modification->id,
-                ModificationHistory::ACTION_DELETE,
-                'Modificación eliminada',
-                [
-                    'modification_number' => $modification->modification_number,
-                    'reason' => $modification->reason,
-                    'status' => $modification->status
-                ]
-            );
-            
-            $modification->delete();
-            
-            DB::commit();
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * Registra una acción en el historial de modificaciones
-     *
-     * @param int $modificationId
-     * @param string $action
-     * @param string $description
-     * @param array|null $details
-     * @return ModificationHistory
-     */
-    private function logModificationAction(int $modificationId, string $action, string $description, ?array $details = null)
-    {
-        return ModificationHistory::create([
-            'modification_id' => $modificationId,
-            'action' => $action,
-            'description' => $description,
-            'details' => $details,
-            'user_id' => auth()->id(),
-            'date' => now()
-        ]);
-    }
-
-    /**
-     * Obtiene estadísticas de modificaciones por plan de compra
-     *
-     * @param int $purchasePlanId
-     * @return array
-     */
-    public function getModificationStats(int $purchasePlanId): array
-    {
-        $modifications = Modification::where('purchase_plan_id', $purchasePlanId)->get();
-        
         return [
-            'total' => $modifications->count(),
-            'active' => $modifications->where('status', Modification::STATUS_ACTIVE)->count(),
-            'pending' => $modifications->where('status', Modification::STATUS_PENDING)->count(),
-            'approved' => $modifications->where('status', Modification::STATUS_APPROVED)->count(),
-            'rejected' => $modifications->where('status', Modification::STATUS_REJECTED)->count(),
-            'inactive' => $modifications->where('status', Modification::STATUS_INACTIVE)->count(),
+            'total' => $total,
+            'pending' => $pending,
+            'approved' => $approved,
+            'rejected' => $rejected,
+            'active' => $active
         ];
+    }
+
+    /**
+     * Obtiene estadísticas por tipo de modificación
+     */
+    public function getStatisticsByType(): array
+    {
+        return Modification::selectRaw('modification_type_id, COUNT(*) as count')
+            ->with('modificationType:id,name')
+            ->groupBy('modification_type_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->modificationType->name ?? 'Sin tipo' => $item->count];
+            })
+            ->toArray();
+    }
+
+    /**
+     * Obtiene modificaciones por usuario creador
+     */
+    public function getModificationsByCreator(int $userId, int $perPage = 15)
+    {
+        return Modification::with([
+            'modificationType',
+            'purchasePlan.direction'
+        ])
+        ->where('created_by', $userId)
+        ->orderBy('created_at', 'DESC')
+        ->paginate($perPage);
+    }
+
+    /**
+     * Busca modificaciones por nombre o descripción
+     */
+    public function searchModifications(string $search, int $perPage = 15)
+    {
+        return Modification::with([
+            'modificationType',
+            'purchasePlan.direction',
+            'createdBy'
+        ])
+        ->where(function ($query) use ($search) {
+            $query->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%")
+                  ->orWhere('version', 'LIKE', "%{$search}%");
+        })
+        ->orderBy('created_at', 'DESC')
+        ->paginate($perPage);
     }
 } 

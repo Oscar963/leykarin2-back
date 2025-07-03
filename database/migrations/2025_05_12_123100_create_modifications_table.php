@@ -15,21 +15,30 @@ class CreateModificationsTable extends Migration
     {
         Schema::create('modifications', function (Blueprint $table) {
             $table->id();
-            $table->integer('modification_number'); // Número de modificación
+            $table->string('name'); // Nombre de la modificación
+            $table->text('description'); // Descripción de la modificación
+            $table->string('version')->default('1.0'); // Versión de la modificación
             $table->date('date'); // Fecha de la modificación
-            $table->text('reason'); // Motivo de la modificación
             $table->string('status')->default('active'); // Estado: active, inactive, pending, approved, rejected
             
-            // Relaciones
+            // Relación con tipo de modificación
+            $table->foreignId('modification_type_id')->constrained('modification_types')->onDelete('restrict');
+            
+            // Relación con plan de compra
             $table->foreignId('purchase_plan_id')->constrained('purchase_plans')->onDelete('cascade');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Usuario que realizó la modificación
-            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
+            
+            // Usuario que realiza la modificación
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             
             $table->timestamps();
             
             // Índices
-            $table->index(['purchase_plan_id', 'modification_number']);
             $table->index('status');
+            $table->index('modification_type_id');
+            $table->index('purchase_plan_id');
+            $table->index('created_by');
+            $table->index('date');
+            $table->index(['purchase_plan_id', 'status']);
         });
     }
 

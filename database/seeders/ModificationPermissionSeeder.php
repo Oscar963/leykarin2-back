@@ -17,12 +17,37 @@ class ModificationPermissionSeeder extends Seeder
     {
         // Crear permisos para modificaciones
         $permissions = [
+            // Permisos básicos de modificaciones
             'modifications.list',
             'modifications.create',
             'modifications.show',
             'modifications.edit',
             'modifications.delete',
-            'modifications.update_status'
+            'modifications.update_status',
+            
+            // Permisos específicos de estados
+            'modifications.approve',
+            'modifications.reject',
+            'modifications.activate',
+            'modifications.deactivate',
+            
+            // Permisos de archivos
+            'modifications.attach_files',
+            'modifications.detach_files',
+            'modifications.download_files',
+            
+            // Permisos de reportes y estadísticas
+            'modifications.statistics',
+            'modifications.reports',
+            'modifications.export',
+            
+            // Permisos de tipos de modificación
+            'modification_types.list',
+            'modification_types.create',
+            'modification_types.show',
+            'modification_types.edit',
+            'modification_types.delete',
+            'modification_types.statistics'
         ];
 
         foreach ($permissions as $permission) {
@@ -38,23 +63,52 @@ class ModificationPermissionSeeder extends Seeder
                 'modifications.create',
                 'modifications.show',
                 'modifications.edit',
-                'modifications.update_status'
+                'modifications.update_status',
+                'modifications.approve',
+                'modifications.reject',
+                'modifications.attach_files',
+                'modifications.detach_files',
+                'modifications.download_files',
+                'modifications.statistics',
+                'modifications.reports',
+                'modification_types.list',
+                'modification_types.show',
+                'modification_types.statistics'
             ],
             'Subrogante de Director' => [
                 'modifications.list',
                 'modifications.create',
                 'modifications.show',
                 'modifications.edit',
-                'modifications.update_status'
+                'modifications.update_status',
+                'modifications.approve',
+                'modifications.reject',
+                'modifications.attach_files',
+                'modifications.detach_files',
+                'modifications.download_files',
+                'modifications.statistics',
+                'modifications.reports',
+                'modification_types.list',
+                'modification_types.show',
+                'modification_types.statistics'
             ],
             'Visador' => [
                 'modifications.list',
                 'modifications.show',
-                'modifications.update_status'
+                'modifications.update_status',
+                'modifications.approve',
+                'modifications.reject',
+                'modifications.download_files',
+                'modifications.statistics',
+                'modification_types.list',
+                'modification_types.show'
             ],
             'Usuario' => [
                 'modifications.list',
-                'modifications.show'
+                'modifications.show',
+                'modifications.download_files',
+                'modification_types.list',
+                'modification_types.show'
             ]
         ];
 
