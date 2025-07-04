@@ -207,9 +207,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Rutas para tipos de modificación
-    Route::middleware(['permission:modifications.list'])->group(function () {
+ 
         Route::apiResource('type-modifications', ModificationTypeController::class);
-    });
+
 
     Route::middleware(['permission:modifications.show'])->group(function () {
         Route::get('modification-types/{id}/statistics', [ModificationTypeController::class, 'getStatistics'])->name('modification-types.statistics');
@@ -220,3 +220,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/update-profile', [UserController::class, 'updateProfile'])->name('users.update-profile');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
 });
+
+// Ruta de prueba para verificar configuración de cookies
+Route::get('/test-cookies', function () {
+    return response()->json([
+        'session_domain' => config('session.domain'),
+        'session_secure' => config('session.secure'),
+        'session_same_site' => config('session.same_site'),
+        'session_cookie' => config('session.cookie'),
+        'sanctum_domains' => config('sanctum.stateful'),
+        'cors_origins' => config('cors.allowed_origins'),
+        'cors_supports_credentials' => config('cors.supports_credentials'),
+        'app_url' => config('app.url'),
+        'app_env' => config('app.env'),
+        'cookies_set' => request()->cookies->all(),
+        'headers' => request()->headers->all(),
+    ]);
+})->name('test.cookies');
