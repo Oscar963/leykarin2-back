@@ -122,12 +122,7 @@ class PermissionSeeder extends Seeder
             'status_item_purchases.delete',
             'status_item_purchases.view',
             
-            // ===== MÓDULO DE ESTADOS DE PLANES DE COMPRA =====
-            'status_purchase_plans.list',
-            'status_purchase_plans.create',
-            'status_purchase_plans.edit',
-            'status_purchase_plans.delete',
-            'status_purchase_plans.view',
+
             
             // ===== MÓDULO DE FORMULARIOS F1 =====
             'form_f1.list',

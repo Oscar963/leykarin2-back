@@ -17,12 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TypeUserSeeder::class);
         $this->call(RoleSeeder::class); 
         $this->call(PermissionSeeder::class);
-        $this->call(StatusPurchasePlanSeeder::class);
-        $this->call(BudgetAllocationsSeeder::class);
-        $this->call(UnitPurchasingSeeder::class);
-        $this->call(DirectionSeeder::class);
         $this->call(UserSeeder::class);
-        $this->call(DirectorDirectionRelationSeeder::class);
         $this->call(TypePurchaseSeeder::class);
         $this->call(TypeProjectSeeder::class);
         $this->call(StatusItemPurchasesSeeder::class);

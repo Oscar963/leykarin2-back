@@ -4,7 +4,6 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\BudgetAllocationController;
-use App\Http\Controllers\DirectionController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FormF1Controller;
 use App\Http\Controllers\DecretoController;
@@ -15,10 +14,8 @@ use App\Http\Controllers\PublicationMonthController;
 use App\Http\Controllers\PurchasePlanController;
 use App\Http\Controllers\PurchasePlanStatusController;
 use App\Http\Controllers\StatusItemPurchaseController;
-use App\Http\Controllers\StatusPurchasePlanController;
-use App\Http\Controllers\TypeProjectController;
-use App\Http\Controllers\TypePurchaseController;
-use App\Http\Controllers\UnitPurchasingController;
+
+
 use App\Http\Controllers\UserController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
@@ -138,31 +135,26 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas para configuraciones (solo administradores)
     Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
-        Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);
-        Route::apiResource('directions', DirectionController::class);
+        
     });
 
     // Rutas para módulos de configuración (todos los usuarios autenticados)
-    Route::apiResource('type-projects', TypeProjectController::class);
-    Route::apiResource('unit-purchasings', UnitPurchasingController::class);
-    Route::apiResource('type-purchases', TypePurchaseController::class);
-    Route::apiResource('budget-allocations', BudgetAllocationController::class);
     Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
     Route::apiResource('publication-months', PublicationMonthController::class);
 
 
     // Rutas para gestionar relaciones director-dirección
-    Route::middleware(['permission:directions.list'])->group(function () {
-        Route::get('directions/{direction}/director', [DirectionController::class, 'getDirector'])->name('directions.director');
-        Route::get('directions/{direction}/users', [DirectionController::class, 'getUsers'])->name('directions.users');
-        Route::get('directions/{direction}/users-by-role', [DirectionController::class, 'getUsersByRole'])->name('directions.users-by-role');
-    });
+    // Route::middleware(['permission:directions.list'])->group(function () {
+    //     Route::get('directions/{direction}/director', [DirectionController::class, 'getDirector'])->name('directions.director');
+    //     Route::get('directions/{direction}/users', [DirectionController::class, 'getUsers'])->name('directions.users');
+    //     Route::get('directions/{direction}/users-by-role', [DirectionController::class, 'getUsersByRole'])->name('directions.users-by-role');
+    // });
 
-    Route::middleware(['permission:directions.edit'])->group(function () {
-        Route::post('directions/{direction}/assign-director', [DirectionController::class, 'assignDirector'])->name('directions.assign-director');
-        Route::post('directions/{direction}/assign-users', [DirectionController::class, 'assignUsers'])->name('directions.assign-users')->middleware('validate.hierarchical.user');
-        Route::delete('directions/{direction}/remove-users', [DirectionController::class, 'removeUsers'])->name('directions.remove-users');
-    });
+    // Route::middleware(['permission:directions.edit'])->group(function () {
+    //     Route::post('directions/{direction}/assign-director', [DirectionController::class, 'assignDirector'])->name('directions.assign-director');
+    //     Route::post('directions/{direction}/assign-users', [DirectionController::class, 'assignUsers'])->name('directions.assign-users')->middleware('validate.hierarchical.user');
+    //     Route::delete('directions/{direction}/remove-users', [DirectionController::class, 'removeUsers'])->name('directions.remove-users');
+    // });
 
     // Rutas para archivos
     Route::middleware(['permission:files.list'])->group(function () {

@@ -81,7 +81,7 @@ class ListRolesPermissions extends Command
                 'type_projects' => '🏷️ TIPOS DE PROYECTO',
                 'unit_purchasings' => '🏪 UNIDADES DE COMPRA',
                 'status_item_purchases' => '📈 ESTADOS DE ITEMS',
-                'status_purchase_plans' => '📋 ESTADOS DE PLANES',
+
                 'form_f1' => '📄 FORMULARIOS F1',
                 'files' => '📁 ARCHIVOS',
                 'history_purchase_histories' => '📚 HISTORIAL DE MOVIMIENTOS',
