@@ -208,8 +208,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas para tipos de modificación
     Route::middleware(['permission:modifications.list'])->group(function () {
-        Route::apiResource('modification-types', ModificationTypeController::class);
-        Route::get('modification-types/select', [ModificationTypeController::class, 'getForSelect'])->name('modification-types.select');
+        Route::apiResource('type-modifications', ModificationTypeController::class);
     });
 
     Route::middleware(['permission:modifications.show'])->group(function () {

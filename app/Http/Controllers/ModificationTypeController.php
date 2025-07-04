@@ -142,21 +142,4 @@ class ModificationTypeController extends Controller
             ]
         ]);
     }
-
-    /**
-     * Obtiene todos los tipos de modificación para select
-     *
-     * @return JsonResponse
-     */
-    public function getForSelect(): JsonResponse
-    {
-        $modificationTypes = ModificationType::select('id', 'name', 'description')
-            ->orderBy('name', 'asc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $modificationTypes
-        ]);
-    }
 } 

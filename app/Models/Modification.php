@@ -25,7 +25,9 @@ class Modification extends Model
         'status',
         'modification_type_id',
         'purchase_plan_id',
-        'created_by'
+        'created_by',
+        'updated_by',
+        'token'
     ];
 
     /**
@@ -70,6 +72,14 @@ class Modification extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Usuario que actualizó la modificación
+     */
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     /**
