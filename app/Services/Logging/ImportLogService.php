@@ -198,4 +198,23 @@ class ImportLogService
     {
         session()->forget('import_start_time');
     }
+
+    /**
+     * Log de tabla vaciada antes de importar
+     */
+    public function logTableCleared(int $userId, string $tableName, int $recordsDeleted): void
+    {
+        if (!config('import.logging.enabled', true)) {
+            return;
+        }
+
+        Log::warning('Tabla vaciada antes de importar', [
+            'user_id' => $userId,
+            'table_name' => $tableName,
+            'records_deleted' => $recordsDeleted,
+            'timestamp' => now()->toISOString(),
+            'ip_address' => request()->ip(),
+            'user_agent' => $this->sanitizeUserAgent(request()->userAgent())
+        ]);
+    }
 } 

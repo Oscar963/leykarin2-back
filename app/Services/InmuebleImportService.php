@@ -109,6 +109,9 @@ class InmuebleImportService implements ImportServiceInterface
         // Log de inicio
         $this->importLogService->logImportStart($userId, $sanitizedFileName, $file->getSize());
 
+        // Vaciar tabla automáticamente antes de importar
+        $this->clearInmueblesTable($userId);
+
         // Procesar importación con historial
         $import = new InmueblesImport($importHistory);
         Excel::import($import, $file);
@@ -120,7 +123,7 @@ class InmuebleImportService implements ImportServiceInterface
         // Log de finalización
         $this->importLogService->logImportComplete($userId, $stats);
 
-        return $this->buildResponse($sanitizedFileName, $stats, $errors, $importHistory->import_id);
+        return $this->buildResponse($sanitizedFileName, $stats, $errors, $importHistory->import_id, true);
     }
 
     /**
@@ -141,6 +144,33 @@ class InmuebleImportService implements ImportServiceInterface
             'file_name' => $this->sanitizeFileName($file->getClientOriginalName()),
             'preview_rows' => $previewRows
         ];
+    }
+
+    /**
+     * Vaciar la tabla de inmuebles antes de importar
+     *
+     * @param int $userId
+     * @return void
+     */
+    private function clearInmueblesTable(int $userId): void
+    {
+        try {
+            // Obtener el conteo antes de vaciar para el log
+            $countBefore = \App\Models\Inmueble::count();
+            
+            // Vaciar la tabla
+            \App\Models\Inmueble::truncate();
+            
+            // Log de la acción
+            $this->importLogService->logTableCleared($userId, 'inmuebles', $countBefore);
+            
+            // Log de actividad
+            \Illuminate\Support\Facades\Log::info("Usuario {$userId} vació la tabla inmuebles antes de importar. Registros eliminados: {$countBefore}");
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error al vaciar tabla inmuebles: " . $e->getMessage());
+            throw new \App\Exceptions\Import\ImportException("Error al vaciar la tabla de inmuebles: " . $e->getMessage());
+        }
     }
 
     /**
@@ -171,16 +201,17 @@ class InmuebleImportService implements ImportServiceInterface
     /**
      * Build import response as DTO
      */
-    private function buildResponse(string $fileName, array $stats, array $errors, ?string $importId = null): ImportResultDTO
+    private function buildResponse(string $fileName, array $stats, array $errors, ?string $importId = null, bool $tableCleared = false): ImportResultDTO
     {
         $maxErrors = config('import.validation.max_errors', 10);
-        $message = $this->buildImportMessage($stats);
+        $message = $this->buildImportMessage($stats, $tableCleared);
         
         $data = [
             'file_name' => $fileName,
             'statistics' => $stats,
             'has_errors' => !empty($errors),
-            'error_count' => count($errors)
+            'error_count' => count($errors),
+            'table_cleared_before_import' => $tableCleared
         ];
 
         if (!empty($errors)) {
@@ -215,9 +246,13 @@ class InmuebleImportService implements ImportServiceInterface
     /**
      * Construir mensaje de importación
      */
-    private function buildImportMessage(array $stats): string
+    private function buildImportMessage(array $stats, bool $tableCleared = false): string
     {
         $messages = [];
+        
+        if ($tableCleared) {
+            $messages[] = "🗑️ Tabla de inmuebles vaciada automáticamente";
+        }
         
         if ($stats['imported'] > 0) {
             $messages[] = "✅ {$stats['imported']} inmuebles importados exitosamente";

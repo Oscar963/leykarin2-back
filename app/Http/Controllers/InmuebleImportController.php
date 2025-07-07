@@ -10,6 +10,7 @@ use App\Exceptions\Import\FileValidationException;
 use App\Exports\InmueblesTemplateExport;
 use App\Imports\InmueblesImport;
 use App\Models\ImportHistory;
+use App\Models\Inmueble;
 use App\Services\InmuebleImportService;
 use App\Services\ImportHistoryService;
 use App\Services\Validation\FileValidationService;
@@ -186,6 +187,8 @@ class InmuebleImportController extends Controller
             'excel_file.max' => 'El archivo no puede ser mayor a ' . (config('import.max_file_size', 10240) / 1024) . 'MB.'
         ]);
     }
+
+
 
     /**
      * Construir mensaje de importación basado en estadísticas
