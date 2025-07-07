@@ -1,27 +1,15 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\BudgetAllocationController;
-use App\Http\Controllers\FileController;
-use App\Http\Controllers\FormF1Controller;
-use App\Http\Controllers\DecretoController;
-use App\Http\Controllers\GoalController;
-use App\Http\Controllers\ItemPurchaseController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\PublicationMonthController;
-use App\Http\Controllers\PurchasePlanController;
-use App\Http\Controllers\PurchasePlanStatusController;
-use App\Http\Controllers\StatusItemPurchaseController;
-
-
 use App\Http\Controllers\UserController;
-use App\Models\Project;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HistoryPurchaseHistoryController;
-use App\Http\Controllers\ModificationController;
-use App\Http\Controllers\ModificationTypeController;
+use App\Http\Controllers\WebController;
+use App\Http\Controllers\InmuebleImportController;
+use App\Http\Controllers\ImportHistoryController;
+use App\Http\Controllers\InmuebleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,203 +17,114 @@ use App\Http\Controllers\ModificationTypeController;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
 |
 */
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
-
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
-
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('user', [AuthController::class, 'user']);
-    Route::get('isAuthenticated', [AuthController::class, 'isAuthenticated']);
-
-    // Rutas protegidas por roles específicos
-    Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
-        Route::apiResource('users', UserController::class)->middleware('validate.hierarchical.user');
-        Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.reset-password');
-        Route::get('directions-stats/users', [DirectionController::class, 'getUserStats'])->name('directions.user-stats');
+// Public routes
+Route::prefix('v1')->group(function () {
+    
+    // Health check
+    Route::get('/health', function () {
+        return response()->json([
+            'status' => 'healthy',
+            'timestamp' => now()->toISOString(),
+            'version' => '1.0.0'
+        ]);
     });
 
-    // Rutas protegidas por permisos específicos
-    Route::middleware(['permission:purchase_plans.list'])->group(function () {
-        Route::apiResource('purchase-plans', PurchasePlanController::class);
-        Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear'])->name('purchase-plans.show.year');
-        Route::get('purchase-plans/year/{year}/index', [PurchasePlanController::class, 'indexByYear'])->name('purchase-plans.index.year');
-        Route::get('purchase-plans/available-directions', [PurchasePlanController::class, 'getAvailableDirections'])->name('purchase-plans.available-directions');
+    // Authentication routes
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+        Route::post('/reset-password', [PasswordResetController::class, 'reset']);
     });
 
-    // Rutas para upload de decretos - SOLO para roles específicos
-    Route::middleware(['role:Administrador del Sistema|Administrador Municipal|Director|Subrogante de Director'])->group(function () {
-        Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto'])->name('purchase-plans.upload.decreto');
-    });
-
-    // Rutas para cambio de estado de planes de compra
-    Route::middleware(['permission:purchase_plans.visar|purchase_plans.approve', 'validate.purchase.plan.status'])->group(function () {
-        Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus'])->name('purchase-plans.update.status');
-    });
-
-    // Ruta de envío restringida solo a administradores, directores y visadores
-    Route::middleware(['permission:purchase_plans.send|purchase_plans.visar', 'can.send.purchase.plan', 'validate.purchase.plan.status'])->group(function () {
-        Route::post('purchase-plans/{token}/send', [PurchasePlanController::class, 'send'])->name('purchase-plans.send');
-    });
-
-    // Rutas para el historial de estados de planes de compra
-    Route::middleware(['permission:purchase_plan_statuses.history'])->group(function () {
-        Route::get('purchase-plans/{purchasePlanId}/status-history', [PurchasePlanStatusController::class, 'getStatusHistory'])->name('purchase-plans.status-history');
-        Route::get('purchase-plans/{purchasePlanId}/current-status', [PurchasePlanStatusController::class, 'getCurrentStatus'])->name('purchase-plans.current-status');
-        Route::get('purchase-plan-statuses/{id}', [PurchasePlanStatusController::class, 'show'])->name('purchase-plan-statuses.show');
-    });
-
-    Route::middleware(['permission:purchase_plan_statuses.create'])->group(function () {
-        Route::post('purchase-plan-statuses', [PurchasePlanStatusController::class, 'store'])->name('purchase-plan-statuses.store');
-    });
-
-    // Rutas para el historial de movimientos de planes de compra
-    Route::middleware(['permission:history_purchase_histories.list'])->group(function () {
-        Route::get('purchase-plans/{purchasePlanId}/movement-history', [HistoryPurchaseHistoryController::class, 'getMovementHistory'])->name('purchase-plans.movement-history');
-        Route::get('purchase-plans/{purchasePlanId}/movement-statistics', [HistoryPurchaseHistoryController::class, 'getStatistics'])->name('purchase-plans.movement-statistics');
-        Route::get('purchase-plans/{purchasePlanId}/movement-export', [HistoryPurchaseHistoryController::class, 'export'])->name('purchase-plans.movement-export');
-        Route::get('movement-history/{id}', [HistoryPurchaseHistoryController::class, 'show'])->name('movement-history.show');
-    });
-
-    // Rutas para proyectos
-    Route::middleware(['permission:projects.list'])->group(function () {
-        Route::apiResource('projects', ProjectController::class);
-        Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan'])->name('projects.index.purchase-plan');
-        Route::get('projects/export-word/{purchasePlanId}', [ProjectController::class, 'exportWord'])->name('projects.export.word');
-        Route::get('projects/token/{token}', [ProjectController::class, 'showByToken'])->name('projects.show.token');
-        Route::get('projects/dashboard', [ProjectController::class, 'getDashboard'])->name('projects.dashboard');
-    });
-
-    Route::middleware(['permission:projects.verification'])->group(function () {
-        Route::post('projects/verification', [ProjectController::class, 'verification'])->name('projects.verification');
-        Route::get('projects/verification/project/{projectId}/index', [ProjectController::class, 'showVerificationProject'])->name('projects.show.verification.project');
-        Route::delete('projects/{projectId}/verification/{fileId}', [ProjectController::class, 'deleteVerificationProject'])->name('projects.delete.verification.project');
-        Route::get('projects/verification/{fileId}/download', [ProjectController::class, 'downloadVerificationProject'])->name('projects.download.verification.project');
-    });
-
-    // Rutas para ítems de compra
-    Route::middleware(['permission:item_purchases.list'])->group(function () {
-        Route::get('item-purchases/template', [ItemPurchaseController::class, 'downloadTemplate'])->name('item-purchases.template');
-        Route::apiResource('item-purchases', ItemPurchaseController::class);
-        Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export'])->name('item-purchases.export');
-        Route::post('item-purchases/import/{projectId}', [ItemPurchaseController::class, 'import'])->name('item-purchases.import');
-    });
-
-    Route::middleware(['permission:item_purchases.update_status'])->group(function () {
-        Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus'])->name('item-purchases.update.status');
-    });
-
-    // Rutas para metas de proyectos estratégicos
-    Route::middleware(['permission:goals.list', 'validate.strategic.project'])->group(function () {
-        Route::apiResource('goals', GoalController::class);
-        Route::get('goals/project/{projectId}/statistics', [GoalController::class, 'getProjectStatistics'])->name('goals.project.statistics');
-        Route::get('goals/overdue', [GoalController::class, 'getOverdueGoals'])->name('goals.overdue');
-    });
-
-    Route::middleware(['permission:goals.update_progress', 'validate.strategic.project'])->group(function () {
-        Route::put('goals/{id}/progress', [GoalController::class, 'updateProgress'])->name('goals.update.progress');
-    });
-
-    // Rutas para configuraciones (solo administradores)
-    Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
+    // Protected routes
+    Route::middleware('auth:sanctum')->group(function () {
         
+        // User management
+        Route::prefix('users')->group(function () {
+            Route::get('/', [UserController::class, 'index']);
+            Route::get('/me', [UserController::class, 'me']);
+            Route::get('/{user}', [UserController::class, 'show']);
+            Route::put('/{user}', [UserController::class, 'update']);
+            Route::delete('/{user}', [UserController::class, 'destroy']);
+            Route::patch('/{user}/profile', [UserController::class, 'updateProfile']);
+            Route::patch('/{user}/password', [UserController::class, 'updatePassword']);
+        });
+
+        // Inmuebles (Properties) - RESTful CRUD
+        Route::prefix('inmuebles')->group(function () {
+            // CRUD operations (RESTful)
+            Route::get('/', [InmuebleController::class, 'index']);
+            Route::post('/', [InmuebleController::class, 'store']);
+            Route::get('/{inmueble}', [InmuebleController::class, 'show']);
+            Route::put('/{inmueble}', [InmuebleController::class, 'update']);
+            Route::patch('/{inmueble}', [InmuebleController::class, 'update']);
+            Route::delete('/{inmueble}', [InmuebleController::class, 'destroy']);
+            
+            // Bulk operations
+            Route::post('/bulk', [InmuebleController::class, 'bulkStore']);
+            Route::put('/bulk', [InmuebleController::class, 'bulkUpdate']);
+            Route::delete('/bulk', [InmuebleController::class, 'bulkDestroy']);
+            
+            // Search and filters
+            Route::get('/search', [InmuebleController::class, 'search']);
+            Route::get('/filter', [InmuebleController::class, 'filter']);
+            
+            // Statistics
+            Route::get('/statistics', [InmuebleController::class, 'statistics']);
+            
+            // Import/Export operations
+            Route::prefix('import')->group(function () {
+                Route::get('/template', [InmuebleImportController::class, 'downloadTemplate']);
+                Route::get('/column-mapping', [InmuebleImportController::class, 'getColumnMapping']);
+                Route::post('/preview', [InmuebleImportController::class, 'preview']);
+                Route::post('/', [InmuebleImportController::class, 'import']);
+                Route::get('/statistics', [InmuebleImportController::class, 'getImportStatistics']);
+                Route::delete('/{importId}', [InmuebleImportController::class, 'cancelImport']);
+            });
+            
+            // Import History
+            Route::prefix('import-history')->group(function () {
+                Route::get('/', [ImportHistoryController::class, 'index']);
+                Route::get('/statistics', [ImportHistoryController::class, 'statistics']);
+                Route::get('/recent-summary', [ImportHistoryController::class, 'recentSummary']);
+                Route::get('/{importId}', [ImportHistoryController::class, 'show']);
+                Route::get('/{importId}/versions', [ImportHistoryController::class, 'versionHistory']);
+                Route::post('/{importId}/versions', [ImportHistoryController::class, 'createVersion']);
+                Route::post('/{importId}/rollback', [ImportHistoryController::class, 'rollback']);
+                Route::post('/export', [ImportHistoryController::class, 'export']);
+                Route::delete('/{importId}', [ImportHistoryController::class, 'destroy']);
+            });
+            
+            Route::prefix('export')->group(function () {
+                Route::get('/', [InmuebleController::class, 'export']);
+                Route::post('/custom', [InmuebleController::class, 'customExport']);
+            });
+        });
+
+        // Activity logs
+        Route::prefix('activity-logs')->group(function () {
+            Route::get('/', [WebController::class, 'getActivityLogs']);
+            Route::get('/{activityLog}', [WebController::class, 'getActivityLog']);
+        });
     });
-
-    // Rutas para módulos de configuración (todos los usuarios autenticados)
-    Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
-    Route::apiResource('publication-months', PublicationMonthController::class);
-
-
-    // Rutas para gestionar relaciones director-dirección
-    // Route::middleware(['permission:directions.list'])->group(function () {
-    //     Route::get('directions/{direction}/director', [DirectionController::class, 'getDirector'])->name('directions.director');
-    //     Route::get('directions/{direction}/users', [DirectionController::class, 'getUsers'])->name('directions.users');
-    //     Route::get('directions/{direction}/users-by-role', [DirectionController::class, 'getUsersByRole'])->name('directions.users-by-role');
-    // });
-
-    // Route::middleware(['permission:directions.edit'])->group(function () {
-    //     Route::post('directions/{direction}/assign-director', [DirectionController::class, 'assignDirector'])->name('directions.assign-director');
-    //     Route::post('directions/{direction}/assign-users', [DirectionController::class, 'assignUsers'])->name('directions.assign-users')->middleware('validate.hierarchical.user');
-    //     Route::delete('directions/{direction}/remove-users', [DirectionController::class, 'removeUsers'])->name('directions.remove-users');
-    // });
-
-    // Rutas para archivos
-    Route::middleware(['permission:files.list'])->group(function () {
-        Route::apiResource('files', FileController::class);
-        Route::get('/files/{id}/download', [FileController::class, 'download']);
-    });
-
-    // Rutas para formularios F1
-    Route::middleware(['permission:form_f1.list'])->group(function () {
-        Route::apiResource('form-f1', FormF1Controller::class);
-    });
-
-    // Ruta específica para descarga de formularios F1
-    Route::middleware(['permission:form_f1.download'])->group(function () {
-        Route::get('/form-f1/{id}/download', [FormF1Controller::class, 'download'])->name('form-f1.download');
-    });
-
-    // Rutas para decretos 
-    Route::middleware(['role:Administrador del Sistema|Administrador Municipal|Director|Subrogante de Director'])->group(function () {
-        Route::apiResource('decretos', DecretoController::class);
-    });
-
-    // Ruta específica para descarga de decretos
-    Route::middleware(['permission:decretos.download'])->group(function () {
-        Route::get('/decretos/{id}/download', [DecretoController::class, 'download'])->name('decretos.download');
-    });
-
-    // Rutas para modificaciones
-    Route::middleware(['permission:modifications.list'])->group(function () {
-        Route::apiResource('modifications', ModificationController::class);
-        Route::get('modifications/statuses', [ModificationController::class, 'getAvailableStatuses'])->name('modifications.statuses');
-        Route::get('modifications/types', [ModificationController::class, 'getAvailableTypes'])->name('modifications.types');
-        Route::get('modifications/pending-approval', [ModificationController::class, 'getPendingApproval'])->name('modifications.pending-approval');
-        Route::get('modifications/statistics', [ModificationController::class, 'getStatistics'])->name('modifications.statistics');
-        Route::get('modifications/by-creator', [ModificationController::class, 'getByCreator'])->name('modifications.by-creator');
-        Route::get('modifications/search', [ModificationController::class, 'search'])->name('modifications.search');
-        Route::get('purchase-plans/{purchasePlanId}/modifications', [ModificationController::class, 'getByPurchasePlan'])->name('modifications.by-purchase-plan');
-    });
-
-    Route::middleware(['permission:modifications.update_status'])->group(function () {
-        Route::put('modifications/{id}/status', [ModificationController::class, 'changeStatus'])->name('modifications.change-status');
-    });
-
-    // Rutas para tipos de modificación
- 
-        Route::apiResource('type-modifications', ModificationTypeController::class);
-
-
-    Route::middleware(['permission:modifications.show'])->group(function () {
-        Route::get('modification-types/{id}/statistics', [ModificationTypeController::class, 'getStatistics'])->name('modification-types.statistics');
-    });
-
-    // Rutas de perfil de usuario
-    Route::post('/users/update-password', [UserController::class, 'updatePassword'])->name('users.reset-update');
-    Route::post('/users/update-profile', [UserController::class, 'updateProfile'])->name('users.update-profile');
-    Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
 });
 
-// Ruta de prueba para verificar configuración de cookies
-Route::get('/test-cookies', function () {
+// Fallback for undefined routes
+Route::fallback(function () {
     return response()->json([
-        'session_domain' => config('session.domain'),
-        'session_secure' => config('session.secure'),
-        'session_same_site' => config('session.same_site'),
-        'session_cookie' => config('session.cookie'),
-        'sanctum_domains' => config('sanctum.stateful'),
-        'cors_origins' => config('cors.allowed_origins'),
-        'cors_supports_credentials' => config('cors.supports_credentials'),
-        'app_url' => config('app.url'),
-        'app_env' => config('app.env'),
-        'cookies_set' => request()->cookies->all(),
-        'headers' => request()->headers->all(),
-    ]);
-})->name('test.cookies');
+        'error' => [
+            'code' => 'ENDPOINT_NOT_FOUND',
+            'message' => 'The requested endpoint does not exist.',
+            'documentation' => '/api/v1/docs'
+        ],
+        'timestamp' => now()->toISOString()
+    ], 404);
+});

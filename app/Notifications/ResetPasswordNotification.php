@@ -42,12 +42,18 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        $resetUrl = config('app.frontend_url') . '/reset-password/' . $this->token . '?email=' . urlencode($notifiable->getEmailForPasswordReset());
+        // Usar variable de entorno para la URL del frontend
+        $frontendUrl = env('FRONTEND_URL', config('app.url'));
+        $resetUrl = $frontendUrl . '/reset-password/' . $this->token . '?email=' . urlencode($notifiable->getEmailForPasswordReset());
 
-        $logoUrl = asset('assets/img/logos/logo-blanco.png'); // Asegúrate de que la imagen esté en public/images/logo.png
+        $logoUrl = asset('assets/img/logos/logo-blanco.png');
 
-        // Usamos la vista de correo personalizada
+        // Usar variables de entorno para configuración de email
+        $fromAddress = env('NOTIFICATION_MAIL_FROM_ADDRESS', config('mail.from.address'));
+        $fromName = env('NOTIFICATION_MAIL_FROM_NAME', config('mail.from.name'));
+
         return (new MailMessage())
+            ->from($fromAddress, $fromName)
             ->subject('Restablece tu contraseña')
             ->markdown('emails.reset-password', ['resetUrl' => $resetUrl, 'logoUrl' => $logoUrl]);
     }

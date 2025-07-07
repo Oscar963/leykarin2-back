@@ -96,10 +96,7 @@ return [
 'directions.edit'         // Editar direcciones
 'directions.delete'       // Eliminar direcciones
 
-// Archivos
-'files.list'              // Ver archivos
-'files.create'            // Crear archivos
-'files.download'          // Descargar archivos
+
 
 // Usuarios (solo administradores)
 'users.create'            // Crear usuarios

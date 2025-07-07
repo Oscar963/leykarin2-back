@@ -146,105 +146,19 @@ Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->g
 - **Permisos requeridos**: Solo administradores
 
 ### **📋 Planes de Compra**
-```php
-// Listar y gestionar planes
-Route::middleware(['permission:purchase_plans.list'])->group(function () {
-    Route::apiResource('purchase-plans', PurchasePlanController::class);
-    Route::get('purchase-plans/year/{year}', [PurchasePlanController::class, 'showByYear']);
-    Route::get('purchase-plans/available-directions', [PurchasePlanController::class, 'getAvailableDirections']);
-});
-
-// Subir archivos
-Route::middleware(['permission:purchase_plans.create'])->group(function () {
-    Route::post('purchase-plans/upload/decreto', [PurchasePlanController::class, 'uploadDecreto']);
-});
-
-// Aprobar/rechazar planes
-Route::middleware(['permission:purchase_plans.approve'])->group(function () {
-    Route::put('purchase-plans/status/{id}', [PurchasePlanController::class, 'updateStatus']);
-});
-
-// Enviar planes (solo administradores y directores)
-Route::middleware(['permission:purchase_plans.send', 'can.send.purchase.plan'])->group(function () {
-    Route::post('purchase-plans/{token}/send', [PurchasePlanController::class, 'send']);
-});
-```
-- **Protección**: Permisos + Middleware personalizado para envío
-- **Permisos**: `list`, `create`, `approve`, `send`
-- **Restricción de envío**: Solo Administrador del Sistema, Administrador Municipal y Director
+*Nota: Los controllers de planes de compra han sido eliminados del sistema.*
 
 ### **🏗️ Proyectos**
-```php
-// Listar y gestionar proyectos
-Route::middleware(['permission:projects.list'])->group(function () {
-    Route::apiResource('projects', ProjectController::class);
-    Route::get('projects/purchase-plan/{purchasePlanId}/index', [ProjectController::class, 'indexByPurchasePlan']);
-});
-
-// Verificación de proyectos
-Route::middleware(['permission:projects.verification'])->group(function () {
-    Route::post('projects/verification', [ProjectController::class, 'verification']);
-    Route::get('projects/verification/project/{projectId}/index', [ProjectController::class, 'showVerificationProject']);
-});
-```
-- **Protección**: Permisos específicos por funcionalidad
-- **Permisos**: `list`, `verification`
+*Nota: Los controllers de proyectos han sido eliminados del sistema.*
 
 ### **📦 Items de Compra**
-```php
-// Listar y gestionar items
-Route::middleware(['permission:item_purchases.list'])->group(function () {
-    Route::apiResource('item-purchases', ItemPurchaseController::class);
-    Route::get('item-purchases/export/{project_id}', [ItemPurchaseController::class, 'export']);
-});
-
-// Actualizar estados
-Route::middleware(['permission:item_purchases.update_status'])->group(function () {
-    Route::put('item-purchases/{id}/status', [ItemPurchaseController::class, 'updateStatus']);
-});
-```
-- **Protección**: Permisos separados para gestión y estados
-- **Permisos**: `list`, `update_status`
+*Nota: Los controllers de items de compra han sido eliminados del sistema.*
 
 ### **🏢 Direcciones**
-```php
-// Solo administradores
-Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
-    Route::apiResource('directions', DirectionController::class);
-});
-
-// Listar información
-Route::middleware(['permission:directions.list'])->group(function () {
-    Route::get('directions/{direction}/director', [DirectionController::class, 'getDirector']);
-    Route::get('directions/{direction}/users', [DirectionController::class, 'getUsers']);
-});
-
-// Editar relaciones
-Route::middleware(['permission:directions.edit'])->group(function () {
-    Route::post('directions/{direction}/assign-director', [DirectionController::class, 'assignDirector']);
-    Route::post('directions/{direction}/assign-users', [DirectionController::class, 'assignUsers'])->middleware('validate.hierarchical.user');
-});
-```
-- **Protección**: Roles + Permisos + Validación jerárquica
-- **Permisos**: `list`, `edit`
+*Nota: Los controllers de direcciones han sido eliminados del sistema.*
 
 ### **⚙️ Configuración del Sistema**
-```php
-// Solo administradores
-Route::middleware(['role:Administrador del Sistema|Administrador Municipal'])->group(function () {
-    Route::apiResource('status-purchase-plans', StatusPurchasePlanController::class);
-    Route::apiResource('directions', DirectionController::class);
-});
-
-// Todos los usuarios autenticados
-Route::apiResource('type-projects', TypeProjectController::class);
-Route::apiResource('unit-purchasings', UnitPurchasingController::class);
-Route::apiResource('type-purchases', TypePurchaseController::class);
-Route::apiResource('budget-allocations', BudgetAllocationController::class);
-Route::apiResource('status-item-purchases', StatusItemPurchaseController::class);
-```
-- **Protección**: Solo autenticación (sin restricciones adicionales)
-- **Acceso**: Todos los usuarios autenticados
+*Nota: Los controllers de configuración han sido eliminados del sistema.*
 
 ## 🛡️ Middleware Personalizados
 

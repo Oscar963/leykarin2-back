@@ -37,7 +37,7 @@ export type UserRole = typeof ROLES[keyof typeof ROLES];
 export const MODULE_ACCESS = {
   [ROLES.ADMIN_SISTEMA]: [
     'dashboard', 'purchase_plans', 'projects', 'form_f1', 
-    'users', 'files', 'directions', 'reports', 'audit'
+    'users', 'directions', 'reports', 'audit'
   ],
   [ROLES.ADMIN_MUNICIPAL]: [
     'dashboard', 'purchase_plans', 'projects', 'form_f1', 'users', 'directions'
@@ -52,16 +52,16 @@ export const MODULE_ACCESS = {
     'form_f1'
   ],
   [ROLES.DIRECTOR]: [
-    'dashboard', 'purchase_plans', 'projects', 'form_f1', 'files'
+    'dashboard', 'purchase_plans', 'projects', 'form_f1'
   ],
   [ROLES.SUBROGANTE_DIRECTOR]: [
-    'dashboard', 'purchase_plans', 'projects', 'form_f1', 'files'
+    'dashboard', 'purchase_plans', 'projects', 'form_f1'
   ],
   [ROLES.JEFATURA]: [
-    'dashboard', 'purchase_plans', 'projects', 'form_f1', 'files'
+    'dashboard', 'purchase_plans', 'projects', 'form_f1'
   ],
   [ROLES.SUBROGANTE_JEFATURA]: [
-    'dashboard', 'purchase_plans', 'projects', 'form_f1', 'files'
+    'dashboard', 'purchase_plans', 'projects', 'form_f1'
   ]
 } as const;
 ```
@@ -76,7 +76,7 @@ export const MODULE_PERMISSIONS = {
     projects: ['create', 'edit', 'delete', 'view', 'verify'],
     form_f1: ['create', 'edit', 'delete', 'view', 'upload', 'download', 'remove'],
     users: ['create', 'edit', 'delete', 'view', 'reset_password'],
-    files: ['create', 'edit', 'delete', 'view', 'upload', 'download'],
+
     directions: ['create', 'edit', 'delete', 'view'],
     reports: ['view', 'export'],
     audit: ['view', 'logs']
@@ -88,7 +88,6 @@ export const MODULE_PERMISSIONS = {
     users: [],
     directions: ['create', 'edit', 'delete', 'view'],
     form_f1: ['view', 'download'],
-    files: [],
   },
   [ROLES.VISADOR]: {
     dashboard: ['view'],
@@ -96,24 +95,20 @@ export const MODULE_PERMISSIONS = {
     projects: ['create', 'edit', 'delete', 'view'],
     form_f1: ['view', 'download'],
     users: [],
-    files: [],
   },
   [ROLES.ENCARGADO_PRESUPUESTOS]: {
     form_f1: ['create', 'edit', 'delete', 'view', 'upload', 'download', 'remove'],
     users: [],
-    files: [],
   },
   [ROLES.SUBROGANTE_ENCARGADO]: {
     form_f1: ['create', 'edit', 'delete', 'view', 'upload', 'download', 'remove'],
     users: [],
-    files: [],
   },
   [ROLES.DIRECTOR]: {
     dashboard: ['view'],
     purchase_plans: ['create', 'edit', 'view', 'send', 'export'],
     projects: ['create', 'edit', 'delete', 'view', 'verify'],
     form_f1: ['view', 'download'],
-    files: [],
     users: []
   },
   [ROLES.SUBROGANTE_DIRECTOR]: {
@@ -121,7 +116,6 @@ export const MODULE_PERMISSIONS = {
     purchase_plans: ['create', 'edit', 'view', 'send', 'export'],
     projects: ['create', 'edit', 'view', 'verify'],
     form_f1: ['view', 'download'],
-    files: [],
     users: []
   },
   [ROLES.JEFATURA]: {
@@ -129,7 +123,6 @@ export const MODULE_PERMISSIONS = {
     purchase_plans: ['view'],
     projects: ['create', 'edit', 'view', 'verify'],
     form_f1: [],
-    files: [],
     users: []
   },
   [ROLES.SUBROGANTE_JEFATURA]: {
@@ -137,7 +130,6 @@ export const MODULE_PERMISSIONS = {
     purchase_plans: ['view'],
     projects: ['create', 'edit', 'view', 'verify'],
     form_f1: [],
-    files: [],
     users: []
   }
 } as const;
@@ -255,12 +247,7 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { module: 'users' }
   },
-  {
-    path: 'files',
-    component: FilesComponent,
-    canActivate: [AuthGuard, RoleGuard],
-    data: { module: 'files' }
-  },
+
   {
     path: 'directions',
     component: DirectionsComponent,
@@ -405,7 +392,7 @@ export class NavigationComponent implements OnInit {
       projects: { route: 'projects', label: 'Proyectos' },
       form_f1: { route: 'form-f1', label: 'Formulario F1' },
       users: { route: 'users', label: 'Usuarios' },
-      files: { route: 'files', label: 'Archivos' },
+
       directions: { route: 'directions', label: 'Direcciones' }
     };
 

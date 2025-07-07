@@ -65,6 +65,6 @@ class AuthService
      */
     public function getAuthenticatedUser(): User
     {
-        return User::with('direction')->findOrFail(Auth::id());
+        return User::findOrFail(Auth::id());
     }
 }

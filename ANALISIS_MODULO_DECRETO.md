@@ -174,7 +174,7 @@ private function revertPurchasePlanStatusToApproved(PurchasePlan $purchasePlan)
 
 ### **6. Notificación por Email (DESPUÉS)**
 ```php
-// app/Http/Controllers/PurchasePlanController.php - uploadDecreto()
+// Nota: El controller PurchasePlanController ha sido eliminado del sistema
 public function uploadDecreto(UploadDecretoRequest $request): JsonResponse
 {
     try {

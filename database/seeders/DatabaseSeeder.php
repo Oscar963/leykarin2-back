@@ -14,20 +14,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // \App\Models\User::factory(10)->create();
-        $this->call(TypeUserSeeder::class);
         $this->call(RoleSeeder::class); 
         $this->call(PermissionSeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(TypePurchaseSeeder::class);
-        $this->call(TypeProjectSeeder::class);
-        $this->call(StatusItemPurchasesSeeder::class);
-        $this->call(PublicationMonthSeeder::class);
-        
-        // Sistema de modificaciones
-        $this->call(ModificationTypeSeeder::class);
-        $this->call(ModificationPermissionSeeder::class);
-        
-        // Corregir usuarios jerárquicos para que cumplan la regla de dirección única
-        $this->call(FixHierarchicalUserDirectionsSeeder::class);
+        $this->call(UserSeeder::class);       
     }
 }

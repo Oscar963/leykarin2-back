@@ -19,12 +19,7 @@
 | DELETE    | api/directions/{direction}/remove-users                 | directions.remove-users                |
 | GET|HEAD  | api/directions/{direction}/users                        | directions.users                       |
 | GET|HEAD  | api/directions/{direction}/users-by-role                | directions.users-by-role               |
-| GET|HEAD  | api/files                                               | files.index                            |
-| POST      | api/files                                               | files.store                            |
-| GET|HEAD  | api/files/{file}                                        | files.show                             |
-| PUT|PATCH | api/files/{file}                                        | files.update                           |
-| DELETE    | api/files/{file}                                        | files.destroy                          |
-| GET|HEAD  | api/files/{id}/download                                 | generated::CcZ3NcC1Yi5YUIfV            |
+
 | POST      | api/forgot-password                                     | generated::i4UUzckNm73F19LY            |
 | GET|HEAD  | api/form-f1                                             | form-f1.index                          |
 | POST      | api/form-f1                                             | form-f1.store                          |
