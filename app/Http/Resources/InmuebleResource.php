@@ -42,15 +42,15 @@ class InmuebleResource extends JsonResource
             // Links for HATEOAS
             '_links' => [
                 'self' => [
-                    'href' => route('inmuebles.show', $this->id),
+                    'href' => url("/api/v1/inmuebles/{$this->id}"),
                     'method' => 'GET'
                 ],
                 'update' => [
-                    'href' => route('inmuebles.update', $this->id),
+                    'href' => url("/api/v1/inmuebles/{$this->id}"),
                     'method' => 'PUT'
                 ],
                 'delete' => [
-                    'href' => route('inmuebles.destroy', $this->id),
+                    'href' => url("/api/v1/inmuebles/{$this->id}"),
                     'method' => 'DELETE'
                 ]
             ]
