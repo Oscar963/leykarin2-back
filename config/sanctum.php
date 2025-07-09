@@ -20,7 +20,9 @@ return [
         '127.0.0.1',
         '127.0.0.1:8000',
         '127.0.0.1:4200',
-        '::1'
+        '::1',
+        'bienesinmuebles.imaarica.cl',
+        '*.imaarica.cl'
     ],
 
     /*
