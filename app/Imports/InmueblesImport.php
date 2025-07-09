@@ -217,16 +217,16 @@ class InmueblesImport implements
 
         try {
             // Verificar duplicados
-            if ($this->isDuplicate($row)) {
-                $this->errors[] = [
-                    'row' => $this->currentRow,
-                    'error' => 'DUPLICADO: Ya existe un inmueble con el mismo número o descripción.',
-                    'data' => $row
-                ];
-                $this->duplicatesCount++;
-                $this->skippedCount++;
-                return null;
-            }
+            // if ($this->isDuplicate($row)) {
+            //     $this->errors[] = [
+            //         'row' => $this->currentRow,
+            //         'error' => 'DUPLICADO: Ya existe un inmueble con el mismo número o descripción.',
+            //         'data' => $row
+            //     ];
+            //     $this->duplicatesCount++;
+            //     $this->skippedCount++;
+            //     return null;
+            // }
 
             // Limpiar y preparar datos
             $cleanedData = $this->cleanRowData($row);
