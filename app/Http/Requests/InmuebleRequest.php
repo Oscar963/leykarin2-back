@@ -22,17 +22,26 @@ class InmuebleRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'numero' => 'required|string|max:255',
-            'descripcion' => 'required|string|max:1000',
-            'calle' => 'required|string|max:255',
+            'numero' => 'required|max:255',
+            'descripcion' => 'required|max:1000',
+            'calle' => 'required|max:255',
+            'numeracion' => 'required|max:255',
+            'lote_sitio' => 'nullable|max:255',
+            'manzana' => 'nullable|max:255',
+            'poblacion_villa' => 'required|max:255',
+            'foja' => 'required|max:255',
+            'inscripcion_numero' => 'required|max:255',
+            'inscripcion_anio' => 'required|max:255',
+            'rol_avaluo' => 'nullable|max:255',
+            'superficie' => 'nullable|max:255',
+            'deslinde_norte' => 'nullable|max:255',
+            'deslinde_sur' => 'nullable|max:255',
+            'deslinde_este' => 'nullable|max:255',
+            'deslinde_oeste' => 'nullable|max:255',
+            'decreto_incorporacion' => 'nullable|max:255',
+            'decreto_destinacion' => 'nullable|max:255',
+            'observaciones' => 'nullable|max:1000',
         ];
-
-        // Add unique validation for numero when creating
-        if ($this->isMethod('POST')) {
-            $rules['numero'] .= '|unique:inmuebles,numero';
-        } else {
-            $rules['numero'] .= '|unique:inmuebles,numero,' . $this->inmueble->id;
-        }
 
         return $rules;
     }
@@ -42,18 +51,7 @@ class InmuebleRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'numero.required' => 'El número del inmueble es obligatorio.',
-            'numero.string' => 'El número debe ser una cadena de texto.',
-            'numero.max' => 'El número no puede tener más de 255 caracteres.',
-            'numero.unique' => 'Ya existe un inmueble con este número.',
-            'descripcion.required' => 'La descripción es obligatoria.',
-            'descripcion.string' => 'La descripción debe ser una cadena de texto.',
-            'descripcion.max' => 'La descripción no puede tener más de 1000 caracteres.',
-            'calle.required' => 'La calle es obligatoria.',
-            'calle.string' => 'La calle debe ser una cadena de texto.',
-            'calle.max' => 'La calle no puede tener más de 255 caracteres.',
-        ];
+        return [];
     }
 
     /**
@@ -61,11 +59,7 @@ class InmuebleRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return [
-            'numero' => 'número del inmueble',
-            'descripcion' => 'descripción',
-            'calle' => 'calle',
-        ];
+        return [];
     }
 
     /**
@@ -97,4 +91,4 @@ class InmuebleRequest extends FormRequest
             'calle' => trim($this->calle),
         ]);
     }
-} 
+}

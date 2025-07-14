@@ -38,39 +38,6 @@ class InmuebleResource extends JsonResource
             'observaciones' => $this->observaciones,
             'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
-
-            // Links for HATEOAS
-            '_links' => [
-                'self' => [
-                    'href' => url("/api/v1/inmuebles/{$this->id}"),
-                    'method' => 'GET'
-                ],
-                'update' => [
-                    'href' => url("/api/v1/inmuebles/{$this->id}"),
-                    'method' => 'PUT'
-                ],
-                'delete' => [
-                    'href' => url("/api/v1/inmuebles/{$this->id}"),
-                    'method' => 'DELETE'
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Get additional data that should be returned with the resource array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function with($request)
-    {
-        return [
-            'meta' => [
-                'resource_type' => 'inmueble',
-                'api_version' => 'v1',
-                'timestamp' => now()->toISOString()
-            ]
         ];
     }
 }
