@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
         $gestorContenido = User::updateOrCreate(
             ['email' => 'gestor.contenido@demo.com'],
             [
-                'rut' => '87654321-9',
+                'rut' => '17323866-5',
                 'name' => 'Gestor',
                 'paternal_surname' => 'Contenido',
                 'maternal_surname' => 'Demo',
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
         $gestorContenido2 = User::updateOrCreate(
             ['email' => 'gestor.contenido2@demo.com'],
             [
-                'rut' => '11223344-5',
+                'rut' => '30294724-4',
                 'name' => 'Gestor',
                 'paternal_surname' => 'Contenido',
                 'maternal_surname' => 'Demo 2',
