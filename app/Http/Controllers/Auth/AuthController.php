@@ -222,30 +222,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/logout",
-     *      operationId="logout",
-     *      tags={"Autenticación"},
-     *      summary="Cerrar sesión en el sistema",
-     *      description="Cierra la sesión del usuario autenticado",
-     *      security={{"sanctum":{}}},
-     *      @OA\Response(
-     *          response=200,
-     *          description="Logout exitoso",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Cerró sesión exitosamente")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="No autenticado",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
-     *          )
-     *      )
-     * )
-     */
     public function logout(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -287,40 +263,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/user",
-     *      operationId="user",
-     *      tags={"Autenticación"},
-     *      summary="Obtener información del usuario autenticado",
-     *      description="Retorna la información completa del usuario autenticado",
-     *      security={{"sanctum":{}}},
-     *      @OA\Response(
-     *          response=200,
-     *          description="Información del usuario",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example=1),
-     *                  @OA\Property(property="name", type="string", example="Juan"),
-     *                  @OA\Property(property="rut", type="string", example="12345678-9"),
-     *                  @OA\Property(property="email", type="string", example="juan@example.com"),
-     *                  @OA\Property(property="status", type="boolean", example=true),
-     *                  @OA\Property(property="direction", type="object"),
-     *                  @OA\Property(property="direction_id", type="integer", example=1),
-     *                  @OA\Property(property="roles", type="array", @OA\Items(type="string")),
-     *                  @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
-     *              )
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="No autenticado",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
-     *          )
-     *      )
-     * )
-     */
     public function user(): JsonResponse
     {
         $user = Auth::user();
@@ -348,36 +290,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/permissions",
-     *      operationId="permissions",
-     *      tags={"Autenticación"},
-     *      summary="Obtener permisos del usuario autenticado",
-     *      description="Retorna los roles y permisos del usuario autenticado",
-     *      security={{"sanctum":{}}},
-     *      @OA\Response(
-     *          response=200,
-     *          description="Permisos del usuario",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="user", type="object",
-     *                  @OA\Property(property="name", type="string", example="Juan"),
-     *                  @OA\Property(property="email", type="string", example="juan@example.com"),
-     *                  @OA\Property(property="rut", type="string", example="12345678-9")
-     *              ),
-     *              @OA\Property(property="roles", type="array", @OA\Items(type="string")),
-     *              @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="No autenticado",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
-     *          )
-     *      )
-     * )
-     */
     public function permissions(): JsonResponse
     {
         $user = Auth::user();
@@ -399,30 +311,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/roles",
-     *      operationId="roles",
-     *      tags={"Autenticación"},
-     *      summary="Obtener roles del usuario autenticado",
-     *      description="Retorna los roles del usuario autenticado",
-     *      security={{"sanctum":{}}},
-     *      @OA\Response(
-     *          response=200,
-     *          description="Roles del usuario",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="roles", type="array", @OA\Items(type="string"))
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="No autenticado",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
-     *          )
-     *      )
-     * )
-     */
     public function roles(): JsonResponse
     {
         $user = Auth::user();

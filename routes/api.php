@@ -24,7 +24,7 @@ use App\Http\Controllers\InmuebleController;
 
 // Public routes
 Route::prefix('v1')->group(function () {
-    
+
     // Health check
     Route::get('/health', function () {
         return response()->json([
@@ -36,17 +36,14 @@ Route::prefix('v1')->group(function () {
 
     // Authentication routes
     Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
         Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
-        Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,10');
+        Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:3,10');
     });
 
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
-        
         // User management
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'index']);
@@ -61,25 +58,15 @@ Route::prefix('v1')->group(function () {
         // Inmuebles (Properties) - RESTful CRUD
         Route::prefix('inmuebles')->group(function () {
             // CRUD operations (RESTful)
-            Route::get('/', [InmuebleController::class, 'index']);
-            Route::post('/', [InmuebleController::class, 'store']);
-            Route::get('/{inmueble}', [InmuebleController::class, 'show']);
-            Route::put('/{inmueble}', [InmuebleController::class, 'update']);
-            Route::patch('/{inmueble}', [InmuebleController::class, 'update']);
-            Route::delete('/{inmueble}', [InmuebleController::class, 'destroy']);
-            
-            // Bulk operations
-            Route::post('/bulk', [InmuebleController::class, 'bulkStore']);
-            Route::put('/bulk', [InmuebleController::class, 'bulkUpdate']);
-            Route::delete('/bulk', [InmuebleController::class, 'bulkDestroy']);
-            
+            Route::apiResource('inmuebles', InmuebleController::class);
+
             // Search and filters
             Route::get('/search', [InmuebleController::class, 'search']);
             Route::get('/filter', [InmuebleController::class, 'filter']);
-            
+
             // Statistics
             Route::get('/statistics', [InmuebleController::class, 'statistics']);
-            
+
             // Import/Export operations
             Route::prefix('import')->group(function () {
                 Route::get('/template', [InmuebleImportController::class, 'downloadTemplate']);
@@ -89,7 +76,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('/statistics', [InmuebleImportController::class, 'getImportStatistics']);
                 Route::delete('/{importId}', [InmuebleImportController::class, 'cancelImport']);
             });
-            
+
             // Import History
             Route::prefix('import-history')->group(function () {
                 Route::get('/', [ImportHistoryController::class, 'index']);
@@ -102,7 +89,7 @@ Route::prefix('v1')->group(function () {
                 Route::post('/export', [ImportHistoryController::class, 'export']);
                 Route::delete('/{importId}', [ImportHistoryController::class, 'destroy']);
             });
-            
+
             Route::prefix('export')->group(function () {
                 Route::get('/', [InmuebleController::class, 'export']);
                 Route::post('/custom', [InmuebleController::class, 'customExport']);
