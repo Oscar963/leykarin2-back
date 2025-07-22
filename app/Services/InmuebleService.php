@@ -12,7 +12,7 @@ class InmuebleService
         return Inmueble::orderBy('created_at', 'DESC')->get();
     }
 
-    public function getAllInmueblesByQuery(?string $query, int $perPage = 15, array $filters = []): LengthAwarePaginator
+    public function getAllInmueblesByQuery(?string $query, ?int $perPage = 15, ?array $filters = []): LengthAwarePaginator
     {
         $queryBuilder = Inmueble::orderBy('created_at', 'DESC');
 

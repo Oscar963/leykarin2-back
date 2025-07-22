@@ -10,6 +10,7 @@ use App\Http\Controllers\WebController;
 use App\Http\Controllers\InmuebleImportController;
 use App\Http\Controllers\ImportHistoryController;
 use App\Http\Controllers\InmuebleController;
+use App\Http\Controllers\ModulesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,13 +27,13 @@ use App\Http\Controllers\InmuebleController;
 Route::prefix('v1')->group(function () {
 
     // Health check
-    Route::get('/health', function () {
-        return response()->json([
-            'status' => 'healthy',
-            'timestamp' => now()->toISOString(),
-            'version' => '1.0.0'
-        ]);
-    });
+    // Route::get('/health', function () {
+    //     return response()->json([
+    //         'status' => 'healthy',
+    //         'timestamp' => now()->toISOString(),
+    //         'version' => '1.0.0'
+    //     ]);
+    // });
 
     // Authentication routes
     Route::prefix('auth')->group(function () {
@@ -55,46 +56,23 @@ Route::prefix('v1')->group(function () {
             Route::patch('/{user}/password', [UserController::class, 'updatePassword']);
         });
 
-        // Inmuebles (Properties) - RESTful CRUD
-        Route::prefix('inmuebles')->group(function () {
-            // CRUD operations (RESTful)
-            Route::apiResource('inmuebles', InmuebleController::class);
-
-            // Search and filters
-            Route::get('/search', [InmuebleController::class, 'search']);
-            Route::get('/filter', [InmuebleController::class, 'filter']);
-
-            // Statistics
-            Route::get('/statistics', [InmuebleController::class, 'statistics']);
-
-            // Import/Export operations
-            Route::prefix('import')->group(function () {
-                Route::get('/template', [InmuebleImportController::class, 'downloadTemplate']);
-                Route::get('/column-mapping', [InmuebleImportController::class, 'getColumnMapping']);
-                Route::post('/preview', [InmuebleImportController::class, 'preview']);
-                Route::post('/', [InmuebleImportController::class, 'import']);
-                Route::get('/statistics', [InmuebleImportController::class, 'getImportStatistics']);
-                Route::delete('/{importId}', [InmuebleImportController::class, 'cancelImport']);
-            });
-
-            // Import History
-            Route::prefix('import-history')->group(function () {
-                Route::get('/', [ImportHistoryController::class, 'index']);
-                Route::get('/statistics', [ImportHistoryController::class, 'statistics']);
-                Route::get('/recent-summary', [ImportHistoryController::class, 'recentSummary']);
-                Route::get('/{importId}', [ImportHistoryController::class, 'show']);
-                Route::get('/{importId}/versions', [ImportHistoryController::class, 'versionHistory']);
-                Route::post('/{importId}/versions', [ImportHistoryController::class, 'createVersion']);
-                Route::post('/{importId}/rollback', [ImportHistoryController::class, 'rollback']);
-                Route::post('/export', [ImportHistoryController::class, 'export']);
-                Route::delete('/{importId}', [ImportHistoryController::class, 'destroy']);
-            });
-
-            Route::prefix('export')->group(function () {
-                Route::get('/', [InmuebleController::class, 'export']);
-                Route::post('/custom', [InmuebleController::class, 'customExport']);
-            });
+        // Roles, Permissions, Modules
+        Route::get('/roles', function () {
+            $roles = \Spatie\Permission\Models\Role::all(['id', 'name']);
+            return response()->json(['roles' => $roles], 200);
         });
+        Route::get('/permissions', function () {
+            $permissions = \Spatie\Permission\Models\Permission::all(['id', 'name']);
+            return response()->json(['permissions' => $permissions], 200);
+        });
+        Route::get('/modules', [\App\Http\Controllers\ModulesController::class, 'index']);
+        Route::get('/user/roles', [\App\Http\Controllers\Auth\AuthController::class, 'roles']);
+        Route::get('/user/permissions', [\App\Http\Controllers\Auth\AuthController::class, 'permissions']);
+
+        // Inmuebles
+        Route::apiResource('inmuebles', InmuebleController::class);
+        Route::get('inmuebles/import/template', [InmuebleImportController::class, 'downloadTemplate'])->name('inmuebles.import.template');
+        Route::post('inmuebles/import', [InmuebleImportController::class, 'import'])->name('inmuebles.import');
 
         // Activity logs
         Route::prefix('activity-logs')->group(function () {
