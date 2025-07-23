@@ -67,7 +67,7 @@ class InmuebleImportController extends Controller
             // Validate request
             $this->validateImportRequest($request);
             
-            $file = $request->file('excel_file');
+            $file = $request->file('file');
 
             // Crear registro de historial
             $importHistory = $this->importHistoryService->createImportHistory(
@@ -175,16 +175,16 @@ class InmuebleImportController extends Controller
     private function validateImportRequest(Request $request): void
     {
         $request->validate([
-            'excel_file' => [
+            'file' => [
                 'required',
                 'file',
                 'mimes:' . implode(',', config('import.allowed_types', ['xlsx', 'xls', 'csv'])),
                 'max:' . config('import.max_file_size', 10240)
             ]
         ], [
-            'excel_file.required' => 'Debe seleccionar un archivo para importar.',
-            'excel_file.mimes' => 'El archivo debe ser de tipo: ' . implode(', ', config('import.allowed_types', ['xlsx', 'xls', 'csv'])),
-            'excel_file.max' => 'El archivo no puede ser mayor a ' . (config('import.max_file_size', 10240) / 1024) . 'MB.'
+            'file.required' => 'Debe seleccionar un archivo para importar.',
+            'file.mimes' => 'El archivo debe ser de tipo: ' . implode(', ', config('import.allowed_types', ['xlsx', 'xls', 'csv'])),
+            'file.max' => 'El archivo no puede ser mayor a ' . (config('import.max_file_size', 10240) / 1024) . 'MB.'
         ]);
     }
 
@@ -231,7 +231,7 @@ class InmuebleImportController extends Controller
             $allowedTypes = config('import.allowed_types', ['xlsx', 'xls', 'csv']);
             
             $request->validate([
-                'excel_file' => [
+                'file' => [
                     'required',
                     'file',
                     'mimes:' . implode(',', $allowedTypes),
@@ -239,7 +239,7 @@ class InmuebleImportController extends Controller
                 ]
             ]);
 
-            $file = $request->file('excel_file');
+            $file = $request->file('file');
             
             // Leer solo las primeras filas para preview (configurable)
             $previewRows = config('import.preview.rows', 5);
