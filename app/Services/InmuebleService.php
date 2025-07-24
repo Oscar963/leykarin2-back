@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Imports\InmueblesImport;
 use App\Models\Inmueble;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InmuebleService
 {
@@ -60,14 +62,14 @@ class InmuebleService
         return $inmueble;
     }
 
-    public function getInmuebleById($id)
+    public function getInmuebleById(int $id): Inmueble
     {
         return Inmueble::findOrFail($id);
     }
 
-    public function updateInmueble($id, array $data)
+    public function updateInmueble(Inmueble $inmueble, array $data): Inmueble
     {
-        $inmueble = $this->getInmuebleById($id);
+        $inmueble = $this->getInmuebleById($inmueble->id);
 
         $inmueble->numero = $data['numero'] ?? '';
         $inmueble->descripcion = $data['descripcion'] ?? '';
@@ -94,9 +96,8 @@ class InmuebleService
         return $inmueble;
     }
 
-    public function deleteInmueble($id)
+    public function deleteInmueble(Inmueble $inmueble): Inmueble
     {
-        $inmueble = $this->getInmuebleById($id);
         $inmueble->delete();
 
         return $inmueble;

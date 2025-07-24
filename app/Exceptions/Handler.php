@@ -5,20 +5,15 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array<int, class-string<Throwable>>
-     */
-    protected $dontReport = [
-        //
-    ];
-
     /**
      * A list of the inputs that are never flashed for validation exceptions.
      *
@@ -37,47 +32,77 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        // Se aplica esta lógica solo si la petición espera una respuesta JSON (típicamente APIs)
+        $this->renderable(function (Throwable $e, $request) {
+            if ($request->wantsJson()) {
+                return $this->handleApiException($request, $e);
+            }
         });
     }
 
-    protected function unauthenticated($request, AuthenticationException $exception)
+    /**
+     * Maneja las excepciones para las peticiones de API.
+     */
+    protected function handleApiException($request, Throwable $exception)
     {
-        return response()->json([
-            'status' => 401,
-            'error' => [
-                'message' => 'Unauthenticated.'
-            ]
-        ], 401);
-    }
+        $exception = $this->prepareException($exception);
 
-    public function render($request, Throwable $exception)
-    {
         if ($exception instanceof AuthenticationException) {
-            return $this->unauthenticated($request, $exception);
+            return $this->jsonResponse('No autenticado.', 401);
         }
 
         if ($exception instanceof AuthorizationException) {
-            return response()->json([
-                'status' => 403,
-                'error' => [
-                    'message' => 'Forbidden.'
-                ]
-            ], 403);
+            return $this->jsonResponse('No tienes permiso para realizar esta acción.', 403);
+        }
+
+        if ($exception instanceof ModelNotFoundException || $exception instanceof NotFoundHttpException) {
+            return $this->jsonResponse('El recurso solicitado no fue encontrado.', 404);
+        }
+
+        if ($exception instanceof ValidationException) {
+            return $this->jsonResponse(
+                'Los datos proporcionados no son válidos.',
+                422,
+                ['details' => $exception->errors()]
+            );
         }
 
         if ($exception instanceof ThrottleRequestsException) {
-            return response()->json([
-                'status' => 429,
-                'error' => [
-                    'message' => 'Demasiados intentos. Por favor, inténtalo de nuevo más tarde.'
-                ]
-            ], 429);
+            return $this->jsonResponse('Demasiados intentos. Por favor, inténtalo de nuevo más tarde.', 429);
         }
 
-        // ...otros errores...
+        if ($exception instanceof ExcelValidationException) {
+            return $this->jsonResponse(
+                'El archivo Excel no cumple con el formato requerido.',
+                422,
+                ['details' => $exception->errors()]
+            );
+        }
 
-        return parent::render($request, $exception);
+        // Para cualquier otra excepción, se devuelve un error 500
+        $message = config('app.debug')
+            ? $exception->getMessage()
+            : 'Error interno del servidor.';
+
+        return $this->jsonResponse($message, 500);
+    }
+
+    /**
+     * Helper para crear una respuesta JSON estandarizada.
+     */
+    protected function jsonResponse(string $message, int $statusCode, array $data = [])
+    {
+        $response = [
+            'status' => $statusCode,
+            'error' => [
+                'message' => $message,
+            ]
+        ];
+
+        if (!empty($data)) {
+            $response['error'] = array_merge($response['error'], $data);
+        }
+
+        return response()->json($response, $statusCode);
     }
 }

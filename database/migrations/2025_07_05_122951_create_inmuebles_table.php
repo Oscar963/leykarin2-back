@@ -17,7 +17,7 @@ class CreateInmueblesTable extends Migration
             $table->id();
 
             $table->string('numero')->nullable(); // N°
-            $table->string('descripcion')->nullable();
+            $table->text('descripcion')->nullable();
             $table->string('calle')->nullable(); // AVENIDA/CALLE/PASAJE
             $table->string('numeracion')->nullable();
             $table->string('lote_sitio')->nullable();

@@ -10,14 +10,13 @@ class ImportLogService
     /**
      * Log de inicio de importación
      */
-    public function logImportStart(int $userId, string $fileName, int $fileSize): void
+    public function logImportStart(string $fileName, int $fileSize): void
     {
         if (!config('import.logging.enabled', true)) {
             return;
         }
 
         Log::info('Importación iniciada', [
-            'user_id' => $userId,
             'file_name' => $this->sanitizeFileName($fileName),
             'file_size_kb' => round($fileSize / 1024, 2),
             'timestamp' => now()->toISOString(),
@@ -29,14 +28,13 @@ class ImportLogService
     /**
      * Log de finalización de importación
      */
-    public function logImportComplete(int $userId, array $stats): void
+    public function logImportComplete(array $stats): void
     {
         if (!config('import.logging.enabled', true)) {
             return;
         }
 
         Log::info('Importación completada', [
-            'user_id' => $userId,
             'imported_count' => $stats['imported'] ?? 0,
             'skipped_count' => $stats['skipped'] ?? 0,
             'duplicates_count' => $stats['duplicates'] ?? 0,
@@ -49,14 +47,13 @@ class ImportLogService
     /**
      * Log de error de importación
      */
-    public function logImportError(int $userId, string $error, string $fileName = null): void
+    public function logImportError(string $error, string $fileName = null): void
     {
         if (!config('import.logging.enabled', true)) {
             return;
         }
 
         Log::error('Error en importación', [
-            'user_id' => $userId,
             'error_message' => $this->sanitizeErrorMessage($error),
             'file_name' => $fileName ? $this->sanitizeFileName($fileName) : null,
             'timestamp' => now()->toISOString(),
@@ -67,14 +64,13 @@ class ImportLogService
     /**
      * Log de validación de archivo
      */
-    public function logFileValidation(int $userId, string $fileName, bool $isValid, array $errors = []): void
+    public function logFileValidation(string $fileName, bool $isValid, array $errors = []): void
     {
         if (!config('import.logging.enabled', true)) {
             return;
         }
 
         Log::info('Validación de archivo', [
-            'user_id' => $userId,
             'file_name' => $this->sanitizeFileName($fileName),
             'is_valid' => $isValid,
             'error_count' => count($errors),
@@ -84,7 +80,6 @@ class ImportLogService
         // Log detallado de errores solo en desarrollo
         if (config('app.debug') && !empty($errors)) {
             Log::debug('Errores de validación', [
-                'user_id' => $userId,
                 'errors' => array_slice($errors, 0, 5) // Solo primeros 5 errores
             ]);
         }
@@ -100,7 +95,6 @@ class ImportLogService
         }
 
         Log::warning('Rate limit excedido', [
-            'user_id' => $userId,
             'timestamp' => now()->toISOString(),
             'ip_address' => request()->ip(),
             'user_agent' => $this->sanitizeUserAgent(request()->userAgent())
@@ -110,14 +104,13 @@ class ImportLogService
     /**
      * Log de bloqueo de usuario
      */
-    public function logUserBlocked(int $userId, string $reason): void
+    public function logUserBlocked(string $reason): void
     {
         if (!config('import.logging.enabled', true)) {
             return;
         }
 
         Log::warning('Usuario bloqueado', [
-            'user_id' => $userId,
             'reason' => $reason,
             'timestamp' => now()->toISOString(),
             'ip_address' => request()->ip()
