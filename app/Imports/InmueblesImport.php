@@ -7,7 +7,10 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Events\BeforeImport;
 use Illuminate\Validation\ValidationException;
-class InmueblesImport implements ToModel, WithHeadingRow
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\WithValidation;
+
+class InmueblesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithValidation
 {
     protected $expectedHeaders = [
         'numero',
@@ -60,27 +63,32 @@ class InmueblesImport implements ToModel, WithHeadingRow
                 ]);
             }
         }
-        
+
+        // Limpia los valores: si es null, lo convierte a ""
+        $clean = function ($value) {
+            return is_null($value) ? '' : $value;
+        };
+
         return new Inmueble([
-            'numero'     => $row['numero'],
-            'descripcion'    => $row['descripcion'],
-            'calle'    => $row['calle'],
-            'numeracion'    => $row['numeracion'],
-            'lote_sitio'    => $row['lote_sitio'],
-            'manzana'    => $row['manzana'],
-            'poblacion_villa'    => $row['poblacion_villa'],
-            'foja'    => $row['foja'],
-            'inscripcion_numero'    => $row['inscripcion_numero'],
-            'inscripcion_anio'    => $row['inscripcion_anio'],
-            'rol_avaluo'    => $row['rol_avaluo'],
-            'superficie'    => $row['superficie'],
-            'deslinde_norte'    => $row['deslinde_norte'],
-            'deslinde_sur'    => $row['deslinde_sur'],
-            'deslinde_este'    => $row['deslinde_este'],
-            'deslinde_oeste'    => $row['deslinde_oeste'],
-            'decreto_incorporacion'    => $row['decreto_incorporacion'],
-            'decreto_destinacion'    => $row['decreto_destinacion'],
-            'observaciones'    => $row['observaciones'],
+            'numero'     => $clean($row['numero']),
+            'descripcion'    => $clean($row['descripcion']),
+            'calle'    => $clean($row['calle']),
+            'numeracion'    => $clean($row['numeracion']),
+            'lote_sitio'    => $clean($row['lote_sitio']),
+            'manzana'    => $clean($row['manzana']),
+            'poblacion_villa'    => $clean($row['poblacion_villa']),
+            'foja'    => $clean($row['foja']),
+            'inscripcion_numero'    => $clean($row['inscripcion_numero']),
+            'inscripcion_anio'    => $clean($row['inscripcion_anio']),
+            'rol_avaluo'    => $clean($row['rol_avaluo']),
+            'superficie'    => $clean($row['superficie']),
+            'deslinde_norte'    => $clean($row['deslinde_norte']),
+            'deslinde_sur'    => $clean($row['deslinde_sur']),
+            'deslinde_este'    => $clean($row['deslinde_este']),
+            'deslinde_oeste'    => $clean($row['deslinde_oeste']),
+            'decreto_incorporacion'    => $clean($row['decreto_incorporacion']),
+            'decreto_destinacion'    => $clean($row['decreto_destinacion']),
+            'observaciones'    => $clean($row['observaciones']),
         ]);
     }
 
@@ -89,5 +97,10 @@ class InmueblesImport implements ToModel, WithHeadingRow
         return [
             BeforeImport::class => [self::class, 'beforeImport'],
         ];
+    }
+
+    public function rules(): array
+    {
+        return [];
     }
 }

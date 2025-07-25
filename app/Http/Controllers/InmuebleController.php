@@ -14,6 +14,10 @@ use App\Models\Inmueble;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+
 class InmuebleController extends Controller
 {
     use LogsActivity;
@@ -35,7 +39,11 @@ class InmuebleController extends Controller
         $filters = $request->only('rol_avaluo', 'foja');
         $inmuebles = $this->inmuebleService->getAllInmueblesByQuery($query, $perPage, $filters);
 
-        return InmuebleResource::collection($inmuebles)->response();
+        $metadata = [
+            'ultima_importacion' => '2025-07-23 15:30:00'
+        ];
+
+        return InmuebleResource::collection($inmuebles)->additional(['meta' => $metadata])->response();
     }
 
     /**
@@ -97,8 +105,20 @@ class InmuebleController extends Controller
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
-        Inmueble::truncate(); // Limpiar la tabla antes de importar
-        Excel::import(new InmueblesImport(), $request->file('file'));
+
+        try {
+            Excel::import(new InmueblesImport(), $request->file('file'), null, \Maatwebsite\Excel\Excel::XLSX, [
+                'startRow' => 1,
+            ]);
+        } catch (ExcelValidationException | ValidationException $e) {
+            throw $e;
+        }
+
+        DB::transaction(function () use ($request) {
+            Inmueble::truncate();
+            Excel::import(new InmueblesImport(), $request->file('file'));
+        });
+
         $count = Inmueble::count();
 
         return response()->json([
