@@ -3,13 +3,13 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class InmuebleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -18,10 +18,12 @@ class InmuebleRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * @return array
      */
     public function rules(): array
     {
-        $rules = [
+        return [
             'numero' => 'required|max:255',
             'descripcion' => 'required|max:1000',
             'calle' => 'required|max:255',
@@ -42,53 +44,5 @@ class InmuebleRequest extends FormRequest
             'decreto_destinacion' => 'nullable|max:255',
             'observaciones' => 'nullable|max:1000',
         ];
-
-        return $rules;
-    }
-
-    /**
-     * Get custom messages for validator errors.
-     */
-    public function messages(): array
-    {
-        return [];
-    }
-
-    /**
-     * Get custom attributes for validator errors.
-     */
-    public function attributes(): array
-    {
-        return [];
-    }
-
-    /**
-     * Handle a failed validation attempt.
-     */
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(
-            response()->json([
-                'error' => [
-                    'code' => 'VALIDATION_ERROR',
-                    'message' => 'Los datos proporcionados no son válidos.',
-                    'errors' => $validator->errors()
-                ],
-                'timestamp' => now()->toISOString()
-            ], 422)
-        );
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        // Trim whitespace from string fields
-        $this->merge([
-            'numero' => trim($this->numero),
-            'descripcion' => trim($this->descripcion),
-            'calle' => trim($this->calle),
-        ]);
     }
 }
