@@ -32,14 +32,10 @@ Route::prefix('v1')->group(function () {
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
         // User
-        Route::prefix('users')->group(function () {
-            Route::get('/me', [UserController::class, 'me']);
-            Route::get('/{user}', [UserController::class, 'show']);
-            Route::put('/{user}', [UserController::class, 'update']);
-            Route::delete('/{user}', [UserController::class, 'destroy']);
-            Route::patch('/{user}/profile', [UserController::class, 'updateProfile']);
-            Route::patch('/{user}/password', [UserController::class, 'updatePassword']);
-        });
+        Route::get('/users/me', [UserController::class, 'me'])->name('users.me');
+        Route::patch('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('users.updateProfile');
+        Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
+        Route::apiResource('users', UserController::class);
 
         // Inmuebles
         Route::apiResource('inmuebles', InmuebleController::class);

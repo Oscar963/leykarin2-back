@@ -3,160 +3,69 @@
 namespace App\Services;
 
 use App\Models\User;
-use Exception;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class UserService
 {
     /**
-     * Obtiene todos los usuarios
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Obtiene todos los usuarios ordenados por fecha de creación (descendente).
      */
     public function getAllUsers()
     {
-        return User::orderBy('created_at', 'DESC')->get();
+        return User::latest()->get();
     }
 
     /**
-     * Obtiene usuarios paginados con filtrado
-     *
-     * @param string|null $query Término de búsqueda
-     * @param int $perPage Número de elementos por página
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * Obtiene todos los usuarios con filtros y paginación.
      */
-    public function getAllUsersByQuery(?string $query, int $perPage = 15)
+    public function getAllUsersByQuery(?string $query, ?int $perPage = 15, ?array $filters = []): LengthAwarePaginator
     {
-        $queryBuilder = User::orderBy('created_at', 'DESC');
-
-        if ($query) {
-            $queryBuilder->where(function ($q) use ($query) {
-                $q->where('rut', 'LIKE', "%{$query}%")
-                    ->orWhere('name', 'LIKE', "%{$query}%")
+        return User::oldest('id')
+            ->when($query, function (Builder $q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
                     ->orWhere('paternal_surname', 'LIKE', "%{$query}%")
                     ->orWhere('maternal_surname', 'LIKE', "%{$query}%")
-                    ->orWhere('email', 'LIKE', "%{$query}%");
-            });
-        }
-
-        return $queryBuilder->paginate($perPage);
+                    ->orWhere('email', 'LIKE', "%{$query}%")
+                    ->orWhere('rut', 'LIKE', "%{$query}%");
+            })
+            ->when(!empty($filters), function (Builder $q) use ($filters) {
+                $q->where($filters);
+            })
+            ->paginate($perPage);
     }
 
     /**
-     * Obtiene un usuario por su ID
-     *
-     * @param int $id ID del usuario
-     * @return User
+     * Crea un nuevo usuario usando asignación masiva.
      */
-    public function getUserById($id)
+    public function createUser(array $data): User
+    {
+        return User::create($data);
+    }
+
+    /**
+     * Obtiene un usuario por su ID.
+     */
+    public function getUserById(int $id): User
     {
         return User::findOrFail($id);
     }
 
     /**
-     * Crea un nuevo usuario
-     *
-     * @param array $data Datos del usuario
-     * @return User
+     * Actualiza un usuario usando asignación masiva.
      */
-    public function createUser(array $data)
+    public function updateUser(User $user, array $data): User
     {
-        $user = new User();
-        $user->name = trim($data['name']);
-        $user->paternal_surname = trim($data['paternal_surname']);
-        $user->maternal_surname = trim($data['maternal_surname']);
-        $user->rut = trim($data['rut']);
-        $user->email = trim($data['email']);
-        $user->status = $data['status'];
-        $user->password = bcrypt($data['password']);
-        $user->save();
-
+        $user->update($data);
         return $user;
     }
 
     /**
-     * Actualiza un usuario existente
-     *
-     * @param int $id ID del usuario
-     * @param array $data Datos actualizados
-     * @return User
+     * Elimina un usuario.
      */
-    public function updateUser($id, array $data)
+    public function deleteUser(User $user): User
     {
-        $user = $this->getUserById($id);
-        $user->name = trim($data['name']);
-        $user->paternal_surname = trim($data['paternal_surname']);
-        $user->maternal_surname = trim($data['maternal_surname']);
-        $user->rut = trim($data['rut']);
-        $user->email = trim($data['email']);
-        $user->status = $data['status'];
-        $user->save();
-
-        return $user;
-    }
-
-    /**
-     * Elimina un usuario
-     *
-     * @param int $id ID del usuario
-     * @return void
-     */
-    public function deleteUser($id)
-    {
-        $user = $this->getUserById($id);
         $user->delete();
-    }
-
-    /**
-     * Restablece la contraseña de un usuario
-     *
-     * @param int $id ID del usuario
-     * @param array $data Datos de la contraseña
-     * @return void
-     */
-    public function resetUserPassword(int $id, array $data)
-    {
-        $user = $this->getUserById($id);
-        $user->password = bcrypt($data['password']);
-        $user->save();
-    }
-
-    /**
-     * Actualiza la contraseña de un usuario
-     *
-     * @param int $id ID del usuario
-     * @param array $data Datos de la contraseña
-     * @throws Exception Si la contraseña actual es incorrecta
-     * @return void
-     */
-    public function updateUserPassword(int $id, array $data)
-    {
-        $user = $this->getUserById($id);
-
-        if (!Hash::check($data['current_password'], $user->password)) {
-            throw new Exception('La contraseña actual es incorrecta.');
-        }
-
-        $user->password = bcrypt($data['new_password']);
-        $user->save();
-    }
-
-    /**
-     * Actualiza el perfil del usuario autenticado
-     *
-     * @param array $data Datos del perfil
-     * @return User
-     */
-    public function updateProfile(array $data)
-    {
-        $user = $this->getUserById(auth()->id());
-        $user->name = trim($data['name']);
-        $user->paternal_surname = trim($data['paternal_surname']);
-        $user->maternal_surname = trim($data['maternal_surname']);
-        $user->rut = trim($data['rut']);
-        $user->email = trim($data['email']);
-        $user->save();
-
         return $user;
     }
 }
