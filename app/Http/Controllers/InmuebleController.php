@@ -11,6 +11,7 @@ use App\Services\InmuebleService;
 use App\Services\ImportHistoriesService;
 use App\Http\Resources\InmuebleResource;
 use App\Imports\InmueblesImport;
+use App\Exports\InmueblesExport;
 use App\Models\Inmueble;
 use App\Models\ImportHistories;
 use Maatwebsite\Excel\Facades\Excel;
@@ -163,6 +164,14 @@ class InmuebleController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Exportar inmuebles a Excel.
+     */
+    public function export(): BinaryFileResponse
+    {
+        return Excel::download(new InmueblesExport(), 'inmuebles.xlsx');
     }
 
     /**

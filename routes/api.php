@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', UserController::class);
 
         // Inmuebles
+        Route::get('inmuebles/export', [InmuebleController::class, 'export'])->name('inmuebles.export');
         Route::apiResource('inmuebles', InmuebleController::class);
         Route::get('inmuebles/import/template', [InmuebleController::class, 'downloadTemplate'])->name('inmuebles.import.template');
         Route::post('inmuebles/import', [InmuebleController::class, 'import'])->name('inmuebles.import');
