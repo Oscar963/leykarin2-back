@@ -3,86 +3,98 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Rules\RutValidation;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\UserResource;
 use App\Services\SecurityLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): JsonResponse
+    protected $securityLogService;
+
+    public function __construct(SecurityLogService $securityLogService)
     {
-        // Ensure we get the data correctly from JSON or form
-        $data = $request->json()->all() ?: $request->all();
-        
-        if (empty($data)) {
-            return response()->json([
-                'status' => 422,
-                'error' => [
-                    'message' => 'No se recibieron datos. Verifique que está enviando JSON válido.'
-                ]
-            ], 422);
-        }
+        $this->securityLogService = $securityLogService;
+    }
 
-        // Create a new request with the parsed data for validation
-        $processedRequest = new Request($data);
-        $processedRequest->setJson($request->json());
-
-        $this->validateLogin($processedRequest);
-
-        $credentials = [
-            'rut' => $data['rut'] ?? null,
-            'password' => $data['password'] ?? null
-        ];
-        
-        $remember = $data['remember'] ?? false;
-
-        if (!Auth::attempt($credentials, $remember)) {
-            // Log intento fallido de login
-            SecurityLogService::logFailedLogin($credentials, $request);
+    /**
+     * Autentica al usuario e inicia una sesión.
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        if (!Auth::attempt($request->only('rut', 'password'), $request->boolean('remember'))) {
+            $this->securityLogService->logFailedLogin($request->only('rut', 'password'), $request);
             return $this->sendFailedLoginResponse();
         }
 
-        $user = Auth::user();
+        $request->session()->regenerate();
+
+        $user = $request->user();
 
         if (!$user->status) {
             Auth::logout();
-            // Log intento de login con cuenta suspendida
-            SecurityLogService::logSuspendedAccountLogin($user, $request);
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            $this->securityLogService->logSuspendedAccountLogin($user, $request);
             return $this->sendSuspendedAccountResponse();
         }
 
-        // Log login exitoso
-        SecurityLogService::logSuccessfulLogin($user, $request);
-
+        $this->securityLogService->logSuccessfulLogin($user, $request);
         return $this->sendSuccessfulLoginResponse($user);
     }
 
     /**
-     * Valida los datos de inicio de sesión
-     *
-     * @param Request $request
-     * @throws ValidationException
+     * Retorna los datos del usuario autenticado.
+     * Esta ruta debe estar protegida por el middleware 'auth:sanctum'.
      */
-    protected function validateLogin(Request $request): void
+    public function user(Request $request): UserResource
     {
-        $validator = Validator::make($request->all(), [
-            'rut' => ['required', 'string', new RutValidation()],
-            'password' => 'required|string',
-            'remember' => 'boolean'
-        ]);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
+        $user = $request->user()->load(['roles', 'permissions']);
+        return new UserResource($user);
     }
 
     /**
-     * Envía respuesta de error por credenciales incorrectas
+     * Cierra la sesión del usuario.
+     * Esta ruta debe estar protegida por el middleware 'auth:sanctum'.
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $this->securityLogService->logLogout($request->user(), $request);
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Cerró sesión exitosamente']);
+    }
+
+    /**
+     * Verifica si el usuario tiene una sesión activa.
+     */
+    public function isAuthenticated(): JsonResponse
+    {
+        return response()->json(['isAuthenticated' => Auth::check()]);
+    }
+
+    /**
+     * Envía respuesta de inicio de sesión exitoso
+     *
+     * @param User $user
+     * @return JsonResponse
+     */
+    protected function sendSuccessfulLoginResponse(User $user): JsonResponse
+    {
+        return response()->json([
+            'message' => "Bienvenido(a) al sistema {$user->name} {$user->paternal_surname}",
+            'user' => new UserResource($user->load(['roles', 'permissions']))
+        ]);
+    }
+
+    /**
+     * Envía respuesta de inicio de sesión fallido
      *
      * @return JsonResponse
      */
@@ -97,7 +109,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Envía respuesta de error por cuenta suspendida
+     * Envía respuesta de cuenta suspendida
      *
      * @return JsonResponse
      */
@@ -109,131 +121,5 @@ class AuthController extends Controller
                 'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.'
             ]
         ], 403);
-    }
-
-    /**
-     * Envía respuesta de inicio de sesión exitoso
-     *
-     * @param User $user
-     * @return JsonResponse
-     */
-    protected function sendSuccessfulLoginResponse(User $user): JsonResponse
-    {
-        // Para usar solo cookies, comenta esta línea:
-        // $token = $user->createToken('auth-token')->plainTextToken;
-
-        return response()->json([
-            'message' => "Bienvenido(a) al sistema {$user->name} {$user->paternal_surname}",
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email
-            ]
-            // Para usar solo cookies, elimina esta línea:
-            // 'token' => $token
-        ], 200);
-    }
-
-    public function logout(Request $request): JsonResponse
-    {
-        $user = Auth::user();
-        
-        // Log logout
-        if ($user) {
-            SecurityLogService::logLogout($user, $request);
-        }
-
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return response()->json([
-            'message' => 'Cerró sesión exitosamente'
-        ], 200);
-    }
-
-    /**
-     * @OA\Get(
-     *      path="/isAuthenticated",
-     *      operationId="isAuthenticated",
-     *      tags={"Autenticación"},
-     *      summary="Verificar si el usuario está autenticado",
-     *      description="Retorna true si el usuario está autenticado, false en caso contrario",
-     *      @OA\Response(
-     *          response=200,
-     *          description="Estado de autenticación",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="isAuthenticated", type="boolean", example=true)
-     *          )
-     *      )
-     * )
-     */
-    public function isAuthenticated(): JsonResponse
-    {
-        return response()->json([
-            'isAuthenticated' => Auth::check()
-        ], 200);
-    }
-
-    public function user(): JsonResponse
-    {
-        $user = Auth::user();
-        
-        if (!$user) {
-            return response()->json([
-                'message' => 'Usuario no autenticado'
-            ], 401);
-        }
-
-        $user->load(['roles', 'permissions']);
-
-        return response()->json([
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'paternal_surname' => $user->paternal_surname,
-                'maternal_surname' => $user->maternal_surname,
-                'rut' => $user->rut,
-                'email' => $user->email,
-                'status' => $user->status,
-                'roles' => $user->getRoleNames(),
-                'permissions' => $user->getAllPermissions()->pluck('name')
-            ]
-        ], 200);
-    }
-
-    public function permissions(): JsonResponse
-    {
-        $user = Auth::user();
-        
-        if (!$user) {
-            return response()->json([
-                'message' => 'Usuario no autenticado'
-            ], 401);
-        }
-
-        return response()->json([
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-                'rut' => $user->rut
-            ],
-            'roles' => $user->getRoleNames(),
-            'permissions' => $user->getAllPermissions()->pluck('name')
-        ], 200);
-    }
-
-    public function roles(): JsonResponse
-    {
-        $user = Auth::user();
-        
-        if (!$user) {
-            return response()->json([
-                'message' => 'Usuario no autenticado'
-            ], 401);
-        }
-
-        return response()->json([
-            'roles' => $user->getRoleNames()
-        ], 200);
     }
 }

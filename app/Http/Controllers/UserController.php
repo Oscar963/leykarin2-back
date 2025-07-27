@@ -9,7 +9,6 @@ use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\UserService;
-use Exception;
 
 class UserController extends Controller
 {
@@ -33,7 +32,8 @@ class UserController extends Controller
         $users = $this->userService->getAllUsersByQuery($query, $perPage, $filters);
 
         $metadata = [
-            'ultima_importacion' => '2025-07-25'
+            'active_users' => User::where('status', 1)->count(),
+            'suspended_users' => User::where('status', 0)->count(),
         ];
 
         return UserResource::collection($users)->additional(['meta' => $metadata])->response();
@@ -88,43 +88,5 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Usuario eliminado exitosamente'
         ], 200);
-    }
-
-    /**
-     * Obtener información del usuario autenticado actual.
-     */
-    public function me(): JsonResponse
-    {
-        try {
-            $user = auth()->user();
-
-            if (!$user) {
-                return response()->json([
-                    'message' => 'Usuario no autenticado'
-                ], 401);
-            }
-
-            // Cargar roles y permisos
-            $user->load(['roles', 'permissions']);
-
-            return response()->json([
-                'data' => [
-                    'name' => $user->name,
-                    'paternal_surname' => $user->paternal_surname,
-                    'maternal_surname' => $user->maternal_surname,
-                    'rut' => $user->rut,
-                    'email' => $user->email,
-                    'status' => $user->status,
-                    'roles' => $user->getRoleNames(),
-                    'permissions' => $user->getAllPermissions()->pluck('name'),
-                    'created_at' => $user->created_at,
-                    'updated_at' => $user->updated_at
-                ]
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al obtener información del usuario: ' . $e->getMessage()
-            ], 500);
-        }
     }
 }

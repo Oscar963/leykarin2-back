@@ -15,7 +15,10 @@ class UserResource extends JsonResource
     public function toArray($request)
     {
         $defaultData = parent::toArray($request);
-        $customData = [];
+        $customData = [
+            'roles' => $this->whenLoaded('roles', fn() => $this->getRoleNames()),
+            'permissions' => $this->whenLoaded('permissions', fn() => $this->getAllPermissions()->pluck('name')),
+        ];
         return array_merge($defaultData, $customData);
     }
 }

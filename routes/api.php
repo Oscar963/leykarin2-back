@@ -30,9 +30,11 @@ Route::prefix('v1')->group(function () {
     });
 
     // Protected routes
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
         // User
-        Route::get('/users/me', [UserController::class, 'me'])->name('users.me');
+        Route::get('/user', [AuthController::class, 'user'])->name('user');
+
+        // User
         Route::patch('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('users.updateProfile');
         Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
         Route::apiResource('users', UserController::class);

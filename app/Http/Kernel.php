@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         'log.rate.limit' => \App\Http\Middleware\LogRateLimitExceeded::class,
+        'active.user' => \App\Http\Middleware\EnsureUserIsActive::class,
     ];
 }

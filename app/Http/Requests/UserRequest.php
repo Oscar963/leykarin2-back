@@ -25,14 +25,21 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => 'required|max:255',
             'paternal_surname' => 'required|max:255',
             'maternal_surname' => 'required|max:255',
             'rut' => 'required|max:255',
             'email' => 'required|max:255',
             'status' => 'required|max:255',
-            'password' => ['required', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()],
         ];
+
+        if ($this->isMethod('post')) {
+            $rules['password'] = ['required', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()];
+        } else {
+            $rules['password'] = ['nullable', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()];
+        }
+
+        return $rules;
     }
 }
