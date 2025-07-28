@@ -21,7 +21,8 @@ class EnsureUserIsActive
         if ($request->user() && !$request->user()->status) {
 
             // 1. Cierra la sesión del usuario en el backend
-            Auth::logout();
+            Auth::guard('web')->logout(); // Especificamos el guard 'web' para cerrar la sesión
+
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
