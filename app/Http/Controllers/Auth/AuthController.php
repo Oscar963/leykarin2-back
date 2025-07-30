@@ -64,7 +64,7 @@ class AuthController extends Controller
     {
         $this->securityLogService->logLogout($request->user(), $request);
 
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

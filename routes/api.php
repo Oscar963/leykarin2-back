@@ -7,54 +7,51 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InmuebleController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
-// Public routes
 Route::prefix('v1')->group(function () {
 
-    // Authentication routes
+    /*
+    |--------------------------------------------------------------------------
+    | Rutas de Autenticación Públicas
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-        Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,10');
         Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:3,10');
     });
 
-    // Protected routes
+    /*
+    |--------------------------------------------------------------------------
+    | Rutas Protegidas
+    |--------------------------------------------------------------------------
+    */
     Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
-        // User
-        Route::get('/user', [AuthController::class, 'user'])->name('user');
 
-        // User
+        // --- Autenticación (para usuario logueado) ---
+        Route::prefix('auth')->group(function () {
+            Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+            Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
+        });
+
+        // --- Gestión de Usuarios ---
         Route::patch('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('users.updateProfile');
         Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
         Route::apiResource('users', UserController::class);
 
-        // Inmuebles
+        // --- Gestión de Inmuebles ---
         Route::get('inmuebles/export', [InmuebleController::class, 'export'])->name('inmuebles.export');
-        Route::apiResource('inmuebles', InmuebleController::class);
         Route::get('inmuebles/import/template', [InmuebleController::class, 'downloadTemplate'])->name('inmuebles.import.template');
         Route::post('inmuebles/import', [InmuebleController::class, 'import'])->name('inmuebles.import');
+        Route::apiResource('inmuebles', InmuebleController::class);
     });
 });
 
-// Fallback for undefined routes
+// Fallback para rutas no definidas
 Route::fallback(function () {
     return response()->json([
         'error' => [
             'code' => 'ENDPOINT_NOT_FOUND',
             'message' => 'The requested endpoint does not exist.',
-            'documentation' => '/api/v1/docs'
         ],
-        'timestamp' => now()->toISOString()
     ], 404);
 });
