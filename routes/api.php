@@ -18,6 +18,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
         Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,10');
         Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:3,10');
+        
+        // -- Rutas para Clave Única (públicas) --
+        Route::get('/claveunica/redirect', [AuthController::class, 'redirectToClaveUnica'])->name('auth.claveunica.redirect');
+        Route::get('/claveunica/callback', [AuthController::class, 'handleClaveUnicaCallback'])->name('auth.claveunica.callback');
     });
 
     /*
@@ -29,6 +33,7 @@ Route::prefix('v1')->group(function () {
 
         // --- Autenticación (para usuario logueado) ---
         Route::prefix('auth')->group(function () {
+            // -- Rutas de autenticación --
             Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
         });

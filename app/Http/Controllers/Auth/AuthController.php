@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\SecurityLogService;
+use App\Helpers\RutHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -44,6 +48,101 @@ class AuthController extends Controller
 
         $this->securityLogService->logSuccessfulLogin($user, $request);
         return $this->sendSuccessfulLoginResponse($user);
+    }
+
+    /**
+     * Redirige al usuario a la página de autenticación de Clave Única.
+     */
+    public function redirectToClaveUnica(): RedirectResponse
+    {
+        return Socialite::driver('claveunica')->redirect();
+    }
+
+    /**
+     * Maneja la respuesta de Clave Única después de la autenticación.
+     */
+    public function handleClaveUnicaCallback(Request $request)
+    {
+        try {
+            $claveUnicaUser = Socialite::driver('claveunica')->user();
+            
+            // Log de la respuesta para debugging (remover en producción)
+            Log::info('Clave Única Response', [
+                'user_data' => $claveUnicaUser->user ?? null,
+                'id' => $claveUnicaUser->id ?? null,
+                'email' => $claveUnicaUser->email ?? null
+            ]);
+
+            // Validar y normalizar el RUT
+            $rawRut = $claveUnicaUser->id; // El provider devuelve el RUN en el campo 'id'
+            
+            if (empty($rawRut)) {
+                Log::error('Clave Única: RUT vacío recibido');
+                return redirect(config('app.frontend_url') . '/login?error=invalid_rut');
+            }
+            
+            $normalizedRut = RutHelper::normalize($rawRut);
+            
+            if (!$normalizedRut) {
+                Log::error('Clave Única: RUT inválido', ['rut' => $rawRut]);
+                return redirect(config('app.frontend_url') . '/login?error=invalid_rut');
+            }
+
+            // Extraer datos del usuario de forma segura
+            $userData = $claveUnicaUser->user ?? [];
+            $nombres = $userData['name']['nombres'] ?? [];
+            $apellidos = $userData['name']['apellidos'] ?? [];
+            
+            $firstName = !empty($nombres) ? $nombres[0] : '';
+            $paternalSurname = !empty($apellidos) ? $apellidos[0] : '';
+            $maternalSurname = isset($apellidos[1]) ? $apellidos[1] : '';
+            
+            // Buscar o crear el usuario en el sistema
+            $user = User::firstOrCreate(
+                ['rut' => $normalizedRut],
+                [
+                    'name' => $firstName,
+                    'paternal_surname' => $paternalSurname,
+                    'maternal_surname' => $maternalSurname,
+                    'email' => $claveUnicaUser->email ?? '',
+                    'status' => true, // Activar el usuario por defecto
+                ]
+            );
+
+            // Si el usuario ya existía, actualizar sus datos con la información más reciente
+            if (!$user->wasRecentlyCreated) {
+                $user->update([
+                    'name' => $firstName ?: $user->name,
+                    'paternal_surname' => $paternalSurname ?: $user->paternal_surname,
+                    'maternal_surname' => $maternalSurname ?: $user->maternal_surname,
+                    'email' => $claveUnicaUser->email ?: $user->email,
+                ]);
+            }
+
+            // Verificar si la cuenta está activa en nuestro sistema
+            if (!$user->status) {
+                $this->securityLogService->logSuspendedAccountLogin($user, $request);
+                return redirect(config('app.frontend_url') . '/login?error=account_suspended');
+            }
+
+            // Iniciar sesión para el usuario
+            Auth::login($user);
+            $request->session()->regenerate();
+            $this->securityLogService->logSuccessfulLogin($user, $request);
+
+            // Redirigir al usuario al dashboard
+            return redirect(config('app.frontend_url') . '/dashboard?login=success');
+            
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            Log::error('Clave Única: Estado inválido', ['error' => $e->getMessage()]);
+            return redirect(config('app.frontend_url') . '/login?error=invalid_state');
+        } catch (\Exception $e) {
+            Log::error('Clave Única: Error general', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect(config('app.frontend_url') . '/login?error=claveunica_failed');
+        }
     }
 
     /**
