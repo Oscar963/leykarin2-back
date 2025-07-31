@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\Auth\AuthResource;
 use App\Services\SecurityLogService;
 use App\Helpers\RutHelper;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class AuthController extends Controller
 {
@@ -29,8 +30,11 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        if (!Auth::attempt($request->only('rut', 'password'), $request->boolean('remember'))) {
-            $this->securityLogService->logFailedLogin($request->only('rut', 'password'), $request);
+        $rut = $request->input('rut');
+        $rut = RutHelper::normalize($rut); // Normaliza aquí
+
+        if (!Auth::attempt(['rut' => $rut, 'password' => $request->input('password')], $request->boolean('remember'))) {
+            $this->securityLogService->logFailedLogin(['rut' => $rut], $request);
             return $this->sendFailedLoginResponse();
         }
 
@@ -39,7 +43,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         if (!$user->status) {
-            Auth::logout();
+            Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             $this->securityLogService->logSuspendedAccountLogin($user, $request);
@@ -65,7 +69,7 @@ class AuthController extends Controller
     {
         try {
             $claveUnicaUser = Socialite::driver('claveunica')->user();
-            
+
             // Log de la respuesta para debugging (remover en producción)
             Log::info('Clave Única Response', [
                 'user_data' => $claveUnicaUser->user ?? null,
@@ -75,14 +79,14 @@ class AuthController extends Controller
 
             // Validar y normalizar el RUT
             $rawRut = $claveUnicaUser->id; // El provider devuelve el RUN en el campo 'id'
-            
+
             if (empty($rawRut)) {
                 Log::error('Clave Única: RUT vacío recibido');
                 return redirect(config('app.frontend_url') . '/login?error=invalid_rut');
             }
-            
+
             $normalizedRut = RutHelper::normalize($rawRut);
-            
+
             if (!$normalizedRut) {
                 Log::error('Clave Única: RUT inválido', ['rut' => $rawRut]);
                 return redirect(config('app.frontend_url') . '/login?error=invalid_rut');
@@ -92,11 +96,11 @@ class AuthController extends Controller
             $userData = $claveUnicaUser->user ?? [];
             $nombres = $userData['name']['nombres'] ?? [];
             $apellidos = $userData['name']['apellidos'] ?? [];
-            
+
             $firstName = !empty($nombres) ? $nombres[0] : '';
             $paternalSurname = !empty($apellidos) ? $apellidos[0] : '';
             $maternalSurname = isset($apellidos[1]) ? $apellidos[1] : '';
-            
+
             // Buscar o crear el usuario en el sistema
             $user = User::firstOrCreate(
                 ['rut' => $normalizedRut],
@@ -132,8 +136,7 @@ class AuthController extends Controller
 
             // Redirigir al usuario al dashboard
             return redirect(config('app.frontend_url') . '/dashboard?login=success');
-            
-        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+        } catch (InvalidStateException $e) {
             Log::error('Clave Única: Estado inválido', ['error' => $e->getMessage()]);
             return redirect(config('app.frontend_url') . '/login?error=invalid_state');
         } catch (\Exception $e) {
@@ -149,10 +152,10 @@ class AuthController extends Controller
      * Retorna los datos del usuario autenticado.
      * Esta ruta debe estar protegida por el middleware 'auth:sanctum'.
      */
-    public function user(Request $request): UserResource
+    public function user(Request $request): AuthResource
     {
         $user = $request->user()->load(['roles', 'permissions']);
-        return new UserResource($user);
+        return new AuthResource($user);
     }
 
     /**
@@ -188,7 +191,7 @@ class AuthController extends Controller
     {
         return response()->json([
             'message' => "Bienvenido(a) al sistema {$user->name} {$user->paternal_surname}",
-            'user' => new UserResource($user->load(['roles', 'permissions']))
+            'user' => new AuthResource($user->load(['roles', 'permissions']))
         ]);
     }
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Auth;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class InmuebleResource extends JsonResource
+class AuthResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,10 +15,9 @@ class InmuebleResource extends JsonResource
     public function toArray($request)
     {
         $defaultData = parent::toArray($request);
-
         $customData = [
-            'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
-            'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
+            'roles' => $this->whenLoaded('roles', fn() => $this->getRoleNames()),
+            'permissions' => $this->whenLoaded('permissions', fn() => $this->getAllPermissions()->pluck('name')),
         ];
         return array_merge($defaultData, $customData);
     }

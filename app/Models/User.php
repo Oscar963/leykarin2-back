@@ -10,6 +10,7 @@ use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -72,6 +73,18 @@ class User extends Authenticatable
      */
     public function setPasswordAttribute($value)
     {
-        $this->attributes['password'] = Hash::make($value);
+        if (Str::startsWith($value, '$2y$')) { // Si es un hash bcrypt válido
+            $this->attributes['password'] = $value;
+        } else {
+            $this->attributes['password'] = Hash::make($value);
+        }
+    }
+
+    /**
+     * Normaliza el RUT antes de guardar en la base de datos.
+     */
+    public function setRutAttribute($value)
+    {
+        $this->attributes['rut'] = \App\Helpers\RutHelper::normalize($value);
     }
 }

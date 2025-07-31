@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InmuebleController;
+use App\Http\Controllers\RoleController;
 
 Route::prefix('v1')->group(function () {
 
@@ -15,10 +16,10 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,10');
-        Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:3,10');
-        
+        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('auth.login');
+        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,10')->name('auth.forgot-password');
+        Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:3,10')->name('auth.reset-password');
+
         // -- Rutas para Clave Única (públicas) --
         Route::get('/claveunica/redirect', [AuthController::class, 'redirectToClaveUnica'])->name('auth.claveunica.redirect');
         Route::get('/claveunica/callback', [AuthController::class, 'handleClaveUnicaCallback'])->name('auth.claveunica.callback');
@@ -33,7 +34,6 @@ Route::prefix('v1')->group(function () {
 
         // --- Autenticación (para usuario logueado) ---
         Route::prefix('auth')->group(function () {
-            // -- Rutas de autenticación --
             Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
         });
@@ -48,6 +48,9 @@ Route::prefix('v1')->group(function () {
         Route::get('inmuebles/import/template', [InmuebleController::class, 'downloadTemplate'])->name('inmuebles.import.template');
         Route::post('inmuebles/import', [InmuebleController::class, 'import'])->name('inmuebles.import');
         Route::apiResource('inmuebles', InmuebleController::class);
+
+        // --- Gestión de Roles ---
+        Route::apiResource('roles', RoleController::class);
     });
 });
 

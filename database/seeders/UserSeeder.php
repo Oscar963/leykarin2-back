@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Helpers\RutHelper;
 
 class UserSeeder extends Seeder
 {
@@ -19,7 +20,7 @@ class UserSeeder extends Seeder
         $adminSistema = User::updateOrCreate(
             ['email' => 'admin.sistema@demo.com'],
             [
-                'rut' => '12345678-5',
+                'rut' => RutHelper::normalize('12345678-5'),
                 'name' => 'Admin',
                 'paternal_surname' => 'Sistema',
                 'maternal_surname' => 'Demo',
@@ -34,7 +35,7 @@ class UserSeeder extends Seeder
         $gestorContenido = User::updateOrCreate(
             ['email' => 'gestor.contenido@demo.com'],
             [
-                'rut' => '17323866-5',
+                'rut' => RutHelper::normalize('17323866-5'),
                 'name' => 'Gestor',
                 'paternal_surname' => 'Contenido',
                 'maternal_surname' => 'Demo',
@@ -49,7 +50,7 @@ class UserSeeder extends Seeder
         $gestorContenido2 = User::updateOrCreate(
             ['email' => 'gestor.contenido2@demo.com'],
             [
-                'rut' => '30294724-4',
+                'rut' => RutHelper::normalize('30294724-4'),
                 'name' => 'Gestor',
                 'paternal_surname' => 'Contenido',
                 'maternal_surname' => 'Demo 2',

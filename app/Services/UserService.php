@@ -21,7 +21,8 @@ class UserService
      */
     public function getAllUsersByQuery(?string $query, ?int $perPage = 15, ?array $filters = []): LengthAwarePaginator
     {
-        return User::oldest('id')
+        return User::with('roles')
+            ->oldest('id')
             ->when($query, function (Builder $q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                     ->orWhere('paternal_surname', 'LIKE', "%{$query}%")
@@ -57,6 +58,9 @@ class UserService
     public function updateUser(User $user, array $data): User
     {
         $user->update($data);
+        if (!empty($data['roles'])) {
+            $user->syncRoles($data['roles']);
+        }
         return $user;
     }
 

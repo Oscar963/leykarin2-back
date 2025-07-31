@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class InmuebleResource extends JsonResource
+class RoleResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,11 +15,7 @@ class InmuebleResource extends JsonResource
     public function toArray($request)
     {
         $defaultData = parent::toArray($request);
-
-        $customData = [
-            'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
-            'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
-        ];
+        $customData = [];
         return array_merge($defaultData, $customData);
     }
 }

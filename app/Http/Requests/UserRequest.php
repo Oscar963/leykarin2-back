@@ -4,7 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
-
+use Illuminate\Validation\Rule;
+use App\Helpers\RutHelper;
 
 class UserRequest extends FormRequest
 {
@@ -25,13 +26,25 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->route('user');
+
         $rules = [
             'name' => 'required|max:255',
             'paternal_surname' => 'required|max:255',
             'maternal_surname' => 'required|max:255',
-            'rut' => 'required|max:255',
-            'email' => 'required|max:255',
+            'rut' => [
+                'required',
+                'max:255',
+                Rule::unique('users', 'rut')->ignore($userId),
+            ],
+            'email' => [
+                'required',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($userId),
+            ],
             'status' => 'required|max:255',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'string',
         ];
 
         if ($this->isMethod('post')) {
@@ -41,5 +54,14 @@ class UserRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('rut')) {
+            $this->merge([
+                'rut' => RutHelper::normalize($this->input('rut')),
+            ]);
+        }
     }
 }
