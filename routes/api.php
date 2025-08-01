@@ -36,11 +36,11 @@ Route::prefix('v1')->group(function () {
         Route::prefix('auth')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
+            Route::post('/user/profile', [AuthController::class, 'updateProfile'])->name('auth.updateProfile');
+            Route::post('/user/password', [AuthController::class, 'updatePassword'])->name('auth.updatePassword');
         });
 
         // --- Gestión de Usuarios ---
-        Route::patch('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('users.updateProfile');
-        Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
         Route::apiResource('users', UserController::class);
 
         // --- Gestión de Inmuebles ---

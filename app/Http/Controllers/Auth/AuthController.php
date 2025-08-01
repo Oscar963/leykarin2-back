@@ -15,9 +15,12 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
+use App\Http\Requests\Auth\ProfileRequest;
+use App\Traits\LogsActivity;
 
 class AuthController extends Controller
 {
+    use LogsActivity;
     protected $securityLogService;
 
     public function __construct(SecurityLogService $securityLogService)
@@ -179,6 +182,41 @@ class AuthController extends Controller
     public function isAuthenticated(): JsonResponse
     {
         return response()->json(['isAuthenticated' => Auth::check()]);
+    }
+
+    /**
+     * Actualiza el perfil del usuario. 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateProfile(ProfileRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $validated = $request->validated();
+
+        $user->fill($validated); // Llena el modelo con los datos validados
+        if ($user->isDirty()) {
+            $user->save();
+            $this->logActivity('update_profile', 'Usuario actualizó su perfil');
+        }
+
+        return response()->json([
+            'message' => 'Perfil actualizado exitosamente',
+            'user' => $user->fresh(),
+        ], 200);
+    }
+
+    /**
+     * Actualiza la contraseña del usuario.
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update(['password' => bcrypt($request->input('password'))]);
+        $this->logActivity('update_password', 'Usuario actualizó su contraseña');
+        return response()->json(['message' => 'Contraseña actualizada exitosamente']);
     }
 
     /**
