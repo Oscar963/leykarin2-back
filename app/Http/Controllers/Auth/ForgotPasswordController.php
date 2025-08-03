@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use App\Traits\LogsActivity;
 
 class ForgotPasswordController extends Controller
 {
+    use LogsActivity;
     /**
      * Enviar el enlace de restablecimiento de la contraseña.
      *
@@ -47,6 +49,7 @@ class ForgotPasswordController extends Controller
         // Enviar el enlace de restablecimiento en cola
         SendPasswordResetLink::dispatch($request->email);
 
+        $this->logActivity('send_password_reset_link', 'Usuario solicitó restablecimiento de contraseña', $request);
         return response()->json([
             'message' => '¡El enlace de restablecimiento de contraseña ha sido enviado a su correo electrónico! Por favor, revise su bandeja de entrada.'
         ], 200);

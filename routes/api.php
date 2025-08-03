@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -37,7 +38,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
             Route::post('/user/profile', [AuthController::class, 'updateProfile'])->name('auth.updateProfile');
-            Route::post('/user/password', [AuthController::class, 'updatePassword'])->name('auth.updatePassword');
+            Route::post('/user/change-password', [AuthController::class, 'changePassword'])->name('auth.changePassword');
         });
 
         // --- Gestión de Usuarios ---
@@ -51,6 +52,9 @@ Route::prefix('v1')->group(function () {
 
         // --- Gestión de Roles ---
         Route::apiResource('roles', RoleController::class);
+
+        // --- Gestión de Logs ---
+        Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });
 

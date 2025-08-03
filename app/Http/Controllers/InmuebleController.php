@@ -54,8 +54,8 @@ class InmuebleController extends Controller
     public function store(InmuebleRequest $request): JsonResponse
     {
         $inmueble = $this->inmuebleService->createInmueble($request->validated());
-        $this->logActivity('create_inmueble', 'Usuario creó un inmueble con ID: ' . $inmueble->id);
 
+        $this->logActivity('create_inmueble', 'Usuario creó un inmueble con ID: ' . $inmueble->id);
         return response()->json([
             'message' => 'Inmueble guardado exitosamente',
             'data' => new InmuebleResource($inmueble)
@@ -67,6 +67,8 @@ class InmuebleController extends Controller
      */
     public function show(Inmueble $inmueble): JsonResponse
     {
+
+        $this->logActivity('show_inmueble', 'Usuario mostró un inmueble con ID: ' . $inmueble->id);
         return response()->json([
             'data' => new InmuebleResource($inmueble)
         ], 200);
@@ -78,8 +80,8 @@ class InmuebleController extends Controller
     public function update(Inmueble $inmueble, InmuebleRequest $request): JsonResponse
     {
         $updatedInmueble = $this->inmuebleService->updateInmueble($inmueble, $request->validated());
-        $this->logActivity('update_inmueble', 'Usuario actualizó el inmueble con ID: ' . $updatedInmueble->id);
 
+        $this->logActivity('update_inmueble', 'Usuario actualizó el inmueble con ID: ' . $updatedInmueble->id);
         return response()->json([
             'message' => 'Inmueble actualizado exitosamente',
             'data' => new InmuebleResource($updatedInmueble)
@@ -92,8 +94,8 @@ class InmuebleController extends Controller
     public function destroy(Inmueble $inmueble): JsonResponse
     {
         $this->inmuebleService->deleteInmueble($inmueble);
-        $this->logActivity('delete_inmueble', 'Usuario eliminó el inmueble con ID: ' . $inmueble->id);
 
+        $this->logActivity('delete_inmueble', 'Usuario eliminó el inmueble con ID: ' . $inmueble->id);
         return response()->json([
             'message' => 'Inmueble eliminado exitosamente'
         ], 200);
@@ -125,6 +127,7 @@ class InmuebleController extends Controller
                 Excel::import($importer, $file);
             });
 
+            $this->logActivity('import_inmuebles', 'Usuario importó inmuebles');
             return response()->json([
                 'message' => 'Se han importado ' . Inmueble::count() . ' inmuebles exitosamente',
                 'total_imported' => Inmueble::count()
@@ -159,6 +162,7 @@ class InmuebleController extends Controller
                 $importHistoriesService->failImport($lastImport, 'Error inesperado durante la importación: ' . $e->getMessage());
             }
 
+            $this->logActivity('import_inmuebles', 'Usuario importó inmuebles');
             return response()->json([
                 'message' => 'Error durante la importación',
                 'error' => $e->getMessage()
@@ -171,6 +175,7 @@ class InmuebleController extends Controller
      */
     public function export(): BinaryFileResponse
     {
+        $this->logActivity('export_inmuebles', 'Usuario exportó inmuebles');
         return Excel::download(new InmueblesExport(), 'inmuebles.xlsx');
     }
 
@@ -179,6 +184,7 @@ class InmuebleController extends Controller
      */
     public function downloadTemplate(): BinaryFileResponse
     {
+        $this->logActivity('download_template', 'Usuario descargó el template de importación');
         return Excel::download(new InmueblesTemplateExport(), 'inmuebles_template.xlsx');
     }
 

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rules\Password as PasswordRules;
+use App\Traits\LogsActivity;
 
 class PasswordResetController extends Controller
 {
+    use LogsActivity;
     /**
      * Restablecer la contraseña.
      *
@@ -34,17 +36,21 @@ class PasswordResetController extends Controller
         );
 
         if ($status == Password::PASSWORD_RESET) {
+            $this->logActivity('reset_password', 'Usuario restableció su contraseña', $request);
             return response()->json(['status' => '¡La contraseña ha sido restablecida correctamente!'], 200);
         }
 
         switch ($status) {
             case Password::INVALID_TOKEN:
+                $this->logActivity('reset_password', 'Usuario solicitó restablecimiento de contraseña', $request);
                 return response()->json(['message' => 'El token de restablecimiento ha expirado o es inválido. Por favor, solicite un nuevo enlace de restablecimiento.'], 400);
 
             case Password::INVALID_USER:
+                $this->logActivity('reset_password', 'Usuario solicitó restablecimiento de contraseña', $request);
                 return response()->json(['message' => 'No se ha encontrado un usuario con esa dirección de correo electrónico.'], 400);
 
             default:
+                $this->logActivity('reset_password', 'Usuario solicitó restablecimiento de contraseña', $request);
                 return response()->json(['message' => 'No se pudo restablecer la contraseña. Inténtalo nuevamente más tarde.'], 400);
         }
     }

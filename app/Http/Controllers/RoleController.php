@@ -40,8 +40,8 @@ class RoleController extends Controller
     public function store(RoleRequest $request): JsonResponse
     {
         $role = $this->roleService->createRole($request->validated());
-        $this->logActivity('create_role', 'Usuario creó un role con ID: ' . $role->id);
 
+        $this->logActivity('create_role', 'Usuario creó un role con ID: ' . $role->id);
         return response()->json([
             'message' => 'Role guardado exitosamente',
             'data' => new RoleResource($role)
@@ -53,6 +53,7 @@ class RoleController extends Controller
      */
     public function show(Role $role): JsonResponse
     {
+        $this->logActivity('show_role', 'Usuario mostró un role con ID: ' . $role->id);
         return response()->json([
             'data' => new RoleResource($role)
         ], 200);
@@ -64,8 +65,8 @@ class RoleController extends Controller
     public function update(Role $role, RoleRequest $request): JsonResponse
     {
         $updatedRole = $this->roleService->updateRole($role, $request->validated());
-        $this->logActivity('update_role', 'Usuario actualizó el role con ID: ' . $updatedRole->id);
 
+        $this->logActivity('update_role', 'Usuario actualizó el role con ID: ' . $updatedRole->id);
         return response()->json([
             'message' => 'Role actualizado exitosamente',
             'data' => new RoleResource($updatedRole)
@@ -78,8 +79,8 @@ class RoleController extends Controller
     public function destroy(Role $role): JsonResponse
     {
         $this->roleService->deleteRole($role);
-        $this->logActivity('delete_role', 'Usuario eliminó el role con ID: ' . $role->id);
 
+        $this->logActivity('delete_role', 'Usuario eliminó el role con ID: ' . $role->id);
         return response()->json([
             'message' => 'Role eliminado exitosamente'
         ], 200);

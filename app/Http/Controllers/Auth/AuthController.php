@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use App\Http\Requests\Auth\ProfileRequest;
+use Illuminate\Validation\Rules\Password;
 use App\Traits\LogsActivity;
 
 class AuthController extends Controller
@@ -54,6 +55,7 @@ class AuthController extends Controller
         }
 
         $this->securityLogService->logSuccessfulLogin($user, $request);
+        $this->logActivity('login', 'Usuario inició sesión');
         return $this->sendSuccessfulLoginResponse($user);
     }
 
@@ -138,15 +140,18 @@ class AuthController extends Controller
             $this->securityLogService->logSuccessfulLogin($user, $request);
 
             // Redirigir al usuario al dashboard
+            $this->logActivity('login', 'Usuario inició sesión con Clave Única exitosamente');
             return redirect(config('app.frontend_url') . '/dashboard?login=success');
         } catch (InvalidStateException $e) {
             Log::error('Clave Única: Estado inválido', ['error' => $e->getMessage()]);
+            $this->logActivity('login', 'Usuario inició sesión con Clave Única fallido');
             return redirect(config('app.frontend_url') . '/login?error=invalid_state');
         } catch (\Exception $e) {
             Log::error('Clave Única: Error general', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            $this->logActivity('login', 'Usuario inició sesión con Clave Única fallido');
             return redirect(config('app.frontend_url') . '/login?error=claveunica_failed');
         }
     }
@@ -173,6 +178,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        $this->logActivity('logout', 'Usuario cerró sesión');
         return response()->json(['message' => 'Cerró sesión exitosamente']);
     }
 
@@ -191,32 +197,37 @@ class AuthController extends Controller
      */
     public function updateProfile(ProfileRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user()->load(['roles', 'permissions']);
         $validated = $request->validated();
 
         $user->fill($validated); // Llena el modelo con los datos validados
         if ($user->isDirty()) {
             $user->save();
-            $this->logActivity('update_profile', 'Usuario actualizó su perfil');
         }
 
+        $this->logActivity('update_profile', 'Usuario actualizó su perfil');
         return response()->json([
             'message' => 'Perfil actualizado exitosamente',
-            'user' => $user->fresh(),
+            'user' => new AuthResource($user),
         ], 200);
     }
 
     /**
-     * Actualiza la contraseña del usuario.
+     * Cambia la contraseña del usuario.
      * @param Request $request
      * @return JsonResponse
      */
-    public function updatePassword(Request $request): JsonResponse
+    public function changePassword(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()],
+        ]);
+
         $user = $request->user();
-        $user->update(['password' => bcrypt($request->input('password'))]);
-        $this->logActivity('update_password', 'Usuario actualizó su contraseña');
-        return response()->json(['message' => 'Contraseña actualizada exitosamente']);
+        $user->update(['password' => bcrypt($validated['password'])]);
+
+        $this->logActivity('update_password', 'Usuario cambió su contraseña');
+        return response()->json(['message' => 'Contraseña cambiada exitosamente']);
     }
 
     /**

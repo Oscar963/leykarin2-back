@@ -45,8 +45,8 @@ class UserController extends Controller
     public function store(UserRequest $request): JsonResponse
     {
         $user = $this->userService->createUser($request->validated());
-        $this->logActivity('create_user', 'Usuario creó un usuario con ID: ' . $user->id);
 
+        $this->logActivity('create_user', 'Usuario creó un usuario con ID: ' . $user->id);
         return response()->json([
             'message' => 'Usuario guardado exitosamente',
             'data' => new UserResource($user)
@@ -58,6 +58,7 @@ class UserController extends Controller
      */
     public function show(User $user): JsonResponse
     {
+        $this->logActivity('show_user', 'Usuario mostró un usuario con ID: ' . $user->id);
         return response()->json([
             'data' => new UserResource($user)
         ], 200);
@@ -69,8 +70,8 @@ class UserController extends Controller
     public function update(User $user, UserRequest $request): JsonResponse
     {
         $updatedUser = $this->userService->updateUser($user, $request->validated());
+        
         $this->logActivity('update_user', 'Usuario actualizó el usuario con ID: ' . $updatedUser->id);
-
         return response()->json([
             'message' => 'Usuario actualizado exitosamente',
             'data' => new UserResource($updatedUser)
@@ -83,8 +84,8 @@ class UserController extends Controller
     public function destroy(User $user): JsonResponse
     {
         $this->userService->deleteUser($user);
-        $this->logActivity('delete_user', 'Usuario eliminó el usuario con ID: ' . $user->id);
 
+        $this->logActivity('delete_user', 'Usuario eliminó el usuario con ID: ' . $user->id);
         return response()->json([
             'message' => 'Usuario eliminado exitosamente'
         ], 200);

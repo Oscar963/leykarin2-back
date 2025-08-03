@@ -19,6 +19,8 @@ class UserResource extends JsonResource
 
         // 2. Definimos los campos que queremos formatear, añadir o sobrescribir.
         $customData = [
+            'rut' => $this->formatRut($this->rut),
+
             // Sobrescribimos el formato de las fechas para asegurar el estándar ISO 8601.
             // Nota: Laravel por defecto ya convierte las fechas a este formato al serializar,
             // pero ser explícito aquí garantiza el comportamiento.
@@ -35,5 +37,27 @@ class UserResource extends JsonResource
         ];
         // 3. Fusionamos los datos por defecto con nuestros datos personalizados.
         return array_merge($defaultData, $customData); //Los campos en $customData tendrán prioridad.
+    }
+
+    /**
+     * Formatea un RUT chileno como XXXXXXXX-X (sin puntos, con guion)
+     *
+     * @param string $rut
+     * @return string
+     */
+    private function formatRut($rut)
+    {
+        $rut = preg_replace('/[^0-9kK]/', '', $rut);
+
+        $rut = strtolower($rut);
+
+        if (strlen($rut) < 2) {
+            return $rut;
+        }
+
+        $cuerpo = substr($rut, 0, -1);
+        $dv = substr($rut, -1);
+
+        return $cuerpo . '-' . $dv;
     }
 }

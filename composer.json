@@ -24,14 +24,15 @@
         "stevebauman/location": "^6.6"
     },
     "require-dev": {
+        "darkaonline/l5-swagger": "^8.5",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "laravel/sail": "^1.0.1",
+        "laravel/telescope": "^4.10",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^5.10",
         "phpunit/phpunit": "^9.5.10",
-        "squizlabs/php_codesniffer": "^3.7",
-        "darkaonline/l5-swagger": "^8.5"
+        "squizlabs/php_codesniffer": "^3.7"
     },
     "autoload": {
         "psr-4": {
@@ -110,7 +111,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/telescope"
+            ]
         }
     },
     "config": {

@@ -2,10 +2,10 @@
 
 namespace App\Traits;
 
-use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use Stevebauman\Location\Facades\Location;
+use App\Jobs\LogActivityJob;
 
 trait LogsActivity
 {
@@ -19,8 +19,8 @@ trait LogsActivity
     protected function logActivity($action, $details = null)
     {
         $location = Location::get(Request::ip());
-
-        ActivityLog::create([
+    
+        $data = [
             'user_id' => Auth::id(),
             'action' => $action,
             'details' => $details,
@@ -30,7 +30,9 @@ trait LogsActivity
             'browser' => $this->getBrowser(),
             'os' => $this->getOS(),
             'referer' => Request::header('referer')
-        ]);
+        ];
+    
+        dispatch(new LogActivityJob($data));
     }
 
     /**

@@ -44,8 +44,8 @@ class ImportHistoriesController extends Controller
     public function store(ImportHistoriesRequest $request): JsonResponse
     {
         $importHistory = $this->importHistoriesService->createImportHistory($request->validated());
-        $this->logActivity('create_import_history', 'Usuario creó un import_history con ID: ' . $importHistory->id);
 
+        $this->logActivity('create_import_history', 'Usuario creó un import_history con ID: ' . $importHistory->id);
         return response()->json([
             'message' => 'ImportHistory guardado exitosamente',
             'data' => new ImportHistoriesResource($importHistory)
@@ -57,6 +57,7 @@ class ImportHistoriesController extends Controller
      */
     public function show(ImportHistories $importHistory): JsonResponse
     {
+        $this->logActivity('show_import_history', 'Usuario mostró un import_history con ID: ' . $importHistory->id);
         return response()->json([
             'data' => new ImportHistoriesResource($importHistory)
         ], 200);
@@ -68,8 +69,8 @@ class ImportHistoriesController extends Controller
     public function update(ImportHistories $importHistory, ImportHistoriesRequest $request): JsonResponse
     {
         $updatedImportHistory = $this->importHistoriesService->updateImportHistory($importHistory, $request->validated());
-        $this->logActivity('update_import_history', 'Usuario actualizó el import_history con ID: ' . $updatedImportHistory->id);
 
+        $this->logActivity('update_import_history', 'Usuario actualizó el import_history con ID: ' . $updatedImportHistory->id);
         return response()->json([
             'message' => 'ImportHistory actualizado exitosamente',
             'data' => new ImportHistoriesResource($updatedImportHistory)
@@ -82,8 +83,8 @@ class ImportHistoriesController extends Controller
     public function destroy(ImportHistories $importHistory): JsonResponse
     {
         $this->importHistoriesService->deleteImportHistory($importHistory);
-        $this->logActivity('delete_import_history', 'Usuario eliminó el import_history con ID: ' . $importHistory->id);
 
+        $this->logActivity('delete_import_history', 'Usuario eliminó el import_history con ID: ' . $importHistory->id);
         return response()->json([
             'message' => 'ImportHistory eliminado exitosamente'
         ], 200);
