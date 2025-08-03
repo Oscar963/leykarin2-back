@@ -23,6 +23,7 @@ class UserService
     {
         return User::with('roles')
             ->oldest('id')
+            ->where('rut', '!=', '185995380') // Excluir al administrador del sistema principal
             ->when($query, function (Builder $q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                     ->orWhere('paternal_surname', 'LIKE', "%{$query}%")

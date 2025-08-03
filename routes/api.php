@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InmuebleController;
 use App\Http\Controllers\RoleController;
@@ -37,12 +38,16 @@ Route::prefix('v1')->group(function () {
         Route::prefix('auth')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
-            Route::post('/user/profile', [AuthController::class, 'updateProfile'])->name('auth.updateProfile');
-            Route::post('/user/change-password', [AuthController::class, 'changePassword'])->name('auth.changePassword');
+        });
+
+        Route::prefix('profile')->group(function () {
+            Route::post('/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+            Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
         });
 
         // --- Gestión de Usuarios ---
         Route::apiResource('users', UserController::class);
+        Route::post('users/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
         // --- Gestión de Inmuebles ---
         Route::get('inmuebles/export', [InmuebleController::class, 'export'])->name('inmuebles.export');

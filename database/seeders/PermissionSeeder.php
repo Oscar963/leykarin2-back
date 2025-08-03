@@ -17,19 +17,13 @@ class PermissionSeeder extends Seeder
     {
         // Crear todos los permisos del sistema
         $permissions = [
-            // ===== MÓDULO DE AUTENTICACIÓN Y USUARIOS =====
-            'auth.login',
-            'auth.logout',
-
-            // Permisos de usuarios
+            // ===== MÓDULO DE USUARIOS =====
             'users.list',
             'users.create',
             'users.edit',
             'users.delete',
             'users.view',
-            'users.update_password',
-            'users.update_profile',
-            'users.profile',
+            'users.change_password',
 
             // ===== MÓDULO DE ROLES Y PERMISOS =====
             'roles.list',
@@ -48,7 +42,6 @@ class PermissionSeeder extends Seeder
             'inmuebles.edit',
             'inmuebles.delete',
             'inmuebles.view',
-            'inmuebles.bulk_create',
 
             // ===== MÓDULO DE IMPORTACIÓN DE INMUEBLES =====
             'inmuebles.import',
@@ -73,47 +66,32 @@ class PermissionSeeder extends Seeder
 
         // 2. Gestor: acceso completo a inmuebles e importación, sin usuarios ni roles
         $gestor->syncPermissions([
-            // Autenticación básica y perfil propio
-            'auth.login',
-            'auth.logout',
-            'users.update_profile',
-            'users.profile',
-            'users.update_password',
-
             // Inmuebles (todos los permisos de inmuebles)
             'inmuebles.list',
             'inmuebles.create',
             'inmuebles.edit',
             'inmuebles.delete',
             'inmuebles.view',
-            'inmuebles.bulk_create',
 
             // Importación y gestión de inmuebles
             'inmuebles.import',
-
-            // Logs de actividad
-            'activity_logs.list',
-            'activity_logs.view',
         ]);
 
         // 3. Editor: solo ver, crear y editar inmuebles (NO eliminar), sin usuarios/roles
         $editor->syncPermissions([
-            'auth.login',
-            'auth.logout',
-            'users.update_profile',
-            'users.profile',
-            'users.update_password',
-
             // Inmuebles (solo ver, crear y editar)
             'inmuebles.list',
             'inmuebles.create',
             'inmuebles.edit',
             'inmuebles.view',
-
-            // Logs de actividad
-            'activity_logs.list',
-            'activity_logs.view',
         ]);
+
+        // Asignar permisos por defecto a todos los usuarios existentes
+        $defaultPermissions = [];
+        $allUsers = \App\Models\User::all();
+        foreach ($allUsers as $user) {
+            $user->givePermissionTo($defaultPermissions);
+        }
 
         $this->command->info('Permisos creados y asignados correctamente a los roles.');
     }

@@ -9,6 +9,8 @@ use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\UserService;
+use Illuminate\Validation\Rules\Password;
+use App\Helpers\RutHelper;
 
 class UserController extends Controller
 {
@@ -70,7 +72,7 @@ class UserController extends Controller
     public function update(User $user, UserRequest $request): JsonResponse
     {
         $updatedUser = $this->userService->updateUser($user, $request->validated());
-        
+
         $this->logActivity('update_user', 'Usuario actualizó el usuario con ID: ' . $updatedUser->id);
         return response()->json([
             'message' => 'Usuario actualizado exitosamente',
@@ -89,5 +91,32 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Usuario eliminado exitosamente'
         ], 200);
+    }
+
+    /**
+     * Cambia la contraseña del usuario.
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'rut' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()],
+        ]);
+
+        // Solo administrador puede usar esta función
+        if (!$request->user()->hasRole('Administrador del Sistema')) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $user = User::where('rut',RutHelper::normalize($validated['rut']))->first();
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        $user->update(['password' => bcrypt($validated['password'])]);
+        $this->logActivity('admin_reset_password', 'Administrador restableció la contraseña de un usuario (RUT: ' . $validated['rut'] . ')');
+        return response()->json(['message' => 'Contraseña restablecida exitosamente']);
     }
 }
