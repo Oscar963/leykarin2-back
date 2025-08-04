@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class RoleResource extends JsonResource
+class PermissionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,10 +15,7 @@ class RoleResource extends JsonResource
     public function toArray($request)
     {
         $defaultData = parent::toArray($request);
-        $customData = [
-            'permissions' => $this->whenLoaded('permissions', fn() => $this->permissions),
-            'created_at' => $this->created_at ? $this->created_at->format('d-m-Y H:i:s') : null,
-        ];
+        $customData = [];
         return array_merge($defaultData, $customData);
     }
 }

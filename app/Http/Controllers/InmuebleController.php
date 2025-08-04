@@ -33,6 +33,8 @@ class InmuebleController extends Controller
 
     /**
      * Listar todos los inmuebles.
+     * @param Request $request
+     * @return JsonResponse 
      */
     public function index(Request $request): JsonResponse
     {
@@ -50,6 +52,8 @@ class InmuebleController extends Controller
 
     /**
      * Guardar un nuevo inmueble.
+     * @param InmuebleRequest $request
+     * @return JsonResponse 
      */
     public function store(InmuebleRequest $request): JsonResponse
     {
@@ -64,6 +68,8 @@ class InmuebleController extends Controller
 
     /**
      * Mostrar un inmueble.
+     * @param Inmueble $inmueble
+     * @return JsonResponse 
      */
     public function show(Inmueble $inmueble): JsonResponse
     {
@@ -76,6 +82,9 @@ class InmuebleController extends Controller
 
     /**
      * Actualizar un inmueble.
+     * @param Inmueble $inmueble
+     * @param InmuebleRequest $request
+     * @return JsonResponse 
      */
     public function update(Inmueble $inmueble, InmuebleRequest $request): JsonResponse
     {
@@ -90,6 +99,8 @@ class InmuebleController extends Controller
 
     /**
      * Eliminar un inmueble.
+     * @param Inmueble $inmueble
+     * @return JsonResponse 
      */
     public function destroy(Inmueble $inmueble): JsonResponse
     {
@@ -103,6 +114,8 @@ class InmuebleController extends Controller
 
     /**
      * Procesar la importación de un archivo de inmuebles.
+     * @param Request $request
+     * @return JsonResponse 
      */
     public function import(Request $request): JsonResponse
     {
@@ -172,6 +185,7 @@ class InmuebleController extends Controller
 
     /**
      * Exportar inmuebles a Excel.
+     * @return BinaryFileResponse 
      */
     public function export(): BinaryFileResponse
     {
@@ -181,6 +195,7 @@ class InmuebleController extends Controller
 
     /**
      * Descargar el template de importación.
+     * @return BinaryFileResponse 
      */
     public function downloadTemplate(): BinaryFileResponse
     {
@@ -189,7 +204,8 @@ class InmuebleController extends Controller
     }
 
     /**
-     * Obtiene la fecha de la última importación exitosa de inmuebles.
+     * Obtiene la fecha de la última importación exitosa de inmuebles.      
+     * @return string 
      */
     private function getUltimaImportacionInmuebles()
     {

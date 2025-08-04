@@ -25,13 +25,14 @@ class UserController extends Controller
 
     /**
      * Listar todos los usuarios.
+     * @param Request $request
+     * @return JsonResponse 
      */
     public function index(Request $request): JsonResponse
     {
         $query = $request->query('query');
         $perPage = $request->query('per_page');
-        $filters = $request->only('rol_avaluo', 'foja');
-        $users = $this->userService->getAllUsersByQuery($query, $perPage, $filters);
+        $users = $this->userService->getAllUsersByQuery($query, $perPage);
 
         $metadata = [
             'active_users' => User::where('status', 1)->count(),
@@ -43,6 +44,8 @@ class UserController extends Controller
 
     /**
      * Guardar un nuevo usuario.
+     * @param UserRequest $request
+     * @return JsonResponse 
      */
     public function store(UserRequest $request): JsonResponse
     {
@@ -57,6 +60,8 @@ class UserController extends Controller
 
     /**
      * Mostrar un usuario.
+     * @param User $user
+     * @return JsonResponse 
      */
     public function show(User $user): JsonResponse
     {
@@ -67,7 +72,10 @@ class UserController extends Controller
     }
 
     /**
-     * Actualizar un usuario.
+     * Actualizar un usuario.   
+     * @param User $user
+     * @param UserRequest $request
+     * @return JsonResponse 
      */
     public function update(User $user, UserRequest $request): JsonResponse
     {
@@ -82,6 +90,8 @@ class UserController extends Controller
 
     /**
      * Eliminar un usuario.
+     * @param User $user
+     * @return JsonResponse 
      */
     public function destroy(User $user): JsonResponse
     {
@@ -110,7 +120,7 @@ class UserController extends Controller
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
-        $user = User::where('rut',RutHelper::normalize($validated['rut']))->first();
+        $user = User::where('rut', RutHelper::normalize($validated['rut']))->first();
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
         }

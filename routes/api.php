@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InmuebleController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 
 Route::prefix('v1')->group(function () {
@@ -57,6 +58,9 @@ Route::prefix('v1')->group(function () {
 
         // --- Gestión de Roles ---
         Route::apiResource('roles', RoleController::class);
+
+        // --- Gestión de Permisos ---
+        Route::apiResource('permissions', PermissionController::class);
 
         // --- Gestión de Logs ---
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

@@ -10,6 +10,7 @@ class ActivityLogService
 {
     /**
      * Obtiene todos los logs de actividad ordenados por fecha de creación (descendente).
+     * @return Collection
      */
     public function getAllActivityLogs()
     {
@@ -18,6 +19,9 @@ class ActivityLogService
 
     /**
      * Obtiene todos los logs de actividad con filtros y paginación.
+     * @param ?string $query
+     * @param ?int $perPage
+     * @return LengthAwarePaginator 
      */
     public function getAllActivityLogsByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {

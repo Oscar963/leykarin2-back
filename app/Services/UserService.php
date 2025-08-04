@@ -10,6 +10,7 @@ class UserService
 {
     /**
      * Obtiene todos los usuarios ordenados por fecha de creación (descendente).
+     * @return Collection
      */
     public function getAllUsers()
     {
@@ -18,8 +19,11 @@ class UserService
 
     /**
      * Obtiene todos los usuarios con filtros y paginación.
+     * @param ?string $query
+     * @param ?int $perPage
+     * @return LengthAwarePaginator
      */
-    public function getAllUsersByQuery(?string $query, ?int $perPage = 15, ?array $filters = []): LengthAwarePaginator
+    public function getAllUsersByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {
         return User::with('roles')
             ->oldest('id')
@@ -31,14 +35,13 @@ class UserService
                     ->orWhere('email', 'LIKE', "%{$query}%")
                     ->orWhere('rut', 'LIKE', "%{$query}%");
             })
-            ->when(!empty($filters), function (Builder $q) use ($filters) {
-                $q->where($filters);
-            })
             ->paginate($perPage);
     }
 
     /**
      * Crea un nuevo usuario usando asignación masiva.
+     * @param array $data
+     * @return User
      */
     public function createUser(array $data): User
     {
@@ -47,6 +50,8 @@ class UserService
 
     /**
      * Obtiene un usuario por su ID.
+     * @param int $id
+     * @return User
      */
     public function getUserById(int $id): User
     {
@@ -55,6 +60,9 @@ class UserService
 
     /**
      * Actualiza un usuario usando asignación masiva.
+     * @param User $user
+     * @param array $data
+     * @return User
      */
     public function updateUser(User $user, array $data): User
     {
@@ -65,8 +73,10 @@ class UserService
         return $user;
     }
 
-    /**
+    /** 
      * Elimina un usuario.
+     * @param User $user
+     * @return User
      */
     public function deleteUser(User $user): User
     {

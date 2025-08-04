@@ -10,6 +10,7 @@ class InmuebleService
 {
     /**
      * Obtiene todos los inmuebles ordenados por fecha de creación (descendente).
+     * @return Collection 
      */
     public function getAllInmuebles()
     {
@@ -18,6 +19,10 @@ class InmuebleService
 
     /**
      * Obtiene todos los inmuebles con filtros y paginación.
+     * @param string|null $query
+     * @param int|null $perPage
+     * @param array|null $filters
+     * @return LengthAwarePaginator 
      */
     public function getAllInmueblesByQuery(?string $query, ?int $perPage = 15, ?array $filters = []): LengthAwarePaginator
     {
@@ -36,6 +41,8 @@ class InmuebleService
 
     /**
      * Crea un nuevo inmueble usando asignación masiva.
+     * @param array $data
+     * @return Inmueble 
      */
     public function createInmueble(array $data): Inmueble
     {
@@ -44,6 +51,8 @@ class InmuebleService
 
     /**
      * Obtiene un inmueble por su ID.
+     * @param int $id
+     * @return Inmueble 
      */
     public function getInmuebleById(int $id): Inmueble
     {
@@ -52,6 +61,9 @@ class InmuebleService
 
     /**
      * Actualiza un inmueble usando asignación masiva.
+     * @param Inmueble $inmueble
+     * @param array $data
+     * @return Inmueble 
      */
     public function updateInmueble(Inmueble $inmueble, array $data): Inmueble
     {
@@ -59,8 +71,10 @@ class InmuebleService
         return $inmueble;
     }
 
-    /**
+    /** 
      * Elimina un inmueble.
+     * @param Inmueble $inmueble
+     * @return Inmueble 
      */
     public function deleteInmueble(Inmueble $inmueble): Inmueble
     {

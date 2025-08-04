@@ -23,6 +23,8 @@ class ImportHistoriesController extends Controller
 
     /**
      * Listar todos los inmuebles.
+     * @param Request $request
+     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -40,6 +42,8 @@ class ImportHistoriesController extends Controller
 
     /**
      * Guardar un nuevo inmueble.
+     * @param ImportHistoriesRequest $request
+     * @return JsonResponse
      */
     public function store(ImportHistoriesRequest $request): JsonResponse
     {
@@ -54,6 +58,8 @@ class ImportHistoriesController extends Controller
 
     /**
      * Mostrar un import_history.
+     * @param ImportHistories $importHistory
+     * @return JsonResponse
      */
     public function show(ImportHistories $importHistory): JsonResponse
     {
@@ -65,6 +71,9 @@ class ImportHistoriesController extends Controller
 
     /**
      * Actualizar un import_history.
+     * @param ImportHistories $importHistory
+     * @param ImportHistoriesRequest $request
+     * @return JsonResponse
      */
     public function update(ImportHistories $importHistory, ImportHistoriesRequest $request): JsonResponse
     {
@@ -79,6 +88,8 @@ class ImportHistoriesController extends Controller
 
     /**
      * Eliminar un import_history.
+     * @param ImportHistories $importHistory
+     * @return JsonResponse
      */
     public function destroy(ImportHistories $importHistory): JsonResponse
     {

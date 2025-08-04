@@ -34,4 +34,33 @@ class UpdatePasswordRequest extends FormRequest
             ],
         ];
     }
+
+    /**
+     * Get the custom attributes for the defined validation rules.
+     *
+     * @return array
+     */
+    public function attributes(): array
+    {
+        return [
+            'current_password' => 'Contraseña actual',
+            'new_password' => 'Contraseña nueva',
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'current_password.required' => 'La contraseña actual es obligatoria.',
+            'new_password.required' => 'La nueva contraseña es obligatoria.',
+            'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'new_password.max' => 'La nueva contraseña debe tener un máximo de 255 caracteres.',
+            'new_password.confirmed' => 'Las contraseñas no coinciden.',
+        ];
+    }
 }

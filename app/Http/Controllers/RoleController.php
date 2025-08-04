@@ -22,20 +22,23 @@ class RoleController extends Controller
     }
 
     /**
-     * Listar todos los inmuebles.
+     * Listar todos los roles.
+     * @param Request $request
+     * @return JsonResponse 
      */
     public function index(Request $request): JsonResponse
     {
         $query = $request->query('query');
         $perPage = $request->query('per_page');
-        $filters = $request->only('rol_avaluo', 'foja');
-        $roles = $this->roleService->getAllRolesByQuery($query, $perPage, $filters);
+        $roles = $this->roleService->getAllRolesByQuery($query, $perPage);
 
         return RoleResource::collection($roles)->response();
     }
 
     /**
      * Guardar un nuevo role.
+     * @param RoleRequest $request
+     * @return JsonResponse 
      */
     public function store(RoleRequest $request): JsonResponse
     {
@@ -50,6 +53,8 @@ class RoleController extends Controller
 
     /**
      * Mostrar un role.
+     * @param Role $role
+     * @return JsonResponse 
      */
     public function show(Role $role): JsonResponse
     {
@@ -61,6 +66,9 @@ class RoleController extends Controller
 
     /**
      * Actualizar un role.
+     * @param Role $role
+     * @param RoleRequest $request
+     * @return JsonResponse 
      */
     public function update(Role $role, RoleRequest $request): JsonResponse
     {
@@ -75,6 +83,8 @@ class RoleController extends Controller
 
     /**
      * Eliminar un role.
+     * @param Role $role
+     * @return JsonResponse 
      */
     public function destroy(Role $role): JsonResponse
     {

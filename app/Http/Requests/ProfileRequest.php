@@ -16,7 +16,9 @@ class ProfileRequest extends FormRequest
     }
 
     /**
-     * Obtiene las reglas de validación que se aplican a la solicitud.
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
      */
     public function rules(): array
     {
@@ -43,11 +45,29 @@ class ProfileRequest extends FormRequest
     }
 
     /**
-     * Mensajes de error personalizados para la validación.
+     * Get the custom attributes for the defined validation rules.
+     *
+     * @return array
+     */
+    public function attributes(): array
+    {
+        return [
+            'name' => 'Nombre',
+            'paternal_surname' => 'Apellido paterno',
+            'maternal_surname' => 'Apellido materno',
+            'rut' => 'RUT',
+            'email' => 'Correo electrónico',
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array
      */
     public function messages(): array
     {
-        return [
+        return [    
             'name.required' => 'El nombre es obligatorio.',
             'name.max' => 'El nombre no puede tener más de 255 caracteres.',
             'paternal_surname.required' => 'El apellido paterno es obligatorio.',

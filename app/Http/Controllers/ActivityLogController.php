@@ -19,6 +19,8 @@ class ActivityLogController extends Controller
 
     /**
      * Listar todos los logs de actividad.
+     * @param Request $request
+     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
