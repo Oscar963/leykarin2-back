@@ -26,7 +26,7 @@ class InmuebleService
      */
     public function getAllInmueblesByQuery(?string $query, ?int $perPage = 15, ?array $filters = []): LengthAwarePaginator
     {
-        return Inmueble::oldest('id')
+        return Inmueble::latest('id')
             ->when($query, function (Builder $q) use ($query) {
                 $q->where('numero', 'LIKE', "%{$query}%")
                     ->orWhere('descripcion', 'LIKE', "%{$query}%")
