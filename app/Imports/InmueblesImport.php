@@ -17,9 +17,9 @@ use Illuminate\Support\Facades\Session;
 class InmueblesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithValidation, WithEvents
 {
     protected $importHistory;
-    protected $successCount = 0;
-    protected $errorCount = 0;
-    protected array $errorLog = [];
+    public $successCount = 0;
+    public $errorCount = 0;
+    public array $errorLog = [];
     protected ImportHistoriesService $importHistoriesService;
     protected $expectedHeaders = [
         'numero',
@@ -97,18 +97,20 @@ class InmueblesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVa
 
     public function model(array $row)
     {
+        $currentRow = $this->successCount + $this->errorCount + 1;
+        
         try {
             // Validar que todas las columnas requeridas existan
             foreach ($this->expectedHeaders as $header) {
                 if (!array_key_exists($header, $row)) {
                     $error = "Falta la columna requerida: '{$header}'. Verifica que las cabeceras sean correctas y estén en el orden exacto.";
                     $this->errorLog[] = [
-                        'row' => $this->successCount + $this->errorCount + 1,
+                        'row' => $currentRow,
                         'error' => $error,
                         'timestamp' => now()
                     ];
                     $this->errorCount++;
-                    throw ValidationException::withMessages(['file' => [$error]]);
+                    return null; // No lanzar excepción, solo retornar null
                 }
             }
 
@@ -143,14 +145,14 @@ class InmueblesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVa
             return $inmueble;
         } catch (\Exception $e) {
             $this->errorLog[] = [
-                'row' => $this->successCount + $this->errorCount + 1,
+                'row' => $currentRow,
                 'error' => $e->getMessage(),
                 'timestamp' => now()
             ];
             $this->errorCount++;
 
-            // Re-lanzar la excepción para que Laravel Excel la maneje
-            throw $e;
+            // No re-lanzar la excepción, retornar null para continuar con la siguiente fila
+            return null;
         }
     }
 

@@ -16,9 +16,9 @@ use App\Models\Inmueble;
 use App\Models\ImportHistories;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Illuminate\Support\Facades\Log;
 
 class InmuebleController extends Controller
 {
@@ -119,66 +119,73 @@ class InmuebleController extends Controller
      */
     public function import(Request $request): JsonResponse
     {
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv',
-        ]);
-
-        $file = $request->file('file');
-        $filename = $file->getClientOriginalName();
-        $userId = auth()->id();
-        $model = 'Inmueble';
-
         try {
-            DB::transaction(function () use ($file, $filename, $userId, $model) {
-                // Limpiar la tabla antes de importar
-                Inmueble::truncate();
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls,csv',
+            ]);
 
-                // Crear el importador con los parámetros necesarios
-                $importer = new InmueblesImport($filename, $userId, $model);
+            $file = $request->file('file');
+            $filename = $file->getClientOriginalName();
+            $userId = auth()->id();
+            $model = 'Inmueble';
 
-                // Ejecutar la importación
-                Excel::import($importer, $file);
-            });
+            Inmueble::truncate();
+            $importer = new InmueblesImport($filename, $userId, $model);
+            Excel::import($importer, $file);
 
             $this->logActivity('import_inmuebles', 'Usuario importó inmuebles');
+            
+            $success = $importer->successCount ?? 0;
+            $errors = $importer->errorCount ?? 0;
+            $errorLog = $importer->errorLog ?? [];
+            $total = $success + $errors;
+            
             return response()->json([
-                'message' => 'Se han importado ' . Inmueble::count() . ' inmuebles exitosamente',
-                'total_imported' => Inmueble::count()
-            ], 201);
-        } catch (ExcelValidationException | ValidationException $e) {
-            // Si hay un error de validación, marcar la importación como fallida
-            $importHistoriesService = app(ImportHistoriesService::class);
-
-            // Buscar el último registro de importación para este usuario
-            $lastImport = ImportHistories::where('imported_by', $userId)
-                ->where('filename', $filename)
-                ->where('status', 'processing')
-                ->latest()
-                ->first();
-
-            if ($lastImport) {
-                $importHistoriesService->failImport($lastImport, $e->getMessage());
+                'message' => "Importación finalizada. Total: $total, Exitosos: $success, Fallidos: $errors",
+                'total_imported' => $success,
+                'total_failed' => $errors,
+                'error_details' => $errorLog
+            ], ($errors > 0 ? 207 : 201));
+            
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'error' => $e->getMessage(),
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (ExcelValidationException $e) {
+            $failures = $e->failures();
+            $errorDetails = [];
+            
+            foreach ($failures as $failure) {
+                $errorDetails[] = [
+                    'row' => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors' => $failure->errors(),
+                    'values' => $failure->values()
+                ];
             }
-
-            throw $e;
+            
+            return response()->json([
+                'message' => 'Error de validación en el archivo Excel',
+                'error' => 'El archivo contiene errores de formato o validación',
+                'error_details' => $errorDetails
+            ], 422);
+            
         } catch (\Exception $e) {
-            // Para cualquier otro error
-            $importHistoriesService = app(ImportHistoriesService::class);
-
-            $lastImport = ImportHistories::where('imported_by', $userId)
-                ->where('filename', $filename)
-                ->where('status', 'processing')
-                ->latest()
-                ->first();
-
-            if ($lastImport) {
-                $importHistoriesService->failImport($lastImport, 'Error inesperado durante la importación: ' . $e->getMessage());
-            }
-
-            $this->logActivity('import_inmuebles', 'Usuario importó inmuebles');
+            Log::error('Error durante la importación de inmuebles', [
+                'user_id' => auth()->id(),
+                'filename' => $filename ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
-                'message' => 'Error durante la importación',
-                'error' => $e->getMessage()
+                'message' => 'Error inesperado durante la importación',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ], 500);
         }
     }
