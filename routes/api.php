@@ -19,13 +19,9 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('auth.login');
-        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,10')->name('auth.forgot-password');
-        Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:3,10')->name('auth.reset-password');
-
-        // -- Rutas para Clave Única (públicas) --
-        Route::get('/claveunica/redirect', [AuthController::class, 'redirectToClaveUnica'])->name('auth.claveunica.redirect');
-        Route::get('/claveunica/callback', [AuthController::class, 'handleClaveUnicaCallback'])->name('auth.claveunica.callback');
+        // Las rutas de Clave Única deben ir en routes/web.php para usar sesiones (Socialite)
+        // Fortify expone /api/v1/auth/login, /api/v1/auth/logout, /api/v1/auth/forgot-password y /api/v1/auth/reset-password.
+        // Evitamos duplicidad de rutas definiéndolas solo desde Fortify.
     });
 
     /*
@@ -34,10 +30,8 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['auth:sanctum', 'active.user'])->group(function () {
-
         // --- Autenticación (para usuario logueado) ---
         Route::prefix('auth')->group(function () {
-            Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
         });
 

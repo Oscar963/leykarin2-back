@@ -19,6 +19,7 @@ class AuthResource extends JsonResource
             'rut' => $this->formatRut($this->rut),
             'roles' => $this->whenLoaded('roles', fn() => $this->getRoleNames()),
             'permissions' => $this->whenLoaded('permissions', fn() => $this->getAllPermissions()->pluck('name')),
+            'two_factor_enabled' => !empty($this->two_factor_secret) && !empty($this->two_factor_confirmed_at),
         ];
         return array_merge($defaultData, $customData);
     }

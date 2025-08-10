@@ -71,6 +71,17 @@ class Handler extends ExceptionHandler
             return $this->jsonResponse('Demasiados intentos. Por favor, inténtalo de nuevo más tarde.', 429);
         }
 
+        if (
+            $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+            && $exception->getStatusCode() === 423
+        ) {
+            return $this->jsonResponse(
+                'Se requiere verificación adicional para completar la autenticación.',
+                423,
+                ['two_factors' => true]
+            );
+        }
+
         if ($exception instanceof ExcelValidationException) {
             return $this->jsonResponse(
                 'El archivo Excel no cumple con el formato requerido.',

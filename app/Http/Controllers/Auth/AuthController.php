@@ -7,19 +7,28 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Auth\AuthResource;
 use App\Services\SecurityLogService;
 use App\Helpers\RutHelper;
+use App\Models\User;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use Illuminate\Http\RedirectResponse;
+use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
+use Laravel\Fortify\Http\Requests\TwoFactorLoginRequest;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
-use App\Traits\LogsActivity;
+use Throwable;
 
 class AuthController extends Controller
 {
     use LogsActivity;
+
+    /**
+     * Inyecta la instancia del servicio de log de seguridad.
+     *
+     * @param SecurityLogService $securityLogService
+     */
     protected $securityLogService;
 
     public function __construct(SecurityLogService $securityLogService)
@@ -28,37 +37,74 @@ class AuthController extends Controller
     }
 
     /**
-     * Autentica al usuario e inicia una sesión.
+     * Maneja la solicitud de inicio de sesión del usuario.
+     *
+     * @param LoginRequest $request
+     * @return JsonResponse
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $rut = $request->input('rut');
-        $rut = RutHelper::normalize($rut); // Normaliza aquí
+        $credentials = [
+            'rut' => RutHelper::normalize($request->input('rut')),
+            'password' => $request->input('password')
+        ];
 
-        if (!Auth::attempt(['rut' => $rut, 'password' => $request->input('password')], $request->boolean('remember'))) {
-            $this->securityLogService->logFailedLogin(['rut' => $rut], $request);
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            $this->securityLogService->logFailedLogin(['rut' => $credentials['rut']], $request);
             return $this->sendFailedLoginResponse();
         }
 
         $request->session()->regenerate();
-
         $user = $request->user();
 
         if (!$user->status) {
+            $this->securityLogService->logSuspendedAccountLogin($user, $request);
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            $this->securityLogService->logSuspendedAccountLogin($user, $request);
             return $this->sendSuspendedAccountResponse();
         }
 
+        // Si el usuario tiene 2FA, preparamos la sesión para el siguiente paso.
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            $request->session()->put('login.id', $user->getKey());
+            $request->session()->put('login.remember', $request->boolean('remember'));
+            Auth::guard('web')->logout();
+            $request->session()->regenerate();
+            abort(423, 'Two-Factor authentication required.'); // Locked
+        }
+
         $this->securityLogService->logSuccessfulLogin($user, $request);
-        $this->logActivity('login', 'Usuario inició sesión');
-        return $this->sendSuccessfulLoginResponse($user);
+        $this->logActivity('login', 'Usuario inició sesión exitosamente.');
+
+        return $this->sendSuccessfulAuthenticationResponse($request, $user);
     }
 
     /**
-     * Redirige al usuario a la página de autenticación de Clave Única.
+     * Maneja el desafío de autenticación de dos factores (2FA).
+     *
+     * @param TwoFactorLoginRequest $request
+     * @return JsonResponse
+     */
+    public function twoFactorChallenge(TwoFactorLoginRequest $request): JsonResponse
+    {
+        $user = $this->getChallengedUser($request);
+
+        if (!$user || !$this->isValidTwoFactorCode($request, $user)) {
+            // El Rate Limiter se aplica automáticamente a través de la configuración de Fortify.
+            return $this->sendFailedTwoFactorResponse();
+        }
+
+        $this->securityLogService->logSuccessfulLogin($user, $request);
+        $this->logActivity('login', 'Usuario completó 2FA y inició sesión.');
+
+        return $this->sendSuccessfulAuthenticationResponse($request, $user);
+    }
+
+    /**
+     * Redirige al usuario al proveedor de Clave Única.
+     *
+     * @return RedirectResponse
      */
     public function redirectToClaveUnica(): RedirectResponse
     {
@@ -66,97 +112,80 @@ class AuthController extends Controller
     }
 
     /**
-     * Maneja la respuesta de Clave Única después de la autenticación.
+     * Obtiene la información del usuario desde Clave Única y lo autentica.
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws Throwable
      */
-    public function handleClaveUnicaCallback(Request $request)
+    public function handleClaveUnicaCallback(Request $request): RedirectResponse
     {
         try {
             $claveUnicaUser = Socialite::driver('claveunica')->user();
-
-            // Log de la respuesta para debugging (remover en producción)
-            Log::info('Clave Única Response', [
-                'user_data' => $claveUnicaUser->user ?? null,
-                'id' => $claveUnicaUser->id ?? null,
-                'email' => $claveUnicaUser->email ?? null
-            ]);
-
-            // Validar y normalizar el RUT
-            $rawRut = $claveUnicaUser->id; // El provider devuelve el RUN en el campo 'id'
-
-            if (empty($rawRut)) {
-                Log::error('Clave Única: RUT vacío recibido');
-                return redirect(config('app.frontend_url') . '/login?error=invalid_rut');
-            }
-
-            $normalizedRut = RutHelper::normalize($rawRut);
+            $normalizedRut = RutHelper::normalize($claveUnicaUser->id);
 
             if (!$normalizedRut) {
-                Log::error('Clave Única: RUT inválido', ['rut' => $rawRut]);
-                return redirect(config('app.frontend_url') . '/login?error=invalid_rut');
+                Log::error('Clave Única: RUT inválido recibido.', ['rut' => $claveUnicaUser->id]);
+                return $this->redirectWithError('invalid_rut');
             }
 
-            // Extraer datos del usuario de forma segura
-            $userData = $claveUnicaUser->user ?? [];
-            $nombres = $userData['name']['nombres'] ?? [];
-            $apellidos = $userData['name']['apellidos'] ?? [];
-
-            $firstName = !empty($nombres) ? $nombres[0] : '';
-            $paternalSurname = !empty($apellidos) ? $apellidos[0] : '';
-            $maternalSurname = isset($apellidos[1]) ? $apellidos[1] : '';
-
-            // Buscar o crear el usuario en el sistema
-            $user = User::firstOrCreate(
+            $user = User::updateOrCreate(
                 ['rut' => $normalizedRut],
                 [
-                    'name' => $firstName,
-                    'paternal_surname' => $paternalSurname,
-                    'maternal_surname' => $maternalSurname,
-                    'email' => $claveUnicaUser->email ?? '',
-                    'status' => true, // Activar el usuario por defecto
+                    'name' => data_get($claveUnicaUser->user, 'name.nombres.0', 'Usuario'),
+                    'paternal_surname' => data_get($claveUnicaUser->user, 'name.apellidos.0', ''),
+                    'maternal_surname' => data_get($claveUnicaUser->user, 'name.apellidos.1', ''),
+                    'email' => $claveUnicaUser->email,
+                    'status' => true,
                 ]
             );
 
-            // Si el usuario ya existía, actualizar sus datos con la información más reciente
-            if (!$user->wasRecentlyCreated) {
-                $user->update([
-                    'name' => $firstName ?: $user->name,
-                    'paternal_surname' => $paternalSurname ?: $user->paternal_surname,
-                    'maternal_surname' => $maternalSurname ?: $user->maternal_surname,
-                    'email' => $claveUnicaUser->email ?: $user->email,
-                ]);
-            }
-
-            // Verificar si la cuenta está activa en nuestro sistema
             if (!$user->status) {
                 $this->securityLogService->logSuspendedAccountLogin($user, $request);
-                return redirect(config('app.frontend_url') . '/login?error=account_suspended');
+                return $this->redirectWithError('account_suspended');
             }
 
-            // Iniciar sesión para el usuario
-            Auth::login($user);
+            Auth::login($user, true); // Iniciar sesión con "remember me" por defecto
             $request->session()->regenerate();
-            $this->securityLogService->logSuccessfulLogin($user, $request);
 
-            // Redirigir al usuario al dashboard
-            $this->logActivity('login', 'Usuario inició sesión con Clave Única exitosamente');
+            $this->securityLogService->logSuccessfulLogin($user, $request);
+            $this->logActivity('login', 'Usuario inició sesión con Clave Única.');
+
             return redirect(config('app.frontend_url') . '/dashboard?login=success');
         } catch (InvalidStateException $e) {
-            Log::error('Clave Única: Estado inválido', ['error' => $e->getMessage()]);
-            $this->logActivity('login', 'Usuario inició sesión con Clave Única fallido');
-            return redirect(config('app.frontend_url') . '/login?error=invalid_state');
-        } catch (\Exception $e) {
-            Log::error('Clave Única: Error general', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            $this->logActivity('login', 'Usuario inició sesión con Clave Única fallido');
-            return redirect(config('app.frontend_url') . '/login?error=claveunica_failed');
+            Log::error('Clave Única: Estado inválido.', ['error' => $e->getMessage()]);
+            $this->logActivity('login_failed', 'Intento de login con Clave Única falló (estado inválido).');
+            return $this->redirectWithError('invalid_state');
+        } catch (Throwable $e) {
+            Log::error('Clave Única: Error general.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $this->logActivity('login_failed', 'Intento de login con Clave Única falló (error general).');
+            throw $e; // Relanzar para que el handler de excepciones lo tome
         }
     }
 
     /**
+     * Cierra la sesión activa del usuario.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $this->securityLogService->logLogout($request->user(), $request);
+        $this->logActivity('logout', 'Usuario cerró sesión.');
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Cerró sesión exitosamente.']);
+    }
+
+    /**
      * Retorna los datos del usuario autenticado.
-     * Esta ruta debe estar protegida por el middleware 'auth:sanctum'.
+     *
+     * @param Request $request
+     * @return AuthResource
      */
     public function user(Request $request): AuthResource
     {
@@ -165,70 +194,107 @@ class AuthController extends Controller
     }
 
     /**
-     * Cierra la sesión del usuario.
-     * Esta ruta debe estar protegida por el middleware 'auth:sanctum'.
-     */
-    public function logout(Request $request): JsonResponse
-    {
-        $this->securityLogService->logLogout($request->user(), $request);
-
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        $this->logActivity('logout', 'Usuario cerró sesión');
-        return response()->json(['message' => 'Cerró sesión exitosamente']);
-    }
-
-    /**
-     * Verifica si el usuario tiene una sesión activa.
-     */
-    public function isAuthenticated(): JsonResponse
-    {
-        return response()->json(['isAuthenticated' => Auth::check()]);
-    }
-
-    /**
-     * Envía respuesta de inicio de sesión exitoso
+     * Prepara y envía la respuesta JSON para un inicio de sesión exitoso.
      *
+     * @param Request $request
      * @param User $user
      * @return JsonResponse
      */
-    protected function sendSuccessfulLoginResponse(User $user): JsonResponse
+    protected function sendSuccessfulAuthenticationResponse(Request $request, User $user): JsonResponse
     {
+        Auth::login($user, $request->session()->pull('login.remember', false));
+        $request->session()->regenerate();
+
         return response()->json([
             'message' => "Bienvenido(a) al sistema {$user->name} {$user->paternal_surname}",
-            'user' => new AuthResource($user->load(['roles', 'permissions']))
+            'user' => new AuthResource($user->loadMissing(['roles', 'permissions']))
         ]);
     }
 
     /**
-     * Envía respuesta de inicio de sesión fallido
+     * Recupera el usuario que está intentando el desafío 2FA.
+     *
+     * @param Request $request
+     * @return User|null
+     */
+    protected function getChallengedUser(Request $request): ?User
+    {
+        if (!$userId = $request->session()->get('login.id')) {
+            return null;
+        }
+
+        return User::find($userId);
+    }
+
+    /**
+     * Valida el código 2FA o un código de recuperación.
+     *
+     * @param Request $request
+     * @param User $user
+     * @return bool
+     */
+    protected function isValidTwoFactorCode(Request $request, User $user): bool
+    {
+        $provider = app(TwoFactorAuthenticationProvider::class);
+        $code = $request->input('code');
+
+        // Validar código TOTP
+        if ($provider->verify(decrypt($user->two_factor_secret), $code)) {
+            return true;
+        }
+
+
+
+        return false;
+    }
+
+    /**
+     * Construye una respuesta de error para un intento de login fallido.
      *
      * @return JsonResponse
      */
     protected function sendFailedLoginResponse(): JsonResponse
     {
         return response()->json([
-            'status' => 401,
-            'error' => [
-                'message' => 'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.'
-            ]
+            'message' => 'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.'
         ], 401);
     }
 
     /**
-     * Envía respuesta de cuenta suspendida
+     * Construye una respuesta de error para un intento de 2FA fallido.
+     *
+     * @return JsonResponse
+     */
+    protected function sendFailedTwoFactorResponse(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'El código de autenticación de dos factores proporcionado no es válido.',
+            'errors' => [
+                'code' => ['El código proporcionado es incorrecto.'],
+            ]
+        ], 422);
+    }
+
+    /**
+     * Construye una respuesta de error para un intento de login con cuenta suspendida.
      *
      * @return JsonResponse
      */
     protected function sendSuspendedAccountResponse(): JsonResponse
     {
         return response()->json([
-            'status' => 403,
-            'error' => [
-                'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.'
-            ]
+            'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.'
         ], 403);
+    }
+
+    /**
+     * Construye una URL de redirección con un parámetro de error para el frontend.
+     *
+     * @param string $errorCode
+     * @return RedirectResponse
+     */
+    protected function redirectWithError(string $errorCode): RedirectResponse
+    {
+        return redirect(config('app.frontend_url') . '/login?error=' . $errorCode);
     }
 }

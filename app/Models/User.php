@@ -9,8 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
@@ -19,6 +18,7 @@ class User extends Authenticatable
     use Notifiable;
     use SoftDeletes;
     use HasRoles;
+    use TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -43,6 +43,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -63,21 +65,6 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
-    }
-
-    /**
-     * Set the password attribute.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setPasswordAttribute($value)
-    {
-        if (Str::startsWith($value, '$2y$')) { // Si es un hash bcrypt válido
-            $this->attributes['password'] = $value;
-        } else {
-            $this->attributes['password'] = Hash::make($value);
-        }
     }
 
     /**
