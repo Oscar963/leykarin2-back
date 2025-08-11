@@ -59,7 +59,7 @@ class PermissionSeeder extends Seeder
 
         // Obtener los roles
         $administrador = Role::where('name', 'Administrador del Sistema')->first();
-        $gestor = Role::where('name', 'Gestor de Contenido')->first();
+        $gestor = Role::where('name', 'Gestor de Inmuebles')->first();
         $editor = Role::where('name', 'Editor')->first();
 
         // 1. Administrador: todos los permisos
