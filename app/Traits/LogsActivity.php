@@ -19,9 +19,18 @@ trait LogsActivity
     protected function logActivity($action, $details = null)
     {
         $location = Location::get(Request::ip());
-    
+
+        // Intentar obtener el ID de usuario autenticado; si no existe (p. ej., antes de completar 2FA),
+        // usar el ID temporal almacenado en la sesión durante el flujo de login.
+        $userId = Auth::id() ?: Request::session()->get('login.id');
+
+        // Si no hay userId disponible, evitar registrar para no violar la FK (user_id NOT NULL)
+        if (!$userId) {
+            return;
+        }
+
         $data = [
-            'user_id' => Auth::id(),
+            'user_id' => $userId,
             'action' => $action,
             'details' => $details,
             'ip_address' => Request::ip(),
@@ -31,7 +40,7 @@ trait LogsActivity
             'os' => $this->getOS(),
             'referer' => Request::header('referer')
         ];
-    
+
         dispatch(new LogActivityJob($data));
     }
 

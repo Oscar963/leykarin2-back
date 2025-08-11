@@ -45,6 +45,7 @@ class PermissionSeeder extends Seeder
 
             // ===== MÓDULO DE IMPORTACIÓN DE INMUEBLES =====
             'inmuebles.import',
+            'inmuebles.export',
 
             // ===== MÓDULO DE LOGS DE ACTIVIDAD =====
             'activity_logs.list',
