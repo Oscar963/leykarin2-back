@@ -10,6 +10,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use App\Exceptions\InvalidCredentialsException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -49,6 +50,13 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof AuthenticationException) {
             return $this->jsonResponse('No autenticado.', 401);
+        }
+
+        if ($exception instanceof InvalidCredentialsException) {
+            return $this->jsonResponse(
+                'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.',
+                401
+            );
         }
 
         if ($exception instanceof AuthorizationException) {

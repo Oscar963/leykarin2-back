@@ -9,6 +9,7 @@ use App\Services\SecurityLogService;
 use App\Helpers\RutHelper;
 use App\Models\User;
 use App\Traits\LogsActivity;
+use App\Exceptions\InvalidCredentialsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -255,9 +256,7 @@ class AuthController extends Controller
      */
     protected function sendFailedLoginResponse(): JsonResponse
     {
-        return response()->json([
-            'message' => 'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.'
-        ], 401);
+        throw new InvalidCredentialsException('Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.');
     }
 
     /**
