@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
                 'name' => 'Admin',
                 'paternal_surname' => 'Sistema',
                 'maternal_surname' => 'Demo',
-                'email' => 'admin.sistema@demo.com',
+                'email' => 'oscar.apata01@gmail.com',
                 'status' => 1,
                 'password' => Hash::make('password123'),
             ]

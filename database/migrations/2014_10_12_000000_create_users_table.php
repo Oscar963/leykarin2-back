@@ -23,6 +23,13 @@ class CreateUsersTable extends Migration
             $table->boolean('status');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // Campos para 2FA por email
+            $table->boolean('two_factor_enabled')->default(false);
+            $table->string('two_factor_code', 6)->nullable();
+            $table->timestamp('two_factor_expires_at')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
+            
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

@@ -18,10 +18,15 @@ Route::prefix('v1')->group(function () {
     | Rutas de Autenticación Públicas
     |--------------------------------------------------------------------------
     */
-    Route::prefix('auth')->group(function () {
-        // Las rutas de Clave Única deben ir en routes/web.php para usar sesiones (Socialite)
-        // Fortify expone /api/v1/auth/login, /api/v1/auth/logout, /api/v1/auth/forgot-password y /api/v1/auth/reset-password.
-        // Evitamos duplicidad de rutas definiéndolas solo desde Fortify.
+    Route::prefix('auth')->middleware(['web'])->group(function () {
+        Route::post('/login', [AuthController::class, 'login'])->name('login');
+        Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
+        Route::post('/two-factor-challenge', [AuthController::class, 'twoFactorChallenge'])->name('two-factor.login');
+        Route::post('/two-factor-resend', [AuthController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
+        
+        // Rutas de recuperación de contraseña
+        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+        Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.reset');
     });
 
     /*
@@ -33,6 +38,11 @@ Route::prefix('v1')->group(function () {
         // --- Autenticación (para usuario logueado) ---
         Route::prefix('auth')->group(function () {
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
+            
+            // Gestión de 2FA por email
+            Route::get('/two-factor-status', [AuthController::class, 'getTwoFactorStatus'])->name('two-factor.status');
+            Route::post('/two-factor-enable', [AuthController::class, 'enableTwoFactor'])->name('two-factor.enable');
+            Route::post('/two-factor-disable', [AuthController::class, 'disableTwoFactor'])->name('two-factor.disable');
         });
 
         Route::prefix('profile')->group(function () {

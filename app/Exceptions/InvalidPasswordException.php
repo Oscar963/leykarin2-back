@@ -4,12 +4,12 @@ namespace App\Exceptions;
 
 use Exception;
 
-class InvalidCredentialsException extends Exception
+class InvalidPasswordException extends Exception
 {
     /**
      * Create a new exception instance.
      */
-    public function __construct(string $message = 'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.', int $code = 0, \Throwable $previous = null)
+    public function __construct(string $message = 'La contraseña proporcionada es incorrecta.', int $code = 0, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
@@ -19,7 +19,7 @@ class InvalidCredentialsException extends Exception
      */
     public function getStatusCode(): int
     {
-        return 401;
+        return 422;
     }
 
     /**
@@ -28,8 +28,10 @@ class InvalidCredentialsException extends Exception
     public function getAdditionalData(): array
     {
         return [
-            'error_type' => 'invalid_credentials',
-            'retry_allowed' => true
+            'errors' => [
+                'password' => ['La contraseña es incorrecta.']
+            ],
+            'error_type' => 'invalid_password'
         ];
     }
 }

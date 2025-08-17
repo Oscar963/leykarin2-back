@@ -10,13 +10,15 @@ use App\Helpers\RutHelper;
 use App\Models\User;
 use App\Traits\LogsActivity;
 use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\TwoFactorRequiredException;
+use App\Exceptions\InvalidTwoFactorCodeException;
+use App\Exceptions\InvalidPasswordException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
-use Laravel\Fortify\Http\Requests\TwoFactorLoginRequest;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Throwable;
@@ -66,13 +68,17 @@ class AuthController extends Controller
             return $this->sendSuspendedAccountResponse();
         }
 
-        // Si el usuario tiene 2FA, preparamos la sesión para el siguiente paso.
+        // Si el usuario tiene 2FA, generamos y enviamos el código por email
         if ($user->hasEnabledTwoFactorAuthentication()) {
             $request->session()->put('login.id', $user->getKey());
             $request->session()->put('login.remember', $request->boolean('remember'));
             Auth::guard('web')->logout();
             $request->session()->regenerate();
-            abort(423, 'Two-Factor authentication required.'); // Locked
+            
+            // Generar y enviar código 2FA por email
+            $user->generateTwoFactorCode();
+            
+            throw new TwoFactorRequiredException(null, $user->email);
         }
 
         $this->securityLogService->logSuccessfulLogin($user, $request);
@@ -82,22 +88,40 @@ class AuthController extends Controller
     }
 
     /**
-     * Maneja el desafío de autenticación de dos factores (2FA).
+     * Alias para mantener compatibilidad con la ruta existente /two-factor-challenge.
+     * Delegamos al método twoFactorAuthentication.
+     */
+    public function twoFactorChallenge(Request $request): JsonResponse
+    {
+        return $this->twoFactorAuthentication($request);
+    }
+
+    /**
+     * Maneja el desafío de autenticación de dos factores (2FA) por email.
      *
-     * @param TwoFactorLoginRequest $request
+     * @param Request $request
      * @return JsonResponse
      */
-    public function twoFactorChallenge(TwoFactorLoginRequest $request): JsonResponse
+    public function twoFactorAuthentication(Request $request): JsonResponse
     {
+        $request->validate([
+            'code' => 'required|string|size:6'
+        ]);
+
         $user = $this->getChallengedUser($request);
 
-        if (!$user || !$this->isValidTwoFactorCode($request, $user)) {
-            // El Rate Limiter se aplica automáticamente a través de la configuración de Fortify.
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'code' => ['Sesión de autenticación inválida. Por favor, inicia sesión nuevamente.']
+            ]);
+        }
+
+        if (!$user->validateTwoFactorCode($request->input('code'))) {
             return $this->sendFailedTwoFactorResponse();
         }
 
         $this->securityLogService->logSuccessfulLogin($user, $request);
-        $this->logActivity('login', 'Usuario completó 2FA y inició sesión.');
+        $this->logActivity('login', 'Usuario completó 2FA por email y inició sesión.');
 
         return $this->sendSuccessfulAuthenticationResponse($request, $user);
     }
@@ -227,27 +251,6 @@ class AuthController extends Controller
         return User::find($userId);
     }
 
-    /**
-     * Valida el código 2FA o un código de recuperación.
-     *
-     * @param Request $request
-     * @param User $user
-     * @return bool
-     */
-    protected function isValidTwoFactorCode(Request $request, User $user): bool
-    {
-        $provider = app(TwoFactorAuthenticationProvider::class);
-        $code = $request->input('code');
-
-        // Validar código TOTP
-        if ($provider->verify(decrypt($user->two_factor_secret), $code)) {
-            return true;
-        }
-
-
-
-        return false;
-    }
 
     /**
      * Construye una respuesta de error para un intento de login fallido.
@@ -266,12 +269,7 @@ class AuthController extends Controller
      */
     protected function sendFailedTwoFactorResponse(): JsonResponse
     {
-        return response()->json([
-            'message' => 'El código de autenticación de dos factores proporcionado no es válido.',
-            'errors' => [
-                'code' => ['El código proporcionado es incorrecto.'],
-            ]
-        ], 422);
+        throw new InvalidTwoFactorCodeException();
     }
 
     /**
@@ -284,6 +282,119 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Tu cuenta está suspendida. Por favor contáctate con el administrador del sistema.'
         ], 403);
+    }
+
+    /**
+     * Habilita la autenticación de dos factores por email para el usuario.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function enableTwoFactor(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => 'required|string'
+        ]);
+
+        $user = $request->user();
+
+        // Verificar contraseña actual por seguridad
+        if (!Auth::guard('web')->validate(['rut' => $user->rut, 'password' => $request->password])) {
+            throw new InvalidPasswordException();
+        }
+
+        if ($user->two_factor_enabled) {
+            return response()->json([
+                'message' => 'La autenticación de dos factores ya está habilitada.'
+            ], 400);
+        }
+
+        $user->enableTwoFactorAuthentication();
+        $this->logActivity('two_factor_enabled', 'Usuario habilitó 2FA por email.');
+
+        return response()->json([
+            'message' => 'Autenticación de dos factores habilitada exitosamente.',
+            'two_factor_enabled' => true
+        ]);
+    }
+
+    /**
+     * Deshabilita la autenticación de dos factores por email para el usuario.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function disableTwoFactor(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => 'required|string'
+        ]);
+
+        $user = $request->user();
+
+        // Verificar contraseña actual por seguridad
+        if (!Auth::guard('web')->validate(['rut' => $user->rut, 'password' => $request->password])) {
+            throw new InvalidPasswordException();
+        }
+
+        if (!$user->two_factor_enabled) {
+            return response()->json([
+                'message' => 'La autenticación de dos factores ya está deshabilitada.'
+            ], 400);
+        }
+
+        $user->disableTwoFactorAuthentication();
+        $this->logActivity('two_factor_disabled', 'Usuario deshabilitó 2FA por email.');
+
+        return response()->json([
+            'message' => 'Autenticación de dos factores deshabilitada exitosamente.',
+            'two_factor_enabled' => false
+        ]);
+    }
+
+    /**
+     * Obtiene el estado actual de 2FA del usuario.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getTwoFactorStatus(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'two_factor_enabled' => $user->two_factor_enabled,
+            'two_factor_confirmed_at' => $user->two_factor_confirmed_at
+        ]);
+    }
+
+    /**
+     * Reenvía el código 2FA por email durante el proceso de login.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function resendTwoFactorCode(Request $request): JsonResponse
+    {
+        $user = $this->getChallengedUser($request);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Sesión de autenticación inválida. Por favor, inicia sesión nuevamente.'
+            ], 401);
+        }
+
+        if (!$user->hasEnabledTwoFactorAuthentication()) {
+            return response()->json([
+                'message' => 'El usuario no tiene 2FA habilitado.'
+            ], 400);
+        }
+
+        // Generar y enviar nuevo código
+        $user->generateTwoFactorCode();
+        $this->logActivity('two_factor_code_resent', 'Código 2FA reenviado por email.');
+
+        throw new TwoFactorRequiredException(null, $user->email);
     }
 
     /**

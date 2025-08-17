@@ -11,6 +11,9 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\TwoFactorRequiredException;
+use App\Exceptions\InvalidTwoFactorCodeException;
+use App\Exceptions\InvalidPasswordException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -54,8 +57,33 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof InvalidCredentialsException) {
             return $this->jsonResponse(
-                'Credenciales incorrectas. Verifique su rut y contraseña e intente nuevamente.',
-                401
+                $exception->getMessage(),
+                $exception->getStatusCode(),
+                $exception->getAdditionalData()
+            );
+        }
+
+        if ($exception instanceof TwoFactorRequiredException) {
+            return $this->jsonResponse(
+                $exception->getMessage(),
+                $exception->getStatusCode(),
+                $exception->getAdditionalData()
+            );
+        }
+
+        if ($exception instanceof InvalidTwoFactorCodeException) {
+            return $this->jsonResponse(
+                $exception->getMessage(),
+                $exception->getStatusCode(),
+                $exception->getAdditionalData()
+            );
+        }
+
+        if ($exception instanceof InvalidPasswordException) {
+            return $this->jsonResponse(
+                $exception->getMessage(),
+                $exception->getStatusCode(),
+                $exception->getAdditionalData()
             );
         }
 
@@ -77,17 +105,6 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof ThrottleRequestsException) {
             return $this->jsonResponse('Demasiados intentos. Por favor, inténtalo de nuevo más tarde.', 429);
-        }
-
-        if (
-            $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException
-            && $exception->getStatusCode() === 423
-        ) {
-            return $this->jsonResponse(
-                'Se requiere verificación adicional para completar la autenticación.',
-                423,
-                ['two_factors' => true]
-            );
         }
 
         if ($exception instanceof ExcelValidationException) {
