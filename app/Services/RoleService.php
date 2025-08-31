@@ -10,7 +10,7 @@ class RoleService
 {
     /**
      * Obtiene todos los roles ordenados por fecha de creación (descendente).
-     * @return Collection
+     * @return Collection<Role>
      */
     public function getAllRoles()
     {
@@ -21,7 +21,7 @@ class RoleService
      * Obtiene todos los roles con filtros y paginación.
      * @param ?string $query
      * @param ?int $perPage
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator<Role>   
      */
     public function getAllRolesByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {

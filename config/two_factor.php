@@ -21,7 +21,7 @@ return [
 
     // Configuración de email
     'mail' => [
-        'from_name' => env('MAIL_FROM_NAME', 'Sistema de Bienes Inmuebles'),
+        'from_name' => env('MAIL_FROM_NAME', 'Sistema de denuncias Leykarin'),
         'subject' => 'Código de Verificación - ' . env('APP_NAME'),
     ],
 ];

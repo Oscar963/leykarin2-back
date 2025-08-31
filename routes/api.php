@@ -10,8 +10,24 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\InmuebleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\WebController;
+use App\Http\Controllers\FileController;
 
 Route::prefix('v1')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Rutas Web
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/form-data', [WebController::class, 'getFormData'])->name('web.form-data');
+    Route::post('/complaints', [WebController::class, 'storeComplaint'])->name('complaints.store');
+    
+    // --- Gestión de Archivos Temporales (FilePond) ---
+    Route::prefix('temporary-files')->group(function () {
+        Route::post('/', [FileController::class, 'uploadTemporary'])->name('temporary-files.upload');
+        Route::get('/', [FileController::class, 'getTemporaryFiles'])->name('temporary-files.index');
+        Route::post('/delete/{temporaryFile}', [FileController::class, 'deleteTemporary'])->name('temporary-files.delete');
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -23,7 +39,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
         Route::post('/two-factor-challenge', [AuthController::class, 'twoFactorChallenge'])->name('two-factor.login');
         Route::post('/two-factor-resend', [AuthController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
-        
+
         // Rutas de recuperación de contraseña
         Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
         Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.reset');
@@ -38,7 +54,7 @@ Route::prefix('v1')->group(function () {
         // --- Autenticación (para usuario logueado) ---
         Route::prefix('auth')->group(function () {
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
-            
+
             // Gestión de 2FA por email
             Route::get('/two-factor-status', [AuthController::class, 'getTwoFactorStatus'])->name('two-factor.status');
             Route::post('/two-factor-enable', [AuthController::class, 'enableTwoFactor'])->name('two-factor.enable');
@@ -68,6 +84,18 @@ Route::prefix('v1')->group(function () {
 
         // --- Gestión de Logs ---
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+        // --- Gestión de Archivos ---
+        Route::prefix('complaints/{complaint}')->group(function () {
+            Route::post('/files/evidence', [FileController::class, 'uploadEvidence'])->name('complaints.files.evidence');
+            Route::post('/files/signature', [FileController::class, 'uploadSignature'])->name('complaints.files.signature');
+            Route::get('/files', [FileController::class, 'getComplaintFiles'])->name('complaints.files.index');
+        });
+
+        Route::prefix('files')->group(function () {
+            Route::delete('/{file}', [FileController::class, 'deleteFile'])->name('files.delete');
+            Route::get('/{file}/download', [FileController::class, 'downloadFile'])->name('files.download');
+        });
     });
 });
 

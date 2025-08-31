@@ -10,7 +10,7 @@ class PermissionService
 {
     /**
      * Obtiene todos los roles ordenados por fecha de creación (descendente).
-     * @return Collection
+     * @return Collection<Permission>
      */
     public function getAllPermissions()
     {
@@ -21,7 +21,7 @@ class PermissionService
      * Obtiene todos los permisos con filtros y paginación.
      * @param ?string $query
      * @param ?int $perPage
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator<Permission>
      */
     public function getAllPermissionsByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {

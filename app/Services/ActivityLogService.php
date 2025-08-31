@@ -5,14 +5,15 @@ namespace App\Services;
 use App\Models\ActivityLog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class ActivityLogService
 {
     /**
      * Obtiene todos los logs de actividad ordenados por fecha de creación (descendente).
-     * @return Collection
+     * @return Collection<ActivityLog>
      */
-    public function getAllActivityLogs()
+    public function getAllActivityLogs(): Collection
     {
         return ActivityLog::latest()->get();
     }
@@ -21,7 +22,7 @@ class ActivityLogService
      * Obtiene todos los logs de actividad con filtros y paginación.
      * @param ?string $query
      * @param ?int $perPage
-     * @return LengthAwarePaginator 
+     * @return LengthAwarePaginator<ActivityLog> 
      */
     public function getAllActivityLogsByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {
