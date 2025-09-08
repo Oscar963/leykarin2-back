@@ -17,6 +17,42 @@ class ComplaintRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation()
+    {
+        // Convert flat witnesses data to nested array format
+        $witnesses = [];
+        $witnessIndex = 0;
+        
+        while ($this->has("witnesses.{$witnessIndex}.name") || 
+               $this->has("witnesses.{$witnessIndex}.phone") || 
+               $this->has("witnesses.{$witnessIndex}.email")) {
+            
+            $witness = [];
+            if ($this->has("witnesses.{$witnessIndex}.name")) {
+                $witness['name'] = $this->input("witnesses.{$witnessIndex}.name");
+            }
+            if ($this->has("witnesses.{$witnessIndex}.phone")) {
+                $witness['phone'] = $this->input("witnesses.{$witnessIndex}.phone");
+            }
+            if ($this->has("witnesses.{$witnessIndex}.email")) {
+                $witness['email'] = $this->input("witnesses.{$witnessIndex}.email");
+            }
+            
+            if (!empty($witness)) {
+                $witnesses[] = $witness;
+            }
+            
+            $witnessIndex++;
+        }
+        
+        if (!empty($witnesses)) {
+            $this->merge(['witnesses' => $witnesses]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -60,6 +96,12 @@ class ComplaintRequest extends FormRequest
             'denounced_unit' => 'required|string|max:255',
             'denounced_function' => 'required|string|max:255',
             'denounced_grade' => 'nullable|integer',
+            
+            // Witnesses fields
+            'witnesses' => 'nullable|array',
+            'witnesses.*.name' => 'nullable|string|max:255',
+            'witnesses.*.phone' => 'nullable|string|max:50',
+            'witnesses.*.email' => 'nullable|email|max:255',
         ];
     }
 
@@ -99,6 +141,9 @@ class ComplaintRequest extends FormRequest
             'denounced_unit' => 'Unidad del denunciado',
             'denounced_function' => 'Función del denunciado',
             'denounced_grade' => 'Grado del denunciado',
+            'witnesses.*.name' => 'Nombre del testigo',
+            'witnesses.*.phone' => 'Teléfono del testigo',
+            'witnesses.*.email' => 'Email del testigo',
         ];
     }
 

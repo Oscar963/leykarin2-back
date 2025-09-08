@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Complaint;
 use App\Models\Complainant;
 use App\Models\Denounced;
+use App\Models\Witness;
 use App\Models\TypeDependency;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -100,13 +101,31 @@ class ComplaintService
                 'consequences_narrative' => $data['consequences_narrative'],
             ]);
 
+            // Crear testigos (si vienen en la data)
+            if (!empty($data['witnesses']) && is_array($data['witnesses'])) {
+                $witnessesPayload = [];
+                foreach ($data['witnesses'] as $witness) {
+                    if (!is_array($witness)) {
+                        continue;
+                    }
+                    $witnessesPayload[] = [
+                        'name' => $witness['name'] ?? null,
+                        'phone' => $witness['phone'] ?? null,
+                        'email' => $witness['email'] ?? null,
+                    ];
+                }
+                if (!empty($witnessesPayload)) {
+                    $complaint->witnesses()->createMany($witnessesPayload);
+                }
+            }
+
             // Confirmar archivos temporales si hay session_id
             if ($sessionId) {
                 $fileService = app(FileService::class);
                 $fileService->confirmTemporaryFiles($sessionId, $complaint);
             }
 
-            return $complaint->load(['complainant', 'denounced', 'typeComplaint', 'hierarchicalLevel', 'workRelationship', 'supervisorRelationship', 'files']);
+            return $complaint->load(['complainant', 'denounced', 'typeComplaint', 'hierarchicalLevel', 'workRelationship', 'supervisorRelationship', 'witnesses', 'files']);
         });
     }
 

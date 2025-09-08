@@ -52,4 +52,9 @@ class Complaint extends Model
     {
         return $this->belongsTo(SupervisorRelationship::class);
     }
+
+    public function witnesses()
+    {
+        return $this->hasMany(Witness::class);
+    }
 }

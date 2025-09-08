@@ -14,6 +14,7 @@ use App\Services\ComplaintService;
 use App\Traits\LogsActivity;
 use App\Http\Resources\ComplaintResource;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Mail\ComplaintEmail;
 use App\Models\Complaint;
 
@@ -57,6 +58,12 @@ class WebController extends Controller
         $data = $request->validated();
         $sessionId = $request->input('session_id');
 
+        // Debug: Log the witnesses data
+        Log::info('Witnesses data received:', [
+            'witnesses' => $data['witnesses'] ?? 'No witnesses key found',
+            'all_data_keys' => array_keys($data)
+        ]);
+
         $complaint = $this->complaintService->createComplaint($data, $sessionId);
 
         $metadata = [
@@ -80,8 +87,20 @@ class WebController extends Controller
      */
     public function sendComplaintEmail(Complaint $complaint): void
     {
+        // Enviar comprobante al denunciante
         if ($complaint->complainant && !empty($complaint->complainant->email)) {
             Mail::to($complaint->complainant->email)->queue(new ComplaintEmail($complaint));
+        }
+
+        // Enviar notificación a la dependencia correspondiente
+        if (
+            $complaint->complainant &&
+            $complaint->complainant->typeDependency &&
+            !empty($complaint->complainant->typeDependency->email_notification)
+        ) {
+
+            Mail::to($complaint->complainant->typeDependency->email_notification)
+                ->queue(new ComplaintEmail($complaint));
         }
     }
 }
