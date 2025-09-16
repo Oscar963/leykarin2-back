@@ -27,7 +27,11 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'X-Download-Message',
+        'X-Download-Status',
+        'Content-Disposition',
+    ],
 
     'max_age' => 0,
 

@@ -5,26 +5,15 @@ namespace App\Services;
 use App\Models\Complaint;
 use App\Models\Complainant;
 use App\Models\Denounced;
-use App\Models\Witness;
 use App\Models\TypeDependency;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ComplaintService
 {
-    /**
-     * Obtiene todos las denuncias ordenados por fecha de creación (descendente).
-     *
-     * @return Collection<Complaint>    
-     */
-    public function getAllComplaints(): Collection
-    {
-        return Complaint::latest()->get();
-    }
-
     /**
      * Obtiene todos las denuncias con filtros y paginación.
      *
@@ -34,10 +23,12 @@ class ComplaintService
      */
     public function getAllComplaintsByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {
-        return Complaint::latest('id')
+        return Complaint::with('complainant', 'complainant.typeDependency', 'files')->latest('id')
             ->when($query, function (Builder $q) use ($query) {
-                $q->where('name', 'LIKE', "%{$query}%"); 
-                $q->orWhere('folio', 'LIKE', "%{$query}%");
+                $q->where(function (Builder $subquery) use ($query) {
+                    $subquery->where('name', 'LIKE', "%{$query}%")
+                        ->orWhere('folio', 'LIKE', "%{$query}%");
+                });
             })
             ->paginate($perPage);
     }
@@ -52,7 +43,6 @@ class ComplaintService
     public function createComplaint(array $data, ?string $sessionId = null): Complaint
     {
         return DB::transaction(function () use ($data, $sessionId) {
-            // Crear el denunciante
             $complainant = Complainant::create([
                 'type_dependency_id' => $data['complainant_dependence_id'],
                 'name' => $data['complainant_name'],
@@ -70,7 +60,6 @@ class ComplaintService
                 'is_victim' => $data['complainant_is_victim'],
             ]);
 
-            // Crear el denunciado
             $denounced = Denounced::create([
                 'name' => $data['denounced_name'],
                 'address' => $data['denounced_address'],
@@ -83,11 +72,9 @@ class ComplaintService
                 'grade' => $data['denounced_grade'],
             ]);
 
-            // Generar código (correlativo) y token (único) automáticamente
             $code = $this->generateComplaintCode($complainant->type_dependency_id);
             $token = $this->generateComplaintToken();
 
-            // Crear la denuncia principal
             $complaint = Complaint::create([
                 'folio' => $code,
                 'token' => $token,
@@ -101,7 +88,6 @@ class ComplaintService
                 'consequences_narrative' => $data['consequences_narrative'],
             ]);
 
-            // Crear testigos (si vienen en la data)
             if (!empty($data['witnesses']) && is_array($data['witnesses'])) {
                 $witnessesPayload = [];
                 foreach ($data['witnesses'] as $witness) {
@@ -119,7 +105,6 @@ class ComplaintService
                 }
             }
 
-            // Confirmar archivos temporales si hay session_id
             if ($sessionId) {
                 $fileService = app(FileService::class);
                 $fileService->confirmTemporaryFiles($sessionId, $complaint);
@@ -130,18 +115,7 @@ class ComplaintService
     }
 
     /**
-     * Obtiene una denuncia por su ID.
-     *
-     * @param int $id
-     * @return Complaint
-     */
-    public function getComplaintById(int $id): Complaint
-    {
-        return Complaint::findOrFail($id);
-    }
-
-    /**
-     * Actualiza una denuncia.
+     * Actualiza una denuncia existente.
      *
      * @param Complaint $complaint
      * @param array $data
@@ -157,27 +131,22 @@ class ComplaintService
      * Elimina una denuncia.
      *
      * @param Complaint $complaint
-     * @return Complaint
+     * @return bool
      */
-    public function deleteComplaint(Complaint $complaint): Complaint
+    public function deleteComplaint(Complaint $complaint): bool
     {
-        $complaint->delete();
-        return $complaint;
+        return $complaint->delete();
     }
 
     /**
      * Genera un código correlativo para una nueva denuncia
-     * Formato: PREFIX-####-YYYY
      */
     private function generateComplaintCode(int $typeDependencyId): string
     {
         $year = (int) now()->year;
-
         $typeDependency = TypeDependency::find($typeDependencyId);
         $prefix = $typeDependency ? $typeDependency->code : 'X';
 
-        // Estricto: usar contador con lock transaccional
-        // Nota: este método se ejecuta dentro de DB::transaction() desde createComplaint()
         $counter = DB::table('complaint_counters')
             ->where('type_dependency_id', $typeDependencyId)
             ->where('year', $year)
@@ -185,7 +154,6 @@ class ComplaintService
             ->first();
 
         if (!$counter) {
-            // Crear fila de contador para este año/dependencia
             DB::table('complaint_counters')->insert([
                 'type_dependency_id' => $typeDependencyId,
                 'year' => $year,
@@ -208,14 +176,52 @@ class ComplaintService
     }
 
     /**
-     * Genera un token único de 12 caracteres alfanuméricos en mayúsculas
+     * Genera un token único, largo y criptográficamente seguro.
      */
     private function generateComplaintToken(): string
     {
-        do {
-            $token = Str::upper(Str::random(12));
-        } while (Complaint::where('token', $token)->exists());
+        // Genera un string base64 seguro con 32 bytes de entropía.
+        $token = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+
+        // Verifica si el token ya existe para evitar colisiones.
+        while (Complaint::where('token', $token)->exists()) {
+            $token = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+        }
 
         return $token;
+    }
+
+    /**
+     * Busca una denuncia por su token y carga las relaciones necesarias para el PDF.
+     *
+     * @param string $token
+     * @return Complaint|null
+     */
+    public function getComplaintByTokenForDownload(string $token): ?Complaint
+    {
+        // El método original que tenías es exactamente lo que se necesita
+        return Complaint::where('token', $token)
+            ->with(Complaint::getStandardRelations())
+            ->first();
+    }
+
+    /**
+     * Genera el PDF de una denuncia a partir de la vista.
+     */
+    public function generateComplaintPdf(Complaint $complaint, array $extraData = [])
+    {
+        $data = array_merge([
+            'complaint' => $complaint,
+        ], $extraData);
+
+        return Pdf::loadView('pdf.complaint', $data);
+    }
+
+    /**
+     * Obtiene el nombre de archivo estándar para el PDF de una denuncia.
+     */
+    public function getComplaintPdfFilename($complaint): string
+    {
+        return 'folio-' . str_replace(['/', '-', ' '], '_', $complaint->folio) . '.pdf';
     }
 }

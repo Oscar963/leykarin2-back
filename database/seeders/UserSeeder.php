@@ -30,7 +30,7 @@ class UserSeeder extends Seeder
             ]
         );
         $adminSistema->assignRole('Administrador del Sistema');
-        
+
         // Gestor de Contenido
         $gestorContenido = User::updateOrCreate(
             ['email' => 'gestor.contenido@demo.com'],
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ]
         );
-        $gestorContenido->assignRole('Gestor de Inmuebles');
+        $gestorContenido->assignRole('Gestor de Denuncias');
 
         // Gestor de Contenido adicional
         $gestorContenido2 = User::updateOrCreate(
@@ -59,7 +59,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ]
         );
-        $gestorContenido2->assignRole('Gestor de Inmuebles');
+        $gestorContenido2->assignRole('Gestor de Denuncias');
 
         $this->command->info('Usuarios creados correctamente con los nuevos roles.');
     }

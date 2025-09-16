@@ -19,6 +19,7 @@ class ComplaintResource extends JsonResource
         $customData = [
             'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
+            'files' => FileResource::collection($this->files),
         ];
         return array_merge($defaultData, $customData);
     }

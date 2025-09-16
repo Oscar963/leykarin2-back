@@ -57,4 +57,20 @@ class Complaint extends Model
     {
         return $this->hasMany(Witness::class);
     }
+
+    /**
+     * Relaciones estándar para carga completa de denuncias
+     */
+    public static function getStandardRelations(): array
+    {
+        return [
+            'complainant.typeDependency',
+            'denounced',
+            'typeComplaint',
+            'hierarchicalLevel',
+            'workRelationship',
+            'supervisorRelationship',
+            'witnesses',
+        ];
+    }
 }

@@ -13,6 +13,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Exception;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FileService
 {
@@ -120,7 +122,7 @@ class FileService
             'disk' => $disk,
             'replaceExisting' => true
         ]);
-        
+
         return $result->first();
     }
 
@@ -139,10 +141,10 @@ class FileService
         $disk = $options['disk'] ?? 'public';
         $replaceExisting = $options['replaceExisting'] ?? false;
         $customNames = $options['customNames'] ?? [];
-        
+
         return DB::transaction(function () use ($fileable, $files, $fileType, $disk, $replaceExisting, $customNames, $options) {
             $uploadedFiles = collect();
-            
+
             try {
                 // Si se debe reemplazar archivos existentes del mismo tipo
                 if ($replaceExisting) {
@@ -150,21 +152,20 @@ class FileService
                         $this->deleteFile($file);
                     });
                 }
-                
+
                 // Subir cada archivo
                 foreach ($files as $index => $file) {
                     $uploadedFile = $this->uploadFile($fileable, $file, $fileType, $disk, $options);
-                    
+
                     // Aplicar nombre personalizado si se proporciona
                     if (isset($customNames[$index]) && !empty($customNames[$index])) {
                         $uploadedFile->update(['display_name' => $customNames[$index]]);
                     }
-                    
+
                     $uploadedFiles->push($uploadedFile);
                 }
-                
+
                 return $uploadedFiles;
-                
             } catch (\Exception $e) {
                 // En caso de error, la transacción se revierte automáticamente
                 Log::error('Error uploading files: ' . $e->getMessage(), [
@@ -173,7 +174,7 @@ class FileService
                     'file_type' => $fileType,
                     'files_count' => count($files)
                 ]);
-                
+
                 throw $e;
             }
         });
@@ -191,7 +192,7 @@ class FileService
     {
         // Obtener reglas de validación del modelo File
         $rules = File::getValidationRules($fileType);
-        
+
         // Validar tamaño máximo
         $maxSize = $this->getMaxSizeFromRules($rules);
         if ($file->getSize() > $maxSize * 1024) { // Convertir KB a bytes
@@ -199,7 +200,7 @@ class FileService
                 'file' => "El archivo excede el tamaño máximo permitido de {$maxSize}KB."
             ]);
         }
-        
+
         // Validar extensión
         $allowedMimes = $this->getAllowedMimesFromRules($rules);
         if (!in_array($file->getClientOriginalExtension(), $allowedMimes)) {
@@ -207,7 +208,7 @@ class FileService
                 'file' => 'El tipo de archivo no está permitido.'
             ]);
         }
-        
+
         // Validar que el archivo no esté corrupto
         if (!$file->isValid()) {
             throw ValidationException::withMessages([
@@ -215,7 +216,7 @@ class FileService
             ]);
         }
     }
-    
+
     /**
      * Extrae el tamaño máximo de las reglas de validación.
      */
@@ -228,7 +229,7 @@ class FileService
         }
         return 10240; // Default 10MB
     }
-    
+
     /**
      * Extrae las extensiones permitidas de las reglas de validación.
      */
@@ -255,10 +256,10 @@ class FileService
     {
         // Validar archivo antes de subirlo
         $this->validateFile($uploadedFile, $fileType);
-        
+
         // Generar nombre único para el archivo
         $fileName = Str::uuid() . '.' . $uploadedFile->getClientOriginalExtension();
-        
+
         // Definir directorio basado en el token de la denuncia si existe, con subcarpeta por tipo
         // Estructura: {token}/{evidence|signature}
         $hasToken = is_object($fileable) && method_exists($fileable, 'getAttribute') && !empty($fileable->getAttribute('token'));
@@ -270,10 +271,10 @@ class FileService
             // Fallback a estructura por modelo/id si no hay token disponible
             $directory = strtolower(class_basename($fileable)) . 's/' . $fileable->id . '/' . $fileType;
         }
-        
+
         // Subir archivo
         $path = $uploadedFile->storeAs($directory, $fileName, $disk);
-        
+
         // Crear registro en base de datos
         return $fileable->files()->create([
             'file_type' => $fileType,
@@ -313,13 +314,13 @@ class FileService
     {
         // Generar nombre único
         $fileName = Str::uuid() . '.' . $uploadedFile->getClientOriginalExtension();
-        
+
         // Directorio temporal
         $directory = 'temp/' . $sessionId . '/' . $fileType;
-        
+
         // Subir archivo
         $path = $uploadedFile->storeAs($directory, $fileName, $disk);
-        
+
         // Crear registro temporal (expira en 2 horas)
         return TemporaryFile::create([
             'session_id' => $sessionId,
@@ -384,7 +385,7 @@ class FileService
 
         foreach ($tempFileIds as $tempFileId) {
             $tempFile = TemporaryFile::find($tempFileId);
-            
+
             if ($tempFile && !$tempFile->isExpired()) {
                 $displayName = $customNames[$tempFileId] ?? null;
                 $permanentFile = $tempFile->convertToPermanent($fileable, $displayName);
@@ -407,7 +408,7 @@ class FileService
             if ($temporaryFile->exists()) {
                 Storage::disk($temporaryFile->disk)->delete($temporaryFile->path);
             }
-            
+
             return (bool) $temporaryFile->delete();
         } catch (\Exception $e) {
             Log::error('Error deleting temporary file: ' . $e->getMessage(), [
@@ -415,7 +416,7 @@ class FileService
                 'path' => $temporaryFile->path,
                 'disk' => $temporaryFile->disk
             ]);
-            
+
             throw $e;
         }
     }
@@ -437,5 +438,13 @@ class FileService
         }
 
         return $count;
+    }
+
+    /**
+     * Obtiene el nombre de archivo estándar para el PDF de una denuncia.
+     */
+    public function getFilename($file): string
+    {
+        return str_replace(['/', '-', ' '], '_', $file->original_name);
     }
 }

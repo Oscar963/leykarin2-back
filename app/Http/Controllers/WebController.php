@@ -51,18 +51,12 @@ class WebController extends Controller
     /**
      * Guardar una nueva denuncia con archivos temporales.
      * @param ComplaintRequest $request
-     * @return JsonResponse 
+     * @return JsonResponse
      */
     public function storeComplaint(ComplaintRequest $request): JsonResponse
     {
         $data = $request->validated();
         $sessionId = $request->input('session_id');
-
-        // Debug: Log the witnesses data
-        Log::info('Witnesses data received:', [
-            'witnesses' => $data['witnesses'] ?? 'No witnesses key found',
-            'all_data_keys' => array_keys($data)
-        ]);
 
         $complaint = $this->complaintService->createComplaint($data, $sessionId);
 

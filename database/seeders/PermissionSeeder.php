@@ -47,6 +47,13 @@ class PermissionSeeder extends Seeder
             'inmuebles.import',
             'inmuebles.export',
 
+            // ===== MÓDULO DE COMPLAINTS =====
+            'complaints.list',
+            'complaints.create',
+            'complaints.edit',
+            'complaints.delete',
+            'complaints.view',
+
             // ===== MÓDULO DE LOGS DE ACTIVIDAD =====
             'activity_logs.list',
             'activity_logs.view',
@@ -59,32 +66,30 @@ class PermissionSeeder extends Seeder
 
         // Obtener los roles
         $administrador = Role::where('name', 'Administrador del Sistema')->first();
-        $gestor = Role::where('name', 'Gestor de Inmuebles')->first();
+        $gestor = Role::where('name', 'Gestor de Denuncias')->first();
         $editor = Role::where('name', 'Editor')->first();
 
         // 1. Administrador: todos los permisos
         $administrador->syncPermissions(Permission::all());
 
-        // 2. Gestor: acceso completo a inmuebles e importación, sin usuarios ni roles
+        // 2. Gestor: acceso completo a denuncias, sin usuarios ni roles
         $gestor->syncPermissions([
-            // Inmuebles (todos los permisos de inmuebles)
-            'inmuebles.list',
-            'inmuebles.create',
-            'inmuebles.edit',
-            'inmuebles.delete',
-            'inmuebles.view',
+            // Complaints (todos los permisos de complaints)
+            'complaints.list',
+            'complaints.create',
+            'complaints.edit',
+            'complaints.delete',
+            'complaints.view',
 
-            // Importación y gestión de inmuebles
-            'inmuebles.import',
         ]);
 
-        // 3. Editor: solo ver, crear y editar inmuebles (NO eliminar), sin usuarios/roles
+        // 3. Editor: solo ver, crear y editar complaints (NO eliminar), sin usuarios/roles
         $editor->syncPermissions([
-            // Inmuebles (solo ver, crear y editar)
-            'inmuebles.list',
-            'inmuebles.create',
-            'inmuebles.edit',
-            'inmuebles.view',
+            // Complaints (solo ver, crear y editar)
+            'complaints.list',
+            'complaints.create',
+            'complaints.edit',
+            'complaints.view',
         ]);
 
         // Asignar permisos por defecto a todos los usuarios existentes

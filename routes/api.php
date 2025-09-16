@@ -11,6 +11,7 @@ use App\Http\Controllers\InmuebleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\WebController;
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\FileController;
 
 Route::prefix('v1')->group(function () {
@@ -20,8 +21,8 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/form-data', [WebController::class, 'getFormData'])->name('web.form-data');
-    Route::post('/complaints', [WebController::class, 'storeComplaint'])->name('complaints.store');
-    
+    Route::post('web/complaints', [WebController::class, 'storeComplaint'])->name('web.complaints.store');
+
     // --- Gestión de Archivos Temporales (FilePond) ---
     Route::prefix('temporary-files')->group(function () {
         Route::post('/', [FileController::class, 'uploadTemporary'])->name('temporary-files.upload');
@@ -76,11 +77,19 @@ Route::prefix('v1')->group(function () {
         Route::post('inmuebles/import', [InmuebleController::class, 'import'])->name('inmuebles.import');
         Route::apiResource('inmuebles', InmuebleController::class);
 
+        // --- Gestión de Denuncias ---
+        Route::apiResource('complaints', ComplaintController::class);
+        Route::get('complaints/download-pdf/{token}', [ComplaintController::class, 'downloadPdf'])->name('complaints.download-pdf');
+
         // --- Gestión de Roles ---
         Route::apiResource('roles', RoleController::class);
 
         // --- Gestión de Permisos ---
         Route::apiResource('permissions', PermissionController::class);
+
+        // --- Gestión de Archivos ---
+        Route::apiResource('files', FileController::class);
+        Route::get('/files/{id}/download', [FileController::class, 'download']);
 
         // --- Gestión de Logs ---
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

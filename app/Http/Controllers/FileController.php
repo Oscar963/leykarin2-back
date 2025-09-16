@@ -9,6 +9,11 @@ use App\Services\FileService;
 use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class FileController extends Controller
 {
@@ -249,7 +254,6 @@ class FileController extends Controller
                     'uploaded_at' => $temporaryFile->created_at->format('Y-m-d H:i:s'),
                 ],
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al subir archivo temporal',
@@ -287,7 +291,6 @@ class FileController extends Controller
                     ];
                 }),
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener archivos temporales',
@@ -310,12 +313,75 @@ class FileController extends Controller
             return response()->json([
                 'message' => 'Archivo temporal eliminado exitosamente',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al eliminar archivo temporal',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Descargar archivo genérico (PDF, Word, Excel, imágenes, etc.).
+     */
+    public function download(int $id)
+    {
+        try {
+            // Validar que el archivo existe en la base de datos por ID
+            $file = $this->fileService->getFileById($id);
+
+            // Verificar que el archivo físico existe en el disco
+            if (!$file->exists()) {
+                return response()->json([
+                    'error' => 'Archivo no encontrado',
+                    'message' => 'El archivo no existe en el servidor'
+                ], Response::HTTP_NOT_FOUND, [
+                    'X-Download-Message' => 'El archivo no existe en el servidor',
+                    'X-Download-Status' => 'error',
+                    'X-Error-Type' => 'file_not_found'
+                ]);
+            }
+
+            // Obtener el contenido del archivo desde el disco
+            $fileContent = Storage::disk($file->disk)->get($file->path);
+
+            $this->logActivity('download_file', 'Usuario descargó archivo - Nombre: ' . $file->original_name . ', Tipo: ' . $file->mime_type);
+
+            $filename = $this->fileService->getFilename($file);
+
+            return response($fileContent, 200, [
+                'Content-Type' => $file->mime_type,
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Length' => strlen($fileContent),
+                'Cache-Control' => 'no-cache, private',
+                'X-Download-Message' => 'Archivo ' . $file->original_name . ' descargado correctamente',
+                'X-Download-Status' => 'success'
+            ]);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Error al descargar el archivo', ['file_id' => $id, 'ip' => request()->ip(), 'user_agent' => request()->userAgent()]);
+        }
+    }
+
+    /**
+     * Helper para manejar excepciones de forma consistente.
+     */
+    private function handleException(Throwable $e, string $userMessage, array $context = []): JsonResponse
+    {
+        Log::error($e->getMessage(), array_merge($context, [
+            'user_id' => auth()->id(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]));
+
+        $statusCode = $e instanceof ValidationException ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_INTERNAL_SERVER_ERROR;
+
+        return response()->json([
+            'error' => $userMessage,
+            'message' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor',
+        ], $statusCode, [
+            'X-Download-Message' => $userMessage,
+            'X-Download-Status' => 'error',
+            'X-Error-Type' => $e instanceof ValidationException ? 'validation_error' : 'server_error'
+        ]);
     }
 }
