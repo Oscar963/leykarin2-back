@@ -11,22 +11,25 @@ use App\Models\WorkRelationship;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\ComplaintRequest;
 use App\Services\ComplaintService;
+use App\Services\ReCaptchaService;
 use App\Traits\LogsActivity;
 use App\Http\Resources\ComplaintResource;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use App\Mail\ComplaintEmail;
 use App\Models\Complaint;
+use Illuminate\Support\Facades\Http;
 
 class WebController extends Controller
 {
     use LogsActivity;
 
     private ComplaintService $complaintService;
+    private ReCaptchaService $recaptchaService;
 
-    public function __construct(ComplaintService $complaintService)
+    public function __construct(ComplaintService $complaintService, ReCaptchaService $recaptchaService)
     {
         $this->complaintService = $complaintService;
+        $this->recaptchaService = $recaptchaService;
     }
 
     /**
@@ -58,6 +61,12 @@ class WebController extends Controller
         $data = $request->validated();
         $sessionId = $request->input('session_id');
 
+        // Validar reCAPTCHA
+        $recaptchaValidation = $this->validateRecaptcha($request);
+        if ($recaptchaValidation !== true) {
+            return $recaptchaValidation;
+        }
+
         $complaint = $this->complaintService->createComplaint($data, $sessionId);
 
         $metadata = [
@@ -73,6 +82,46 @@ class WebController extends Controller
         ], 201);
     }
 
+    /**
+     * Validar reCAPTCHA token usando el servicio.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return bool|\Illuminate\Http\JsonResponse
+     */
+    private function validateRecaptcha($request)
+    {
+        $recaptchaToken = $request->input('recaptcha_token');
+        
+        // Si no hay token, fallar la validación
+        if (empty($recaptchaToken)) {
+            $this->logActivity('recaptcha_missing_token', 'Token reCAPTCHA faltante en la petición');
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Token reCAPTCHA requerido',
+                'errors' => [
+                    'recaptcha_token' => ['Token reCAPTCHA requerido']
+                ]
+            ], 422);
+        }
+
+        // Usar el servicio para validar
+        $validationResponse = $this->recaptchaService->verifyOrFail(
+            $recaptchaToken,
+            $request->ip(),
+            'submit_complaint' // Acción específica para denuncias
+        );
+
+        // Si hay respuesta, significa que falló la validación
+        if ($validationResponse !== null) {
+            // El logging ya se hace en el servicio
+            return $validationResponse;
+        }
+
+        // Validación exitosa
+        $this->logActivity('recaptcha_success', 'Validación reCAPTCHA exitosa para denuncia');
+        return true;
+    }
 
     /**
      * Enviar comprobante de denuncia.

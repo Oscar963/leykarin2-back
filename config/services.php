@@ -36,4 +36,13 @@ return [
         'redirect' => env('CLAVEUNICA_REDIRECT_URI'),
     ],
 
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY', '6Le48cwrAAAAABedSDcI682mOcNawqjCKT6BNGr9'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'enabled' => env('RECAPTCHA_ENABLED', true),
+        'min_score' => env('RECAPTCHA_MIN_SCORE', 0.5),
+        'timeout' => env('RECAPTCHA_TIMEOUT', 10),
+        'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
+    ],
+
 ];
