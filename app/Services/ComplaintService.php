@@ -23,7 +23,13 @@ class ComplaintService
      */
     public function getAllComplaintsByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {
-        return Complaint::with('complainant', 'complainant.typeDependency', 'files')->latest('id')
+        return Complaint::with([
+            'complainant', 
+            'complainant.typeDependency', 
+            'files' => function ($query) {
+                $query->where('file_type', 'evidence');
+            }
+        ])->latest('id')
             ->when($query, function (Builder $q) use ($query) {
                 $q->where(function (Builder $subquery) use ($query) {
                     $subquery->where('name', 'LIKE', "%{$query}%")

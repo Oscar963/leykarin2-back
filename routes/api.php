@@ -96,8 +96,6 @@ Route::prefix('v1')->group(function () {
 
         // --- Gestión de Archivos ---
         Route::prefix('complaints/{complaint}')->group(function () {
-            Route::post('/files/evidence', [FileController::class, 'uploadEvidence'])->name('complaints.files.evidence');
-            Route::post('/files/signature', [FileController::class, 'uploadSignature'])->name('complaints.files.signature');
             Route::get('/files', [FileController::class, 'getComplaintFiles'])->name('complaints.files.index');
         });
 

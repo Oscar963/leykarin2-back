@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Complaint extends Model
 {
     use HasFactory, HasFiles;
-    
+
     protected $fillable = [
         'folio',
         'token',
