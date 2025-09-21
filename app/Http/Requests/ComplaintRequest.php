@@ -24,11 +24,13 @@ class ComplaintRequest extends FormRequest
         // Convert flat witnesses data to nested array format
         $witnesses = [];
         $witnessIndex = 0;
-        
-        while ($this->has("witnesses.{$witnessIndex}.name") || 
-               $this->has("witnesses.{$witnessIndex}.phone") || 
-               $this->has("witnesses.{$witnessIndex}.email")) {
-            
+
+        while (
+            $this->has("witnesses.{$witnessIndex}.name") ||
+            $this->has("witnesses.{$witnessIndex}.phone") ||
+            $this->has("witnesses.{$witnessIndex}.email")
+        ) {
+
             $witness = [];
             if ($this->has("witnesses.{$witnessIndex}.name")) {
                 $witness['name'] = $this->input("witnesses.{$witnessIndex}.name");
@@ -39,14 +41,14 @@ class ComplaintRequest extends FormRequest
             if ($this->has("witnesses.{$witnessIndex}.email")) {
                 $witness['email'] = $this->input("witnesses.{$witnessIndex}.email");
             }
-            
+
             if (!empty($witness)) {
                 $witnesses[] = $witness;
             }
-            
+
             $witnessIndex++;
         }
-        
+
         if (!empty($witnesses)) {
             $this->merge(['witnesses' => $witnesses]);
         }
@@ -67,7 +69,7 @@ class ComplaintRequest extends FormRequest
             'supervisor_relationship_id' => 'required|integer|exists:supervisor_relationships,id',
             'circumstances_narrative' => 'required|string',
             'consequences_narrative' => 'required|string',
-            
+
             // Complainant fields
             'complainant_dependence_id' => 'required|integer|exists:type_dependencies,id',
             'complainant_name' => 'required|string|max:255',
@@ -84,7 +86,7 @@ class ComplaintRequest extends FormRequest
             'complainant_entry_date' => 'required|date',
             'complainant_contractual_status' => 'required|string|max:255',
             'complainant_is_victim' => 'required|boolean',
-            
+
             // Denounced fields
             'denounced_name' => 'required|string|max:255',
             'denounced_address' => 'nullable|string|max:255',
@@ -96,7 +98,7 @@ class ComplaintRequest extends FormRequest
             'denounced_unit' => 'required|string|max:255',
             'denounced_function' => 'required|string|max:255',
             'denounced_grade' => 'nullable|integer',
-            
+
             // Witnesses fields
             'witnesses' => 'nullable|array',
             'witnesses.*.name' => 'nullable|string|max:255',
