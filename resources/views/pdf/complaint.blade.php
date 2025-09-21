@@ -1,274 +1,354 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Denuncia - {{ $complaint->folio }}</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <title>Denuncia {{ $complaint->folio }}</title>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #333;
-            margin: 0;
-            padding: 20px;
+        .caja_grande {
+            font-family: Helvetica;
         }
 
-        .header {
+        p {
+            font-size: 0.9rem;
+        }
+
+        .titulo {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
+            margin: 0.5rem 1rem;
         }
 
-        .header h1 {
+        .fecha_hora {
+            border: 1px solid black;
+            padding: 3px;
             margin: 0;
-            font-size: 24px;
-            color: #2c3e50;
+            width: 23.9%;
+            display: inline-block;
         }
 
-        .header h2 {
-            margin: 5px 0 0 0;
-            font-size: 16px;
-            color: #7f8c8d;
-        }
-
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            background-color: #3498db;
-            color: white;
-            padding: 8px 12px;
-            margin-bottom: 15px;
+        .nombre {
             font-weight: bold;
-            font-size: 14px;
+            border-right: none;
+            width: 23.9%;
         }
 
-        .info-grid {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
+        .atributo {
+            border: 1px solid black;
+            padding: 3px;
+            margin: 0;
+            display: inline-block;
+            border-top: none;
         }
 
-        .info-row {
-            display: table-row;
+        .primer_atributo {
+            border-top: 1px solid black;
         }
 
-        .info-label {
-            display: table-cell;
-            font-weight: bold;
-            padding: 5px 10px 5px 0;
-            width: 30%;
-            vertical-align: top;
+        .valor_doble {
+            border-left: none;
+            width: 73.7%;
         }
 
-        .info-value {
-            display: table-cell;
-            padding: 5px 0;
-            border-bottom: 1px solid #ecf0f1;
-            vertical-align: top;
+        .valor_cuadruple {
+            width: 23.9%;
         }
 
-        .narrative {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-left: 4px solid #3498db;
-            margin-top: 10px;
-            text-align: justify;
-            line-height: 1.6;
+        .nombre_largo {
+            width: 73.7%;
+            border-right: none;
         }
 
-        .footer {
-            margin-top: 40px;
+        .valor_corto {
+            width: 23.9%;
+        }
+
+        .quitar_borde {
+            border-right: none;
+        }
+
+        .textarea {
+            word-wrap: break-word;
+            border: 1px solid black;
+            padding: 3px;
+        }
+
+        .div_imagen {
             text-align: center;
-            font-size: 10px;
-            color: #7f8c8d;
-            border-top: 1px solid #ecf0f1;
-            padding-top: 15px;
         }
 
-        .witnesses-list {
-            margin-top: 10px;
+        .imagen {
+            margin-top: 2rem
         }
 
-        .witness-item {
-            background-color: #f8f9fa;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-left: 3px solid #e74c3c;
+        .page_break {
+            page-break-before: always;
+        }
+
+        .logo_municipalidad {
+            width: 170px;
         }
     </style>
 </head>
 
 <body>
-    <div class="header">
-        <h1>DENUNCIA</h1>
-        <h2>Folio: {{ $complaint->folio }}</h2>
-        <p><strong>Fecha de creación:</strong> {{ $complaint->created_at->format('d/m/Y H:i') }}</p>
-    </div>
+    <div class="caja_grande">
+        <!--Poner el/la en denunciado y denunciante, víctima no-->
+        <div>
+            <img class="logo_municipalidad" src="{{ public_path('assets/img/logos/logo-azul.png') }}" alt="">
+            <h1 class="titulo">FORMULARIO DE LA DENUNCIA</h1>
+            <h3 class="titulo">FOLIO: {{ $complaint->folio }}</h3>
+            <h3 class="">I. IDENTIFICACIÓN DE LA DENUNCIA</h3>
+        </div>
+        <div>
+            <!--Fecha y hora-->
+            <div class="caja_uno">
+                <!--Hacer explode a fecha y ordenarla día - mes - año-->
+                @php
+                    $fecha_creacion = $complaint->created_at;
+                    $fecha = $fecha_creacion->format('d-m-Y');
+                    $hora = $fecha_creacion->format('H:i');
+                @endphp
+                <p class="fecha_hora nombre">Fecha de creación</p><!--
+                    -->
+                <p class="fecha_hora valor quitar_borde">{{ $fecha }}</p><!--
+                    -->
+                <p class="fecha_hora nombre">Hora de creación</p><!--
+                    -->
+                <p class="fecha_hora valor">{{ $hora }}</p>
+            </div>
+            <!--Tipo denuncia-->
+            <div>
+                <p class="atributo nombre">Tipo de denuncia</p><!--
+                   -->
+                <p class="atributo valor_doble">{{ $complaint->typeComplaint->name ?? 'No especificado' }}</p>
+            </div>
 
-    <!-- Información del Denunciante -->
-    <div class="section">
-        <div class="section-title">INFORMACIÓN DEL DENUNCIANTE</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Nombre:</div>
-                <div class="info-value">{{ $complaint->complainant->name }}</div>
+            <!--Dependencia-->
+            <div>
+                <p class="atributo nombre">Dependencia</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->complainant->typeDependency->name ?? 'No especificada' }}
+                </p>
             </div>
-            <div class="info-row">
-                <div class="info-label">RUT:</div>
-                <div class="info-value">{{ $complaint->complainant->rut }}</div>
+
+            <!--Datos denunciante-->
+            <div>
+                <h3 class="titulo">DATOS DEL DENUNCIANTE</h3>
+                <p class="atributo nombre primer_atributo">Nombre</p><!--
+                    -->
+                <p class="atributo valor_doble primer_atributo">{{ $complaint->complainant->name }}</p>
+
+                <p class="atributo nombre">Domicilio</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->complainant->address ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre quitar_borde">RUT</p><!--
+                    -->
+                <p class="atributo valor_cuadruple quitar_borde">{{ $complaint->complainant->rut }}</p><!--
+                    -->
+                <p class="atributo nombre quitar_borde">Teléfono</p><!--
+                    -->
+                <p class="atributo valor_cuadruple">{{ $complaint->complainant->phone ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Cargo</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->complainant->charge ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Correo</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->complainant->email ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Unidad de desempeño</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->complainant->unit ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Función que realiza</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->complainant->function ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Grado EUR</p><!--
+                    -->
+                <p class="atributo valor_doble">
+                    @if ($complaint->complainant->grade == null)
+                        Sin información
+                    @else
+                        {{ $complaint->complainant->grade }}
+                    @endif
+                </p>
             </div>
-            <div class="info-row">
-                <div class="info-label">Email:</div>
-                <div class="info-value">{{ $complaint->complainant->email }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Teléfono:</div>
-                <div class="info-value">{{ $complaint->complainant->phone }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Dirección:</div>
-                <div class="info-value">{{ $complaint->complainant->address }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Cargo:</div>
-                <div class="info-value">{{ $complaint->complainant->charge }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Unidad:</div>
-                <div class="info-value">{{ $complaint->complainant->unit }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Función:</div>
-                <div class="info-value">{{ $complaint->complainant->function }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Grado:</div>
-                <div class="info-value">{{ $complaint->complainant->grade }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Fecha de Nacimiento:</div>
-                <div class="info-value">
-                    {{ $complaint->complainant->birthdate ? \Carbon\Carbon::parse($complaint->complainant->birthdate)->format('d/m/Y') : 'No especificada' }}
-                </div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Fecha de Ingreso:</div>
-                <div class="info-value">
-                    {{ $complaint->complainant->entry_date ? \Carbon\Carbon::parse($complaint->complainant->entry_date)->format('d/m/Y') : 'No especificada' }}
-                </div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Estado Contractual:</div>
-                <div class="info-value">{{ $complaint->complainant->contractual_status }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Es Víctima:</div>
-                <div class="info-value">{{ $complaint->complainant->is_victim ? 'Sí' : 'No' }}</div>
-            </div>
-            @if ($complaint->complainant->typeDependency)
-                <div class="info-row">
-                    <div class="info-label">Tipo de Dependencia:</div>
-                    <div class="info-value">{{ $complaint->complainant->typeDependency->name ?? 'No especificada' }}
-                    </div>
+
+            <!--Datos víctima-->
+            @if (!$complaint->complainant->is_victim)
+                <div>
+                    <h3 class="titulo">DATOS DE LA VÍCTIMA</h3>
+                    <p class="atributo nombre primer_atributo">Información de víctima</p><!--
+                    -->
+                    <p class="atributo valor_doble primer_atributo">El denunciante actúa en representación de terceros
+                    </p>
                 </div>
             @endif
+
+            <!--Datos denunciado-->
+            <div>
+                <h3 class="titulo">DATOS DEL DENUNCIADO</h3>
+                <p class="atributo nombre primer_atributo">Nombre</p><!--
+                    -->
+                <p class="atributo valor_doble primer_atributo">{{ $complaint->denounced->name ?? 'Sin información' }}
+                </p>
+
+                <p class="atributo nombre">Domicilio</p><!--
+                    -->
+                <p class="atributo valor_doble">
+                    @if ($complaint->denounced->address ?? null == null)
+                        Sin información
+                    @else
+                        {{ $complaint->denounced->address }}
+                    @endif
+                </p>
+
+                <p class="atributo nombre quitar_borde">RUT</p><!--
+                    -->
+                <p class="atributo valor_cuadruple quitar_borde">
+                    @if ($complaint->denounced->rut ?? null == null)
+                        Sin información
+                    @else
+                        {{ $complaint->denounced->rut }}
+                    @endif
+                </p><!--
+                    -->
+                <p class="atributo nombre quitar_borde">Teléfono</p><!--
+                    -->
+                <p class="atributo valor_cuadruple">
+                    @if ($complaint->denounced->phone ?? null == null)
+                        Sin información
+                    @else
+                        {{ $complaint->denounced->phone }}
+                    @endif
+                </p>
+
+                <p class="atributo nombre ">Cargo</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->denounced->charge ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Correo</p><!--
+                    -->
+                <p class="atributo valor_doble">
+                    @if ($complaint->denounced->email ?? null == null)
+                        Sin información
+                    @else
+                        {{ $complaint->denounced->email }}
+                    @endif
+                </p>
+
+                <p class="atributo nombre">Unidad de desempeño</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->denounced->unit ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre">Función que realiza</p><!--
+                    -->
+                <p class="atributo valor_doble">{{ $complaint->denounced->function ?? 'Sin información' }}</p>
+
+                <p class="atributo nombre ">Grado EUR</p><!--
+                    -->
+                <p class="atributo valor_doble">
+                    @if ($complaint->denounced->grade ?? null == null)
+                        Sin información
+                    @else
+                        {{ $complaint->denounced->grade }}
+                    @endif
+                </p>
+            </div>
+
+            <!--Nivel jerárquico, trabajo directo, jefe directo-->
+            @if (!$complaint->complainant->is_victim)
+                <div class="page_break">
+                @else
+                    <div>
+            @endif
+
+            <h3>II. INFORMACIÓN COMPLEMENTARIA</h3>
+            <p class="atributo nombre_largo primer_atributo">Nivel jerárquico del denunciado con respecto a la víctima
+            </p><!--
+                    -->
+            <p class="atributo valor_corto primer_atributo">
+                {{ $complaint->hierarchicalLevel->name ?? 'No especificado' }}</p>
+
+            <p class="atributo nombre_largo">Relación laboral con la víctima</p><!--
+                    -->
+            <p class="atributo valor_corto">{{ $complaint->workRelationship->name ?? 'No especificada' }}</p>
+
+            <p class="atributo nombre_largo">Relación con supervisor</p><!--
+                    -->
+            <p class="atributo valor_corto">{{ $complaint->supervisorRelationship->name ?? 'No especificada' }}</p>
         </div>
+
+        <!--Hechos y consecuencias-->
+        @if (!$complaint->complainant->is_victim)
+            <div>
+            @else
+                <div class="page_break">
+        @endif
+        <h3>III. NARRACIÓN DE LOS HECHOS Y CONSECUENCIAS</h3>
+        <p class="textarea"><strong>Hechos:</strong> {{ $complaint->circumstances_narrative }}</p>
+        <p class="textarea"><strong>Consecuencias:</strong> {{ $complaint->consequences_narrative }}</p>
     </div>
 
-    <!-- Información del Denunciado -->
-    <div class="section">
-        <div class="section-title">INFORMACIÓN DEL DENUNCIADO</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Nombre:</div>
-                <div class="info-value">{{ $complaint->denounced->name ?? 'No especificado' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">RUT:</div>
-                <div class="info-value">{{ $complaint->denounced->rut ?? 'No especificado' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Email:</div>
-                <div class="info-value">{{ $complaint->denounced->email ?? 'No especificado' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Cargo:</div>
-                <div class="info-value">{{ $complaint->denounced->charge ?? 'No especificado' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Unidad:</div>
-                <div class="info-value">{{ $complaint->denounced->unit ?? 'No especificada' }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Información de la Denuncia -->
-    <div class="section">
-        <div class="section-title">DETALLES DE LA DENUNCIA</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Tipo de Denuncia:</div>
-                <div class="info-value">{{ $complaint->typeComplaint->name ?? 'No especificado' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Nivel Jerárquico:</div>
-                <div class="info-value">{{ $complaint->hierarchicalLevel->name ?? 'No especificado' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Relación Laboral:</div>
-                <div class="info-value">{{ $complaint->workRelationship->name ?? 'No especificada' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Relación con Supervisor:</div>
-                <div class="info-value">{{ $complaint->supervisorRelationship->name ?? 'No especificada' }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Narrativa de Circunstancias -->
-    <div class="section">
-        <div class="section-title">NARRATIVA DE CIRCUNSTANCIAS</div>
-        <div class="narrative">
-            {{ $complaint->circumstances_narrative }}
-        </div>
-    </div>
-
-    <!-- Narrativa de Consecuencias -->
-    <div class="section">
-        <div class="section-title">NARRATIVA DE CONSECUENCIAS</div>
-        <div class="narrative">
-            {{ $complaint->consequences_narrative }}
-        </div>
-    </div>
-
-    <!-- Testigos -->
+    <!--Cargar testigos-->
+    @if (!$complaint->complainant->is_victim)
+        <div class="page_break">
+        @else
+            <div>
+    @endif
     @if ($complaint->witnesses && $complaint->witnesses->count() > 0)
-        <div class="section">
-            <div class="section-title">TESTIGOS</div>
-            <div class="witnesses-list">
-                @foreach ($complaint->witnesses as $witness)
-                    <div class="witness-item">
-                        <strong>{{ $witness->name }}</strong><br>
-                        RUT: {{ $witness->rut }}<br>
-                        Email: {{ $witness->email }}<br>
-                        Teléfono: {{ $witness->phone }}
-                    </div>
-                @endforeach
+        <h3 class="titulo">DATOS DE TESTIGOS</h3>
+        @foreach ($complaint->witnesses as $witness)
+            <br>
+            <p class="atributo nombre primer_atributo">Nombre</p><!--
+                            -->
+            <p class="atributo valor_doble primer_atributo">{{ $witness->name }}</p>
+
+            @if ($witness->phone != null)
+                <p class="atributo nombre">Teléfono</p><!--
+                                -->
+                <p class="atributo valor_doble">{{ $witness->phone }}</p>
+            @endif
+
+            <p class="atributo nombre">Correo</p><!--
+                            -->
+            <p class="atributo valor_doble">{{ $witness->email }}</p> <br>
+        @endforeach
+    @endif
+    </div>
+
+    <!--Cargar firma-->
+    @php
+        $signatureFile = $complaint->files()->where('file_type', 'signature')->first();
+    @endphp
+    @if ($signatureFile)
+        <div>
+            <strong>
+                <p>Firma:</p>
+            </strong>
+            <div class="div_imagen">
+                @php
+                    // Para DomPDF necesitamos la ruta absoluta del archivo
+                    $signaturePath = storage_path('app/public/' . $signatureFile->path);
+                @endphp
+                @if (file_exists($signaturePath))
+                    <img class="imagen" src="{{ $signaturePath }}" alt="" width="80%">
+                @else
+                    <p>Firma no disponible</p>
+                @endif
             </div>
         </div>
     @endif
 
-    <div class="footer">
-        <p>Documento generado el {{ now()->format('d/m/Y H:i') }}</p>
-        <p>Token: {{ $complaint->token }}</p>
-        @if(isset($downloadedBy))
-        <p>Descargado por: {{ $downloadedBy }} el {{ $downloadedAt->format('d/m/Y H:i') }}</p>
-        @endif
+    </div>
     </div>
 </body>
 
