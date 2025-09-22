@@ -67,6 +67,9 @@ class PermissionSeeder extends Seeder
         // Obtener los roles
         $administrador = Role::where('name', 'Administrador del Sistema')->first();
         $gestor = Role::where('name', 'Gestor de Denuncias')->first();
+        $gestorIma = Role::where('name', 'Gestor de Denuncias IMA')->first();
+        $gestorDisam = Role::where('name', 'Gestor de Denuncias DISAM')->first();
+        $gestorDemuce = Role::where('name', 'Gestor de Denuncias DEMUCE')->first();
         $editor = Role::where('name', 'Editor')->first();
 
         // 1. Administrador: todos los permisos
@@ -74,6 +77,36 @@ class PermissionSeeder extends Seeder
 
         // 2. Gestor: acceso completo a denuncias, sin usuarios ni roles
         $gestor->syncPermissions([
+            // Complaints (todos los permisos de complaints)
+            'complaints.list',
+            'complaints.create',
+            'complaints.edit',
+            'complaints.delete',
+            'complaints.view',
+
+        ]);
+
+        $gestorIma->syncPermissions([
+            // Complaints (todos los permisos de complaints)
+            'complaints.list',
+            'complaints.create',
+            'complaints.edit',
+            'complaints.delete',
+            'complaints.view',
+
+        ]);
+
+        $gestorDisam->syncPermissions([
+            // Complaints (todos los permisos de complaints)
+            'complaints.list',
+            'complaints.create',
+            'complaints.edit',
+            'complaints.delete',
+            'complaints.view',
+
+        ]);
+
+        $gestorDemuce->syncPermissions([
             // Complaints (todos los permisos de complaints)
             'complaints.list',
             'complaints.create',

@@ -61,6 +61,51 @@ class UserSeeder extends Seeder
         );
         $gestorContenido2->assignRole('Gestor de Denuncias');
 
+        //Gesto de denuncias IMA
+        $gestorIma = User::updateOrCreate(
+            ['email' => 'ima.contenido@demo.com'],
+            [
+                'rut' => RutHelper::normalize('59831887-5'),
+                'name' => 'Gestor',
+                'paternal_surname' => 'IMA',
+                'maternal_surname' => 'Demo',
+                'email' => 'ima.contenido@demo.com',
+                'status' => 1,
+                'password' => Hash::make('password123'),
+            ]
+        );
+        $gestorIma->assignRole('Gestor de Denuncias IMA');
+
+        // Gestor de denuncias DISAM
+        $gestorDisam = User::updateOrCreate(
+            ['email' => 'disam.contenido@demo.com'],
+            [
+                'rut' => RutHelper::normalize('44173636-3'),
+                'name' => 'Gestor',
+                'paternal_surname' => 'DISAM',
+                'maternal_surname' => 'Demo',
+                'email' => 'disam.contenido@demo.com',
+                'status' => 1,
+                'password' => Hash::make('password123'),
+            ]
+        );
+        $gestorDisam->assignRole('Gestor de Denuncias DISAM');
+
+        //Gesto de denuncias DEMUCE
+        $gestorDemuce = User::updateOrCreate(
+            ['email' => 'demuce.contenido@demo.com'],
+            [
+                'rut' => RutHelper::normalize('49750609-3'),
+                'name' => 'Gestor',
+                'paternal_surname' => 'DEMUCE',
+                'maternal_surname' => 'Demo',
+                'email' => 'demuce.contenido@demo.com',
+                'status' => 1,
+                'password' => Hash::make('password123'),
+            ]
+        );
+        $gestorDemuce->assignRole('Gestor de Denuncias DEMUCE');
+
         $this->command->info('Usuarios creados correctamente con los nuevos roles.');
     }
 }

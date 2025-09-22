@@ -6,6 +6,7 @@ use App\Models\Complaint;
 use App\Models\Complainant;
 use App\Models\Denounced;
 use App\Models\TypeDependency;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -23,11 +24,37 @@ class ComplaintService
      */
     public function getAllComplaintsByQuery(?string $query, ?int $perPage = 15): LengthAwarePaginator
     {
-        return Complaint::with(['complainant', 'complainant.typeDependency', 'files'])->latest('id')
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        // Mapear roles de Gestor por dependencia a su type_dependency_id
+        $dependencyId = null;
+        if ($user && method_exists($user, 'hasRole')) {
+            if ($user->hasRole('Gestor de Denuncias IMA')) {
+                $dependencyId = 1; // IMA
+            } elseif ($user->hasRole('Gestor de Denuncias DISAM')) {
+                $dependencyId = 3; // DISAM
+            } elseif ($user->hasRole('Gestor de Denuncias DEMUCE')) {
+                $dependencyId = 2; // DEMUCE
+            }
+        }
+
+        return Complaint::with(['complainant', 'complainant.typeDependency', 'files'])
+            ->latest('id')
             ->when($query, function (Builder $q) use ($query) {
                 $q->where(function (Builder $subquery) use ($query) {
-                    $subquery->where('name', 'LIKE', "%{$query}%")
-                        ->orWhere('folio', 'LIKE', "%{$query}%");
+                    // Buscar por folio en la tabla complaints
+                    $subquery->where('folio', 'LIKE', "%{$query}%")
+                        // Buscar por nombre del denunciante en la tabla complainants
+                        ->orWhereHas('complainant', function (Builder $complainantQuery) use ($query) {
+                            $complainantQuery->where('name', 'LIKE', "%{$query}%");
+                        });
+                });
+            })
+            // Filtrado por dependencia según el rol del usuario autenticado
+            ->when($dependencyId, function (Builder $q) use ($dependencyId) {
+                $q->whereHas('complainant', function (Builder $subquery) use ($dependencyId) {
+                    $subquery->where('type_dependency_id', $dependencyId);
                 });
             })
             ->paginate($perPage);

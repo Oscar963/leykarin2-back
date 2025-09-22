@@ -17,6 +17,9 @@ class RoleSeeder extends Seeder
         DB::table('roles')->insert([
             ['name' => 'Administrador del Sistema', 'guard_name' => 'web'],
             ['name' => 'Gestor de Denuncias', 'guard_name' => 'web'],
+            ['name' => 'Gestor de Denuncias IMA', 'guard_name' => 'web'],
+            ['name' => 'Gestor de Denuncias DISAM', 'guard_name' => 'web'],
+            ['name' => 'Gestor de Denuncias DEMUCE', 'guard_name' => 'web'],
             ['name' => 'Editor', 'guard_name' => 'web'],
         ]);
     }
