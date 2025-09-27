@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\HasFiles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Complaint extends Model
 {
-    use HasFactory, HasFiles;
+    use HasFactory, HasFiles, SoftDeletes;
 
     protected $fillable = [
         'folio',

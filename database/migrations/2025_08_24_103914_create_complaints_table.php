@@ -27,6 +27,7 @@ class CreateComplaintsTable extends Migration
             $table->text('circumstances_narrative'); //circunstancias narración
             $table->text('consequences_narrative'); //consecuencias narración
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

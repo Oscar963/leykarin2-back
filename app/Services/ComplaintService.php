@@ -39,7 +39,7 @@ class ComplaintService
             }
         }
 
-        return Complaint::with(['complainant', 'complainant.typeDependency', 'files'])
+        return Complaint::with(['complainant', 'complainant.typeDependency', 'files', 'witnesses'])
             ->latest('id')
             ->when($query, function (Builder $q) use ($query) {
                 $q->where(function (Builder $subquery) use ($query) {
