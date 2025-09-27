@@ -80,6 +80,7 @@ Route::prefix('v1')->group(function () {
         // --- Gestión de Denuncias ---
         Route::apiResource('complaints', ComplaintController::class);
         Route::get('complaints/download-pdf/{token}', [ComplaintController::class, 'downloadPdf'])->name('complaints.download-pdf');
+        Route::post('complaints/resend-receipt', [ComplaintController::class, 'resendReceipt'])->name('complaints.resend-receipt');
 
         // --- Gestión de Roles ---
         Route::apiResource('roles', RoleController::class);

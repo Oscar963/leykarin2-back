@@ -251,4 +251,36 @@ class ComplaintService
     {
         return 'folio-' . str_replace(['/', '-', ' '], '_', $complaint->folio) . '.pdf';
     }
+
+    /**
+     * Reenvía el comprobante de una denuncia por email.
+     *
+     * @param string $email
+     * @param string $token
+     * @return Complaint
+     * @throws \Exception
+     */
+    public function reenviarComprobante(string $email, string $token): Complaint
+    {
+        // Buscar la denuncia por token
+        $complaint = $this->getComplaintByTokenForDownload($token);
+        
+        if (!$complaint) {
+            throw new \Exception('No se encontró una denuncia con el token proporcionado.');
+        }
+
+        // Validar que el email sea válido
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception('El email proporcionado no es válido.');
+        }
+
+        // Enviar el email con el comprobante
+        try {
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\ComplaintEmail($complaint));
+        } catch (\Exception $e) {
+            throw new \Exception('Error al enviar el email: ' . $e->getMessage());
+        }
+
+        return $complaint;
+    }
 }

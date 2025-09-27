@@ -119,6 +119,37 @@ class ComplaintController extends Controller
     }
 
     /**
+     * Reenviar comprobante de denuncia por email.
+     */
+    public function resendReceipt(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|string|email',
+            'token' => 'required|string|min:10'
+        ]);
+
+        try {
+            $complaint = $this->complaintService->reenviarComprobante($validated['email'], $validated['token']);
+
+            $this->logActivity('reenviar_comprobante', 'Usuario reenvió comprobante de denuncia - Token: ' . $validated['token'] . ', Email: ' . $validated['email']);
+
+            return response()->json([
+                'message' => 'Comprobante reenviado exitosamente',
+                'data' => [
+                    'folio' => $complaint->folio,
+                    'email' => $validated['email'],
+                    'sent_at' => now()->format('d/m/Y H:i:s')
+                ]
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Error al reenviar comprobante de denuncia', [
+                'email' => $validated['email'],
+                'token' => $validated['token']
+            ]);
+        }
+    }
+
+    /**
      * Descargar PDF de denuncia por token.
      */
     public function downloadPdf(string $token)
