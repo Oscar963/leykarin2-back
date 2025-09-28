@@ -13,5 +13,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'telescope/*',
+        'api/v1/auth/google/*',
     ];
 }

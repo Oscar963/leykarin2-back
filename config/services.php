@@ -45,4 +45,13 @@ return [
         'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'enabled' => env('GOOGLE_OAUTH_ENABLED', true),
+        'allowed_domain' => env('GOOGLE_ALLOWED_DOMAIN'),
+        'auto_register' => env('GOOGLE_OAUTH_AUTO_REGISTER', false),
+        'default_role' => env('GOOGLE_OAUTH_DEFAULT_ROLE', 'user'),
+    ],
+
 ];

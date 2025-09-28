@@ -74,10 +74,10 @@ class AuthController extends Controller
             $request->session()->put('login.remember', $request->boolean('remember'));
             Auth::guard('web')->logout();
             $request->session()->regenerate();
-            
+
             // Generar y enviar código 2FA por email
             $user->generateTwoFactorCode();
-            
+
             throw new TwoFactorRequiredException(null, $user->email);
         }
 
@@ -250,7 +250,6 @@ class AuthController extends Controller
 
         return User::find($userId);
     }
-
 
     /**
      * Construye una respuesta de error para un intento de login fallido.

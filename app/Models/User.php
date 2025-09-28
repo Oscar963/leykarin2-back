@@ -37,7 +37,15 @@ class User extends Authenticatable
         'two_factor_enabled',
         'two_factor_code',
         'two_factor_expires_at',
-        'two_factor_confirmed_at'
+        'two_factor_confirmed_at',
+        'google_id',
+        'google_email',
+        'google_name',
+        'google_avatar',
+        'google_verified_at',
+        'google_domain',
+        'auth_provider',
+        'type_dependency_id'
     ];
 
     /**
@@ -61,6 +69,8 @@ class User extends Authenticatable
         'two_factor_enabled' => 'boolean',
         'two_factor_expires_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
+        'google_verified_at' => 'datetime',
+        'status' => 'boolean',
     ];
 
     /**
@@ -163,5 +173,95 @@ class User extends Authenticatable
             'two_factor_expires_at' => null,
             'two_factor_confirmed_at' => null,
         ]);
+    }
+
+    /**
+     * Verifica si el usuario está autenticado con Google OAuth.
+     */
+    public function isGoogleUser(): bool
+    {
+        return $this->auth_provider === 'google' && !empty($this->google_id);
+    }
+
+    /**
+     * Verifica si el usuario puede usar autenticación tradicional.
+     */
+    public function canUseTraditionalAuth(): bool
+    {
+        return !empty($this->password) && ($this->auth_provider === 'local' || $this->auth_provider === 'google');
+    }
+
+    /**
+     * Actualiza la información de Google OAuth del usuario.
+     */
+    public function updateGoogleInfo(array $googleData): void
+    {
+        $this->update([
+            'google_id' => $googleData['sub'] ?? $googleData['id'],
+            'google_email' => $googleData['email'],
+            'google_name' => $googleData['name'],
+            'google_avatar' => $googleData['picture'] ?? null,
+            'google_verified_at' => Carbon::now(),
+            'google_domain' => $googleData['hd'] ?? null,
+            'auth_provider' => 'google',
+        ]);
+    }
+
+    /**
+     * Busca un usuario por Google ID.
+     */
+    public static function findByGoogleId(string $googleId): ?self
+    {
+        return static::where('google_id', $googleId)->first();
+    }
+
+    /**
+     * Busca un usuario por email de Google.
+     */
+    public static function findByGoogleEmail(string $email): ?self
+    {
+        return static::where('google_email', $email)
+                    ->orWhere('email', $email)
+                    ->first();
+    }
+
+    /**
+     * Verifica si el dominio de Google está permitido.
+     */
+    public function isGoogleDomainAllowed(): bool
+    {
+        $allowedDomain = config('services.google.allowed_domain');
+        
+        if (!$allowedDomain) {
+            return true; // Si no hay restricción de dominio
+        }
+
+        return $this->google_domain === $allowedDomain;
+    }
+
+    /**
+     * Relación con el tipo de dependencia organizacional.
+     */
+    public function typeDependency()
+    {
+        return $this->belongsTo(\App\Models\TypeDependency::class, 'type_dependency_id');
+    }
+
+    /**
+     * Verifica si el usuario debe ser filtrado por dependencia.
+     */
+    public function shouldFilterByDependency(): bool
+    {
+        $organizationalRoles = ['IMA', 'DISAM', 'DEMUCE'];
+        
+        return $this->hasAnyRole($organizationalRoles) && !empty($this->type_dependency_id);
+    }
+
+    /**
+     * Obtiene el ID de dependencia para filtrado.
+     */
+    public function getDependencyIdForFilter(): ?int
+    {
+        return $this->shouldFilterByDependency() ? $this->type_dependency_id : null;
     }
 }

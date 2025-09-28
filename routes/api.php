@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\ProfileController;
@@ -35,6 +36,14 @@ Route::prefix('v1')->group(function () {
     | Rutas de Autenticación Públicas
     |--------------------------------------------------------------------------
     */
+    
+    // Rutas de Google OAuth (sin middleware web para evitar CSRF)
+    Route::prefix('auth')->group(function () {
+        Route::post('/google/login', [GoogleLoginController::class, 'login'])->name('auth.google.login');
+        Route::get('/google/config', [GoogleLoginController::class, 'config'])->name('auth.google.config');
+    });
+    
+    // Rutas de autenticación tradicional (con middleware web)
     Route::prefix('auth')->middleware(['web'])->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('login');
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
@@ -60,6 +69,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/two-factor-status', [AuthController::class, 'getTwoFactorStatus'])->name('two-factor.status');
             Route::post('/two-factor-enable', [AuthController::class, 'enableTwoFactor'])->name('two-factor.enable');
             Route::post('/two-factor-disable', [AuthController::class, 'disableTwoFactor'])->name('two-factor.disable');
+
+            // Gestión de Google OAuth (rutas protegidas)
+            Route::get('/google/status', [GoogleLoginController::class, 'status'])->name('auth.google.status');
+            Route::post('/google/link', [GoogleLoginController::class, 'link'])->name('auth.google.link');
+            Route::post('/google/unlink', [GoogleLoginController::class, 'unlink'])->name('auth.google.unlink');
         });
 
         Route::prefix('profile')->group(function () {
