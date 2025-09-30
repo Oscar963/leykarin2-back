@@ -36,14 +36,14 @@ Route::prefix('v1')->group(function () {
     | Rutas de Autenticación Públicas
     |--------------------------------------------------------------------------
     */
-    
+
     // Rutas de Google OAuth (sin middleware web para evitar CSRF)
     Route::prefix('auth')->group(function () {
         Route::post('/google/login', [GoogleLoginController::class, 'login'])->name('auth.google.login');
         Route::get('/google/config', [GoogleLoginController::class, 'config'])->name('auth.google.config');
     });
-    
-    // Rutas de autenticación tradicional (con middleware web)
+
+    // Rutas de autenticación tradicional (con middleware web y CSRF)
     Route::prefix('auth')->middleware(['web'])->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('login');
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
