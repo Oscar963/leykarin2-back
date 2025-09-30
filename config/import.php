@@ -25,10 +25,23 @@ return [
         'max_errors' => env('VALIDATION_MAX_ERRORS', 10),
         'required_columns' => ['numero', 'descripcion'],
         'optional_columns' => [
-            'calle', 'numeracion', 'lote_sitio', 'manzana', 'poblacion_villa',
-            'foja', 'inscripcion_numero', 'inscripcion_anio', 'rol_avaluo',
-            'superficie', 'deslinde_norte', 'deslinde_sur', 'deslinde_este',
-            'deslinde_oeste', 'decreto_incorporacion', 'decreto_destinacion', 'observaciones'
+            'calle',
+            'numeracion',
+            'lote_sitio',
+            'manzana',
+            'poblacion_villa',
+            'foja',
+            'inscripcion_numero',
+            'inscripcion_anio',
+            'rol_avaluo',
+            'superficie',
+            'deslinde_norte',
+            'deslinde_sur',
+            'deslinde_este',
+            'deslinde_oeste',
+            'decreto_incorporacion',
+            'decreto_destinacion',
+            'observaciones'
         ],
     ],
 
@@ -42,7 +55,7 @@ return [
 
     'storage' => [
         'disk' => env('FILESYSTEM_DISK', 'public'),
-        'path' => env('UPLOAD_PATH', 'uploads/inmuebles'),
+        'path' => env('UPLOAD_PATH', 'uploads/compliants'),
         'backup_disk' => env('BACKUP_STORAGE', 'local'),
     ],
 
@@ -51,10 +64,6 @@ return [
 
     'preview' => [
         'rows' => env('IMPORT_PREVIEW_ROWS', 5),
-    ],
-
-    'template' => [
-        'filename' => env('IMPORT_TEMPLATE_FILENAME', 'plantilla_inmuebles.xlsx'),
     ],
 
     'logging' => [
@@ -74,4 +83,4 @@ return [
         'enabled' => env('IMPORT_NOTIFICATIONS_ENABLED', false),
         'email' => env('IMPORT_NOTIFICATION_EMAIL', null),
     ],
-]; 
+];

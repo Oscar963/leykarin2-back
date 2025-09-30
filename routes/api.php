@@ -8,7 +8,6 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\InmuebleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\WebController;
@@ -84,12 +83,6 @@ Route::prefix('v1')->group(function () {
         // --- Gestión de Usuarios ---
         Route::apiResource('users', UserController::class);
         Route::post('users/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
-
-        // --- Gestión de Inmuebles ---
-        Route::get('inmuebles/export', [InmuebleController::class, 'export'])->name('inmuebles.export');
-        Route::get('inmuebles/import/template', [InmuebleController::class, 'downloadTemplate'])->name('inmuebles.import.template');
-        Route::post('inmuebles/import', [InmuebleController::class, 'import'])->name('inmuebles.import');
-        Route::apiResource('inmuebles', InmuebleController::class);
 
         // --- Gestión de Denuncias ---
         Route::apiResource('complaints', ComplaintController::class);
