@@ -21,7 +21,9 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/form-data', [WebController::class, 'getFormData'])->name('web.form-data');
-    Route::post('web/complaints', [WebController::class, 'storeComplaint'])->name('web.complaints.store');
+    Route::post('web/complaints', [WebController::class, 'storeComplaint'])
+        ->middleware('throttle:5,60') // 5 denuncias por hora por IP
+        ->name('web.complaints.store');
 
     // --- Gestión de Archivos Temporales (FilePond) ---
     Route::prefix('temporary-files')->group(function () {
@@ -36,8 +38,8 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Rutas de Google OAuth (sin middleware web para evitar CSRF)
-    Route::prefix('auth')->group(function () {
+    // Rutas de Google OAuth (con middleware web para sesiones)
+    Route::prefix('auth')->middleware(['web'])->group(function () {
         Route::post('/google/login', [GoogleLoginController::class, 'login'])->name('auth.google.login');
         Route::get('/google/config', [GoogleLoginController::class, 'config'])->name('auth.google.config');
     });
@@ -63,6 +65,15 @@ Route::prefix('v1')->group(function () {
         // --- Autenticación (para usuario logueado) ---
         Route::prefix('auth')->group(function () {
             Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
+            
+            // Endpoint de prueba de autenticación
+            Route::get('/test', function () {
+                return response()->json([
+                    'authenticated' => true,
+                    'user' => auth()->user(),
+                    'token' => request()->bearerToken() ? 'Token presente' : 'Sin token',
+                ]);
+            })->name('auth.test');
 
             // Gestión de 2FA por email
             Route::get('/two-factor-status', [AuthController::class, 'getTwoFactorStatus'])->name('two-factor.status');
@@ -81,33 +92,57 @@ Route::prefix('v1')->group(function () {
         });
 
         // --- Gestión de Usuarios ---
-        Route::apiResource('users', UserController::class);
-        Route::post('users/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
-
-        // --- Gestión de Denuncias ---
-        Route::apiResource('complaints', ComplaintController::class);
-        Route::get('complaints/download-pdf/{token}', [ComplaintController::class, 'downloadPdf'])->name('complaints.download-pdf');
-        Route::post('complaints/resend-receipt', [ComplaintController::class, 'resendReceipt'])->name('complaints.resend-receipt');
-
-        // --- Gestión de Roles ---
-        Route::apiResource('roles', RoleController::class);
-
-        // --- Gestión de Permisos ---
-        Route::apiResource('permissions', PermissionController::class);
-
-        // --- Gestión de Archivos ---
-        Route::apiResource('files', FileController::class);
-        Route::get('/files/{id}/download', [FileController::class, 'download']);
-
-        // --- Gestión de Logs ---
-        Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-
-        // --- Gestión de Archivos ---
-        Route::prefix('complaints/{complaint}')->group(function () {
-            Route::get('/files', [FileController::class, 'getComplaintFiles'])->name('complaints.files.index');
+        Route::middleware(['permission:users.manage'])->group(function () {
+            Route::apiResource('users', UserController::class);
+            Route::post('users/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
         });
 
-        Route::prefix('files')->group(function () {
+        // --- Gestión de Denuncias ---
+        Route::prefix('complaints')->group(function () {
+            Route::get('/', [ComplaintController::class, 'index'])->name('complaints.index');
+            Route::post('/', [ComplaintController::class, 'store'])->name('complaints.store');
+            Route::get('/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
+            Route::patch('/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
+            Route::delete('/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
+            
+            Route::get('/download-pdf/{token}', [ComplaintController::class, 'downloadPdf'])
+                ->middleware('throttle:10,1')
+                ->name('complaints.download-pdf');
+            
+            Route::post('/resend-receipt', [ComplaintController::class, 'resendReceipt'])
+                ->middleware('throttle:3,1')
+                ->name('complaints.resend-receipt');
+        });
+
+        // --- Gestión de Roles ---
+        Route::middleware(['permission:roles.manage'])->group(function () {
+            Route::apiResource('roles', RoleController::class);
+        });
+
+        // --- Gestión de Permisos ---
+        Route::middleware(['permission:permissions.manage'])->group(function () {
+            Route::apiResource('permissions', PermissionController::class);
+        });
+
+        // --- Gestión de Archivos ---
+        Route::middleware(['permission:complaints.manage_files'])->group(function () {
+            Route::apiResource('files', FileController::class);
+            Route::get('/files/{id}/download', [FileController::class, 'download']);
+        });
+
+        // --- Gestión de Logs ---
+        Route::middleware(['permission:activity_logs.list'])->group(function () {
+            Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+        });
+
+        // --- Gestión de Archivos de Denuncias ---
+        Route::prefix('complaints/{complaint}')->group(function () {
+            Route::get('/files', [FileController::class, 'getComplaintFiles'])
+                ->middleware('permission:complaints.view')
+                ->name('complaints.files.index');
+        });
+
+        Route::prefix('files')->middleware(['permission:complaints.manage_files'])->group(function () {
             Route::delete('/{file}', [FileController::class, 'deleteFile'])->name('files.delete');
             Route::get('/{file}/download', [FileController::class, 'downloadFile'])->name('files.download');
         });

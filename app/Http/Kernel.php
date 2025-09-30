@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         'log.rate.limit' => \App\Http\Middleware\LogRateLimitExceeded::class,
         'active.user' => \App\Http\Middleware\EnsureUserIsActive::class,
+        'validate.google.domain' => \App\Http\Middleware\ValidateGoogleDomain::class,
     ];
 }

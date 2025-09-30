@@ -61,16 +61,15 @@ class GoogleLoginController extends Controller
             // Buscar o crear usuario
             $user = $this->googleAuthService->findOrCreateUser($payload);
 
-            // Autenticar usuario y generar token
+            // Autenticar usuario usando sesión (cookies)
             $authData = $this->googleAuthService->authenticateUser($user, $request);
 
-            // Respuesta exitosa
+            // Respuesta exitosa (sin token, usa cookies)
             return response()->json([
                 'message' => "Bienvenido(a) al sistema {$user->name} {$user->paternal_surname}",
-                'token' => $authData['token'],
-                'token_type' => $authData['token_type'],
                 'user' => new AuthResource($authData['user']),
-                'auth_provider' => 'google'
+                'auth_provider' => 'google',
+                'auth_method' => 'session'
             ], 200);
         } catch (AuthorizationException $e) {
             // Errores de autorización (dominio, usuario no registrado, cuenta suspendida)

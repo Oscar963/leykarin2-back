@@ -148,10 +148,12 @@
             <h2>Restablecer Contraseña</h2>
 
             <p>Estimado/a usuario,</p>
-            <p>Hemos recibido una solicitud para <span class="highlight">restablecer tu contraseña</span> en el Sistema de Planificación de Compras.</p>
+            <p>Hemos recibido una solicitud para <span class="highlight">restablecer tu contraseña</span> en el Sistema
+                de denuncias Leykarin.</p>
 
             <div class="security-notice">
-                <strong>Importante:</strong> Si no fuiste tú quien solicitó el cambio de contraseña, por favor ignora este mensaje. Tu cuenta permanecerá segura.
+                <strong>Importante:</strong> Si no fuiste tú quien solicitó el cambio de contraseña, por favor ignora
+                este mensaje. Tu cuenta permanecerá segura.
             </div>
 
             <div class="details">
@@ -169,9 +171,9 @@
             <p>Si el botón no funciona, puedes copiar y pegar el siguiente enlace en tu navegador:</p>
             <p style="word-break: break-all; color: #666; font-size: 14px;">{{ $resetUrl }}</p>
 
-            <p>Gracias por utilizar nuestro sistema de Planificación de Compras.</p>
+            <p>Gracias por utilizar nuestro sistema de denuncias Leykarin.</p>
             <p>Atentamente,<br>
-                <strong>Sistema de Planificación de Compras | Ilustre Municipalidad de Arica</strong><br>
+                <strong>Sistema de denuncias Leykarin | Ilustre Municipalidad de Arica</strong><br>
             </p>
         </div>
 

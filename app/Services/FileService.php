@@ -19,13 +19,14 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class FileService
 {
     /**
-     * Obtiene todos los archivos ordenados por fecha de creación (descendente).
+     * Obtiene todos los archivos ordenados por fecha de creación (descendente) con paginación.
      *
-     * @return Collection<File>
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getAllFiles(): Collection
+    public function getAllFiles(int $perPage = 15): \Illuminate\Pagination\LengthAwarePaginator
     {
-        return File::latest()->get();
+        return File::latest()->paginate($perPage);
     }
 
     /**
@@ -309,9 +310,31 @@ class FileService
      * @param string $fileType
      * @param string $disk
      * @return TemporaryFile
+     * @throws ValidationException
      */
     public function uploadTemporaryFile(string $sessionId, UploadedFile $uploadedFile, string $fileType, string $disk = 'public'): TemporaryFile
     {
+        // Validar límites por sesión
+        $existingFiles = $this->getTemporaryFiles($sessionId);
+        
+        // Límite de 10 archivos por sesión
+        if ($existingFiles->count() >= 10) {
+            throw ValidationException::withMessages([
+                'file' => ['Máximo 10 archivos por sesión. Por favor elimine algunos archivos antes de continuar.']
+            ]);
+        }
+        
+        // Límite de 50MB total por sesión
+        $totalSize = $existingFiles->sum('size');
+        $maxTotalSize = 52428800; // 50MB en bytes
+        
+        if (($totalSize + $uploadedFile->getSize()) > $maxTotalSize) {
+            $remainingMB = round(($maxTotalSize - $totalSize) / 1048576, 2);
+            throw ValidationException::withMessages([
+                'file' => ["El tamaño total de archivos excede 50MB. Espacio disponible: {$remainingMB}MB"]
+            ]);
+        }
+        
         // Generar nombre único
         $fileName = Str::uuid() . '.' . $uploadedFile->getClientOriginalExtension();
 

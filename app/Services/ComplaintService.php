@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Complaint;
 use App\Models\Complainant;
+use App\Models\ComplaintCounter;
 use App\Models\Denounced;
 use App\Models\TypeDependency;
 use App\Models\User;
@@ -174,30 +175,9 @@ class ComplaintService
         $typeDependency = TypeDependency::find($typeDependencyId);
         $prefix = $typeDependency ? $typeDependency->code : 'X';
 
-        $counter = DB::table('complaint_counters')
-            ->where('type_dependency_id', $typeDependencyId)
-            ->where('year', $year)
-            ->lockForUpdate()
-            ->first();
-
-        if (!$counter) {
-            DB::table('complaint_counters')->insert([
-                'type_dependency_id' => $typeDependencyId,
-                'year' => $year,
-                'current_seq' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $nextSequence = 1;
-        } else {
-            $nextSequence = ((int) $counter->current_seq) + 1;
-            DB::table('complaint_counters')
-                ->where('id', $counter->id)
-                ->update([
-                    'current_seq' => $nextSequence,
-                    'updated_at' => now(),
-                ]);
-        }
+        // Usar el modelo ComplaintCounter con lock optimista
+        $counter = ComplaintCounter::getOrCreateCounter($typeDependencyId, $year);
+        $nextSequence = $counter->incrementAndGet();
 
         return sprintf('%s-%04d-%d', strtoupper($prefix), $nextSequence, $year);
     }
