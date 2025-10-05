@@ -39,14 +39,17 @@ class SecurityHeaders
         if (app()->environment('production')) {
             $csp = [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Para desarrollo, restringir en producción
-                "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+                "script-src 'self' https://www.google.com https://www.gstatic.com", // Google reCAPTCHA
+                "style-src 'self' 'unsafe-inline' fonts.googleapis.com", // unsafe-inline necesario para algunos frameworks
                 "font-src 'self' fonts.gstatic.com",
                 "img-src 'self' data: https:",
-                "connect-src 'self'",
+                "connect-src 'self' https://www.google.com",
+                "frame-src 'self' https://www.google.com", // Para reCAPTCHA
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
-                "form-action 'self'"
+                "form-action 'self'",
+                "object-src 'none'",
+                "upgrade-insecure-requests"
             ];
             $response->headers->set('Content-Security-Policy', implode('; ', $csp));
         }

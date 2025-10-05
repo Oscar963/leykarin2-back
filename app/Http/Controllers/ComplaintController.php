@@ -131,6 +131,19 @@ class ComplaintController extends Controller
         try {
             $complaint = $this->complaintService->reenviarComprobante($validated['email'], $validated['token']);
 
+            // Validar que el usuario sea el denunciante o tenga permisos
+            $user = auth()->user();
+            $isOwner = $complaint->complainant && $complaint->complainant->email === $validated['email'];
+            $hasPermission = $user->can('complaints.resend');
+
+            if (!$isOwner && !$hasPermission) {
+                $this->logActivity('reenviar_comprobante_unauthorized', 'Intento no autorizado de reenvío - Token: ' . $validated['token']);
+                return response()->json([
+                    'error' => 'No autorizado',
+                    'message' => 'No tiene permisos para reenviar este comprobante'
+                ], 403);
+            }
+
             $this->logActivity('reenviar_comprobante', 'Usuario reenvió comprobante de denuncia - Token: ' . $validated['token'] . ', Email: ' . $validated['email']);
 
             return response()->json([
@@ -163,6 +176,19 @@ class ComplaintController extends Controller
                 ], Response::HTTP_NOT_FOUND);
             }
 
+            // Validar permisos o propiedad
+            $user = auth()->user();
+            $isOwner = $complaint->complainant && $complaint->complainant->email === $user->email;
+            $hasPermission = $user->can('complaints.download_pdf');
+
+            if (!$isOwner && !$hasPermission) {
+                $this->logActivity('download_complaint_pdf_unauthorized', 'Intento no autorizado de descarga - Token: ' . $token);
+                return response()->json([
+                    'error' => 'No autorizado',
+                    'message' => 'No tiene permisos para descargar esta denuncia'
+                ], Response::HTTP_FORBIDDEN);
+            }
+
             $this->logActivity('download_complaint_pdf', 'Usuario descargó PDF de denuncia - Token: ' . $token . ', Folio: ' . $complaint->folio);
 
             $pdf = $this->complaintService->generateComplaintPdf($complaint, [
@@ -192,7 +218,25 @@ class ComplaintController extends Controller
      */
     private function handleException(Throwable $e, string $userMessage, array $context = []): JsonResponse
     {
-        Log::error($e->getMessage(), array_merge($context, [
+        // Filtrar datos sensibles del contexto
+        $sensitiveKeys = [
+            'complainant_email',
+            'complainant_rut',
+            'complainant_address',
+            'complainant_phone',
+            'denounced_email',
+            'denounced_rut',
+            'denounced_address',
+            'denounced_phone',
+            'password',
+            'password_confirmation',
+            'token',
+            'api_token'
+        ];
+
+        $safeContext = array_diff_key($context, array_flip($sensitiveKeys));
+
+        Log::error($e->getMessage(), array_merge($safeContext, [
             'user_id' => auth()->id(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),

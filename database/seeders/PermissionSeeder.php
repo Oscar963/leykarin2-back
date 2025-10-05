@@ -36,17 +36,6 @@ class PermissionSeeder extends Seeder
             'permissions.edit',
             'permissions.delete',
 
-            // ===== MÓDULO DE INMUEBLES =====
-            'inmuebles.list',
-            'inmuebles.create',
-            'inmuebles.edit',
-            'inmuebles.delete',
-            'inmuebles.view',
-
-            // ===== MÓDULO DE IMPORTACIÓN DE INMUEBLES =====
-            'inmuebles.import',
-            'inmuebles.export',
-
             // ===== MÓDULO DE COMPLAINTS =====
             'complaints.list',
             'complaints.create',

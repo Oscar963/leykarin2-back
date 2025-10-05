@@ -232,7 +232,7 @@ class GoogleAuthService
     }
 
     /**
-     * Autentica al usuario y genera token Sanctum.
+     * Autentica al usuario usando cookies de sesión (stateful).
      *
      * @param User $user
      * @param \Illuminate\Http\Request $request
@@ -253,11 +253,11 @@ class GoogleAuthService
             throw new AuthorizationException('Dominio de Google no autorizado para este usuario.');
         }
 
-        // Generar token Sanctum
-        $tokenName = 'GoogleAuthToken-' . now()->format('Y-m-d-H:i:s');
-        $abilities = ['read', 'write']; // Permisos del token
+        // Autenticar usando sesión (cookies) en lugar de token
+        \Illuminate\Support\Facades\Auth::login($user, true); // true = remember me
 
-        $token = $user->createToken($tokenName, $abilities)->plainTextToken;
+        // Regenerar sesión para seguridad
+        $request->session()->regenerate();
 
         // Logging de seguridad
         $this->securityLogService->logSuccessfulLogin($user, $request);
@@ -266,14 +266,12 @@ class GoogleAuthService
         Log::info('Usuario autenticado exitosamente con Google OAuth', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'token_name' => $tokenName
+            'auth_method' => 'session'
         ]);
 
         return [
-            'token' => $token,
             'user' => $user->load(['roles', 'permissions', 'typeDependency']),
-            'token_type' => 'Bearer',
-            'expires_in' => null, // Sanctum tokens no expiran por defecto
+            'auth_method' => 'session',
         ];
     }
 

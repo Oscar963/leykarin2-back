@@ -17,22 +17,18 @@ class EnsureUserIsActive
      */
     public function handle(Request $request, Closure $next)
     {
+        $user = $request->user();
+        
         // Verifica si el usuario está autenticado y si su estado es inactivo (false o 0)
-        if ($request->user() && !$request->user()->status) {
+        if ($user && !$user->status) {
+            // Para API con Sanctum, revocar el token actual
+            if ($user->currentAccessToken()) {
+                $user->currentAccessToken()->delete();
+            }
 
-            // 1. Cierra la sesión del usuario en el backend
-            Auth::guard('web')->logout(); // Especificamos el guard 'web' para cerrar la sesión
-
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            // 2. Retorna una respuesta de error 403 (Forbidden)
-            // El frontend puede usar este código para redirigir al login.
+            // Retorna una respuesta de error 403 (Forbidden)
             return response()->json([
-                'status' => 403,
-                'error' => [
-                    'message' => 'Tu cuenta ha sido suspendida. Sesión cerrada.'
-                ]
+                'message' => 'Tu cuenta ha sido suspendida. Por favor contacta al administrador.'
             ], 403);
         }
 

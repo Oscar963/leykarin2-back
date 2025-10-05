@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Mail\TwoFactorCodeMail;
+use App\Notifications\ResetPasswordNotification;
+use App\Traits\FiresRoleEvents;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use App\Notifications\ResetPasswordNotification;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Permission\Traits\HasRoles;
-use Carbon\Carbon;
-use App\Mail\TwoFactorCodeMail;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
@@ -19,7 +20,14 @@ class User extends Authenticatable
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
-    use HasRoles;
+    use HasRoles, FiresRoleEvents {
+        HasRoles::assignRole as protected assignRoleOriginal;
+        HasRoles::removeRole as protected removeRoleOriginal;
+        HasRoles::syncRoles as protected syncRolesOriginal;
+        FiresRoleEvents::assignRole insteadof HasRoles;
+        FiresRoleEvents::removeRole insteadof HasRoles;
+        FiresRoleEvents::syncRoles insteadof HasRoles;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -204,6 +212,7 @@ class User extends Authenticatable
             'google_verified_at' => Carbon::now(),
             'google_domain' => $googleData['hd'] ?? null,
             'auth_provider' => 'google',
+            'status' => true, // Activar usuario al vincular con Google
         ]);
     }
 

@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\RoleAssigned;
+use App\Events\RoleRevoked;
+use App\Listeners\RoleAssignedListener;
+use App\Listeners\RoleRevokedListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -19,13 +23,19 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
-
         ],
 
         SocialiteWasCalled::class => [
             ClaveUnicaExtendSocialite::class . '@handle',
         ],
 
+        RoleAssigned::class => [
+            RoleAssignedListener::class,
+        ],
+
+        RoleRevoked::class => [
+            RoleRevokedListener::class,
+        ],
     ];
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidRut;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ComplaintRequest extends FormRequest
@@ -67,14 +68,14 @@ class ComplaintRequest extends FormRequest
             'hierarchical_level_id' => 'required|integer|exists:hierarchical_levels,id',
             'work_relationship_id' => 'required|integer|exists:work_relationships,id',
             'supervisor_relationship_id' => 'required|integer|exists:supervisor_relationships,id',
-            'circumstances_narrative' => 'required|string',
-            'consequences_narrative' => 'required|string',
+            'circumstances_narrative' => 'required|string|max:5000',
+            'consequences_narrative' => 'required|string|max:5000',
 
             // Complainant fields
             'complainant_dependence_id' => 'required|integer|exists:type_dependencies,id',
             'complainant_name' => 'required|string|max:255',
             'complainant_address' => 'required|string|max:255',
-            'complainant_rut' => 'required|string|max:20',
+            'complainant_rut' => ['required', 'string', 'max:20', new ValidRut],
             'complainant_phone' => 'required|string|max:20',
             'complainant_charge' => 'required|string|max:255',
             'complainant_email' => 'required|email|max:255',
@@ -90,7 +91,7 @@ class ComplaintRequest extends FormRequest
             // Denounced fields
             'denounced_name' => 'required|string|max:255',
             'denounced_address' => 'nullable|string|max:255',
-            'denounced_rut' => 'nullable|string|max:20',
+            'denounced_rut' => ['nullable', 'string', 'max:20', new ValidRut],
             'denounced_phone' => 'nullable|string|max:20',
             'denounced_charge' => 'required|string|max:255',
             'denounced_email' => 'nullable|email|max:255',
@@ -100,7 +101,7 @@ class ComplaintRequest extends FormRequest
             'denounced_grade' => 'nullable|integer',
 
             // Witnesses fields
-            'witnesses' => 'nullable|array',
+            'witnesses' => 'nullable|array|max:10',
             'witnesses.*.name' => 'nullable|string|max:255',
             'witnesses.*.phone' => 'nullable|string|max:50',
             'witnesses.*.email' => 'nullable|email|max:255',
