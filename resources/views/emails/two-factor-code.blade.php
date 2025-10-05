@@ -3,16 +3,10 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Código de Verificación - {{ config('app.name') }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap"
-        rel="stylesheet">
     <style>
-        /* Reset styles */
         * {
             margin: 0;
             padding: 0;
@@ -20,417 +14,257 @@
         }
 
         body {
-            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #475569;
-            background-color: #f8fafc;
+            color: #2c3e50;
+            background-color: #ecf0f1;
             margin: 0;
-            padding: 20px 0;
+            padding: 30px 0;
         }
 
         .email-container {
             max-width: 600px;
             margin: 0 auto;
             background-color: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .header {
-            /* Cambiado gradiente verde por azul #06048c y variaciones */
-            background: linear-gradient(135deg, #06048c 0%, #0f0b9e 100%);
-            padding: 48px 40px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+            background-color: #ffffff;
+            padding: 30px 40px 20px;
+            border-bottom: 3px solid #3498db;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-            opacity: 0.3;
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 1;
+        .logo-container {
+            text-align: left;
+            margin-bottom: 20px;
         }
 
         .logo {
-            width: 64px;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: white;
-            font-weight: 700;
-            font-family: 'Geist', sans-serif;
+            max-width: 150px;
+            height: auto;
         }
 
-        .header h1 {
-            font-family: 'Geist', sans-serif;
-            font-size: 32px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        .header h2 {
-            font-size: 18px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.9);
+        .header-title {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin: 0;
+            font-weight: 500;
+        }
+
+        .document-type {
+            font-size: 24px;
+            color: #2c3e50;
+            font-weight: 600;
+            margin: 8px 0 0 0;
+            letter-spacing: -0.3px;
         }
 
         .content {
-            padding: 48px 40px;
+            padding: 40px;
             background-color: #ffffff;
         }
 
         .greeting {
-            font-family: 'Geist', sans-serif;
-            font-size: 24px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 24px;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 500;
         }
 
-        .message {
-            font-size: 16px;
-            color: #64748b;
-            margin-bottom: 32px;
+        .intro-text {
+            font-size: 15px;
+            color: #34495e;
+            margin-bottom: 30px;
             line-height: 1.7;
         }
 
-        .code-container {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            /* Cambiado borde verde por azul #06048c */
-            border: 2px solid #06048c;
-            border-radius: 20px;
-            padding: 40px 30px;
+        .code-box {
+            background-color: #f8f9fa;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            padding: 30px;
             text-align: center;
-            position: relative;
-            /* Cambiado box-shadow verde por azul */
-            box-shadow: 0 4px 6px -1px rgba(6, 4, 140, 0.1);
-        }
-
-        .code-container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            /* Cambiado gradiente verde por variaciones de azul */
-            background: linear-gradient(135deg, #06048c, #0f0b9e, #1e40af);
-            border-radius: 20px;
-            z-index: -1;
+            margin: 30px 0;
         }
 
         .code-label {
-            font-family: 'Geist', sans-serif;
-            font-size: 14px;
-            color: #64748b;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-size: 12px;
+            color: #7f8c8d;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            font-weight: 500;
         }
 
         .verification-code {
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-            font-size: 48px;
-            font-weight: 800;
-            /* Cambiado color verde por azul más oscuro */
-            color: #0f0b9e;
-            letter-spacing: 16px;
-            margin: 16px 0;
-            /* Cambiado text-shadow verde por azul */
-            text-shadow: 0 2px 4px rgba(15, 11, 158, 0.2);
-            /* Cambiado gradiente verde por azul */
-            background: linear-gradient(135deg, #06048c, #0f0b9e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 42px;
+            color: #3498db;
+            font-weight: 700;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
         }
 
-        .copy-hint {
+        .code-hint {
             font-size: 13px;
-            color: #94a3b8;
-            font-style: italic;
-            margin-top: 12px;
+            color: #7f8c8d;
+            margin-top: 15px;
         }
 
-        .info-cards {
-            display: grid;
-            gap: 16px;
+        .info-section {
+            margin: 30px 0;
         }
 
-        .info-card {
-            border-radius: 12px;
-            padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-left: 3px solid #06048c;
-            margin-top: 16px;
-        }
-
-        .info-card-content h3 {
-            font-family: 'Geist', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #1e293b;
-        }
-
-        .info-card-content p {
+        .section-title {
             font-size: 14px;
-            line-height: 1.6;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .info-row {
+            display: table;
+            width: 100%;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            display: table-cell;
+            font-size: 14px;
+            color: #7f8c8d;
+            width: 35%;
+            padding-right: 15px;
+            vertical-align: top;
+        }
+
+        .info-value {
+            display: table-cell;
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .notice-box {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .notice-box p {
+            font-size: 14px;
+            color: #1565c0;
             margin: 0;
-            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .notice-box strong {
+            color: #0d47a1;
         }
 
         .security-tips {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-left: 3px solid #06048c;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 24px 0;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 30px 0;
         }
 
-        .security-tips h3 {
-            font-family: 'Geist', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: #06048c;
-            margin-bottom: 16px;
+        .security-tips .section-title {
+            border-bottom: none;
+            margin-bottom: 15px;
+            padding-bottom: 0;
         }
 
         .security-tips ul {
             margin: 0;
             padding-left: 20px;
-            color: #64748b;
         }
 
         .security-tips li {
-            margin-bottom: 8px;
             font-size: 14px;
+            color: #34495e;
+            margin-bottom: 10px;
             line-height: 1.6;
         }
 
-        .cta-button {
-            display: inline-block;
-            /* Cambiado gradiente verde por azul */
-            background: linear-gradient(135deg, #06048c 0%, #0f0b9e 100%);
-            color: white;
-            text-decoration: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-family: 'Geist', sans-serif;
-            font-weight: 600;
-            font-size: 16px;
-            text-align: center;
-            margin: 24px 0;
-            /* Cambiado box-shadow verde por azul */
-            box-shadow: 0 4px 6px -1px rgba(6, 4, 140, 0.3);
-            transition: all 0.2s ease;
-        }
-
-        .signature {
-            margin-top: 40px;
-            padding-top: 24px;
-            border-top: 2px solid #f1f5f9;
-        }
-
-        .signature p {
-            margin: 8px 0;
-            color: #64748b;
-        }
-
-        .signature .team-name {
-            font-family: 'Geist', sans-serif;
-            font-weight: 600;
-            color: #1e293b;
+        .divider {
+            height: 1px;
+            background-color: #ecf0f1;
+            margin: 30px 0;
         }
 
         .footer {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            padding: 32px 40px;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
+            background-color: #f8f9fa;
+            padding: 30px 40px;
+            border-top: 1px solid #ecf0f1;
         }
 
-        .footer p {
+        .footer-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+
+        .footer-brand {
             font-size: 13px;
-            color: #94a3b8;
-            margin: 6px 0;
-        }
-
-        .footer .company-info {
-            font-family: 'Geist', sans-serif;
+            color: #2c3e50;
             font-weight: 600;
-            color: #64748b;
-            font-size: 14px;
+            margin-bottom: 10px;
         }
 
-        .footer a {
-            /* Cambiado color verde por azul */
-            color: #06048c;
-            text-decoration: none;
+        .footer-legal {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
         }
 
-        /* Responsive design */
         @media only screen and (max-width: 600px) {
             body {
-                padding: 10px 0;
+                padding: 15px 0;
             }
 
             .email-container {
                 margin: 0 10px;
-                border-radius: 12px;
             }
 
             .header,
             .content,
             .footer {
-                padding: 32px 24px;
+                padding: 25px 20px;
             }
 
-            .header h1 {
-                font-size: 28px;
+            .info-row {
+                display: block;
             }
 
-            .greeting {
-                font-size: 20px;
+            .info-label,
+            .info-value {
+                display: block;
+                width: 100%;
+                padding: 0;
             }
 
-            .verification-code {
-                font-size: 40px;
-                letter-spacing: 12px;
-            }
-
-            .code-container {
-                padding: 32px 20px;
-                margin: 24px 0;
-            }
-
-            .info-cards {
-                gap: 12px;
-            }
-
-            .info-card {
-                padding: 16px;
-                gap: 12px;
-            }
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #0f172a;
-            }
-
-            .email-container {
-                background-color: #1e293b;
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            }
-
-            .content {
-                background-color: #1e293b;
-            }
-
-            .greeting {
-                color: #f1f5f9;
-            }
-
-            .message {
-                color: #cbd5e1;
-            }
-
-            .code-container {
-                background: linear-gradient(135deg, #334155 0%, #475569 100%);
-                border-color: #06048c;
+            .info-label {
+                margin-bottom: 5px;
             }
 
             .verification-code {
-                color: #60a5fa;
-                background: linear-gradient(135deg, #3b82f6, #60a5fa);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-
-            .code-label {
-                color: #cbd5e1;
-            }
-
-            .copy-hint {
-                color: #94a3b8;
-            }
-
-            .info-card {
-                background-color: #334155;
-                border-color: #475569;
-                border-left-color: #3b82f6;
-            }
-
-            .info-card-content h3 {
-                color: #f1f5f9;
-            }
-
-            .info-card-content p {
-                color: #cbd5e1;
-            }
-
-            .security-tips {
-                background-color: #334155;
-                border-color: #475569;
-                border-left-color: #3b82f6;
-            }
-
-            .security-tips h3 {
-                color: #60a5fa;
-            }
-
-            .security-tips li {
-                color: #cbd5e1;
-            }
-
-            .signature p {
-                color: #cbd5e1;
-            }
-
-            .signature .team-name {
-                color: #f1f5f9;
-            }
-
-            .footer {
-                background: linear-gradient(135deg, #334155 0%, #475569 100%);
-                border-top-color: #475569;
-            }
-
-            .footer p {
-                color: #94a3b8;
-            }
-
-            .footer .company-info {
-                color: #cbd5e1;
-            }
-
-            .footer a {
-                color: #60a5fa;
+                font-size: 32px;
+                letter-spacing: 6px;
             }
         }
     </style>
@@ -440,92 +274,63 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <img src="{{ $logoUrl }}" alt="Logo Municipalidad de Arica" class="logo">
-                    {{-- {{ substr(config('app.name', 'App'), 0, 1) }} --}}
-                </div>
-                <h1 style="color: #fff">{{ config('app.name', 'Mi Aplicación') }}</h1>
-                <h2 style="color: #fff">Verificación de Identidad</h2>
+            <div class="logo-container">
+                <img src="{{ $logoUrl }}" alt="Logo Municipalidad" class="logo">
             </div>
+            <p class="header-title">Estimado/a {{ $userName ?? 'Usuario' }}</p>
+            <h1 class="document-type">Código de Verificación</h1>
         </div>
 
-        <!-- Main Content -->
+        <!-- Content -->
         <div class="content">
-            <div class="greeting">
-                ¡Hola {{ $userName ?? 'Usuario' }}! 👋
-            </div>
-
-            <div class="message">
-                <p>Hemos recibido una solicitud para acceder a tu cuenta. Para garantizar tu seguridad, necesitamos
-                    verificar que realmente eres tú quien está intentando iniciar sesión.</p>
-            </div>
+            <p class="intro-text">
+                Hemos recibido una solicitud para acceder a su cuenta. Para garantizar su seguridad, necesitamos verificar su identidad mediante el siguiente código.
+            </p>
 
             <!-- Verification Code -->
-            <div class="code-container">
-                <div class="code-label">Tu código de verificación</div>
+            <div class="code-box">
+                <div class="code-label">Su código de verificación</div>
                 <div class="verification-code">{{ $verificationCode ?? ($code ?? '123456') }}</div>
-                <div class="copy-hint">Copia y pega este código en la aplicación</div>
+                <div class="code-hint">Ingrese este código en la aplicación</div>
             </div>
 
-            <!-- Information Cards -->
-            <div class="info-cards">
-                <div class="info-card">
-                    <div class="info-card-content">
-                        <h3>Tiempo limitado</h3>
-                        <p>Este código expira en {{ $expiresInMinutes ?? 10 }} minutos por tu seguridad.</p>
-                    </div>
+            <!-- Información -->
+            <div class="info-section">
+                <div class="section-title">Información Importante</div>
+                
+                <div class="info-row">
+                    <span class="info-label">Validez del código</span>
+                    <span class="info-value">{{ $expiresInMinutes ?? 10 }} minutos</span>
                 </div>
 
-                <div class="info-card">
-                    <div class="info-card-content">
-                        <h3>¿No fuiste tú?</h3>
-                        <p>Si no solicitaste este código, ignora este correo y contacta inmediatamente a nuestro equipo
-                            de soporte.</p>
-                    </div>
+                <div class="info-row">
+                    <span class="info-label">Uso</span>
+                    <span class="info-value">Único (no reutilizable)</span>
                 </div>
             </div>
 
             <!-- Security Tips -->
             <div class="security-tips">
-                <h3>Consejos de seguridad</h3>
+                <div class="section-title">Recomendaciones de Seguridad</div>
                 <ul>
-                    <li>Nunca compartas este código con nadie, ni siquiera con nuestro equipo</li>
-                    <li>Solo ingresa el código en la aplicación oficial de {{ config('app.name') }}</li>
-                    <li>Nuestro equipo nunca te pedirá códigos por teléfono o email</li>
+                    <li>Nunca comparta este código con terceros</li>
+                    <li>Solo ingréselo en la aplicación oficial</li>
+                    <li>Nuestro equipo nunca le solicitará códigos por teléfono o email</li>
+                    <li>Si no reconoce esta solicitud, contacte inmediatamente a soporte</li>
                 </ul>
-            </div>
-
-            @if (isset($supportUrl))
-                <a href="{{ $supportUrl }}" class="cta-button">
-                    ¿Necesitas ayuda? Contactar Soporte
-                </a>
-            @endif
-
-            <!-- Signature -->
-            <div class="signature">
-                <p class="team-name">El equipo de {{ config('app.name', 'Mi Aplicación') }}</p>
-                <p>Comprometidos con tu seguridad digital</p>
-                @if (isset($supportEmail))
-                    <p style="font-size: 14px; margin-top: 16px;">
-                        📧 Soporte: <a href="mailto:{{ $supportEmail }}"
-                            style="color: #06048c; text-decoration: none;">{{ $supportEmail }}</a>
-                    </p>
-                @endif
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p class="company-info">{{ config('app.name', 'Mi Aplicación') }}</p>
-            <p>Este es un correo automático generado por nuestro sistema de seguridad.</p>
-            <p>© {{ date('Y') }} {{ config('app.name', 'Mi Aplicación') }}. Todos los derechos reservados.</p>
-            @if (isset($unsubscribeUrl))
-                <p style="margin-top: 16px;">
-                    <a href="{{ $unsubscribeUrl }}" style="color: #94a3b8; font-size: 12px;">Gestionar preferencias de
-                        email</a>
-                </p>
-            @endif
+            <p class="footer-brand">Sistema Leykarin</p>
+            <p class="footer-text">Ilustre Municipalidad de Arica</p>
+            <p class="footer-text">Este es un correo automático, por favor no responda a este mensaje.</p>
+            
+            <div class="footer-legal">
+                <p>&copy; {{ date('Y') }} Municipalidad de Arica. Todos los derechos reservados.</p>
+                <p>Este documento es confidencial y está destinado únicamente para el uso del destinatario.</p>
+            </div>
         </div>
     </div>
 </body>
