@@ -241,8 +241,9 @@ class User extends Authenticatable
     {
         $allowedDomain = config('services.google.allowed_domain');
         
-        if (!$allowedDomain) {
-            return true; // Si no hay restricción de dominio
+        // Si no hay restricción de dominio o es '*', permitir todos
+        if (!$allowedDomain || $allowedDomain === '*') {
+            return true;
         }
 
         return $this->google_domain === $allowedDomain;
