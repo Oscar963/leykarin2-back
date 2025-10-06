@@ -113,10 +113,16 @@ class GoogleAuthService
     {
         $allowedDomain = config('services.google.allowed_domain');
 
-        if (!$allowedDomain) {
-            return; // No hay restricción de dominio
+        // Si no hay dominio configurado o es '*', permitir todos los dominios
+        if (!$allowedDomain || $allowedDomain === '*') {
+            Log::info('Acceso permitido desde cualquier dominio', [
+                'email' => $payload['email'],
+                'domain' => $payload['hd'] ?? 'gmail.com (personal)'
+            ]);
+            return;
         }
 
+        // Si hay dominio específico configurado, validarlo
         $userDomain = $payload['hd'] ?? null;
 
         if ($userDomain !== $allowedDomain) {

@@ -11,10 +11,11 @@ Este documento describe la implementación completa del sistema de autenticació
 - **Google OAuth**: Autenticación con cuenta de Google usando ID Token
 - **Vinculación de Cuentas**: Los usuarios pueden vincular/desvincular sus cuentas de Google
 
-### 🏢 Restricción de Dominio Corporativo
-- Configuración opcional para restringir acceso solo a dominios específicos
+### 🏢 Restricción de Dominio Corporativo (Opcional)
+- Configuración flexible para restringir acceso a dominios específicos o permitir todos
 - Validación automática del dominio `hd` (hosted domain) en el token de Google
 - Soporte para organizaciones que usan Google Workspace
+- Permite cuentas personales de Gmail cuando se configura `GOOGLE_ALLOWED_DOMAIN=*`
 
 ### 🛡️ Seguridad Avanzada
 - Verificación completa de ID Token usando la librería oficial de Google
@@ -69,7 +70,11 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 # Configuración de dominio corporativo (opcional)
-GOOGLE_ALLOWED_DOMAIN=municipalidadarica.cl
+# Opciones:
+# - municipalidadarica.cl (solo ese dominio)
+# - * (todos los dominios, incluye Gmail personal)
+# - vacío (todos los dominios)
+GOOGLE_ALLOWED_DOMAIN=*
 
 # Configuración de seguridad OAuth
 GOOGLE_OAUTH_ENABLED=true
@@ -292,10 +297,18 @@ export class GoogleLoginComponent implements OnInit {
 2. Información de Google se actualiza en cada login
 3. Puede desvincular cuenta si tiene contraseña configurada
 
-### 4. Restricción de Dominio
+### 4. Restricción de Dominio (Configurable)
+
+**Opción A: Dominio Específico**
 1. Solo usuarios con email `@municipalidadarica.cl` pueden acceder
 2. Validación automática del claim `hd` en el token
 3. Error claro si dominio no está autorizado
+
+**Opción B: Todos los Dominios** (configurar `GOOGLE_ALLOWED_DOMAIN=*`)
+1. Permite cuentas de Gmail personales (@gmail.com)
+2. Permite cuentas de otros dominios corporativos
+3. Permite cuentas de Outlook, Yahoo, etc.
+4. Útil para sistemas públicos o con usuarios externos
 
 ## Seguridad
 
@@ -339,8 +352,9 @@ export class GoogleLoginComponent implements OnInit {
 
 #### "Dominio de correo no autorizado"
 - Usuario no pertenece al dominio configurado
-- Verificar variable `GOOGLE_ALLOWED_DOMAIN`
-- Confirmar que usuario tenga cuenta de Google Workspace
+- **Solución**: Cambiar `GOOGLE_ALLOWED_DOMAIN=*` para permitir todos los dominios
+- O verificar que el usuario tenga cuenta del dominio específico configurado
+- Confirmar que usuario tenga cuenta de Google Workspace (si se requiere dominio específico)
 
 #### "Usuario no registrado"
 - Usuario no existe en base de datos
